@@ -16,7 +16,7 @@ const char wav_default_header[WAV_HEADER_BYTES] = {
         0x00, 0x00, 0x00, 0x00,
 };
 
-int wav_header_to_struct(wav_header & s, char header[WAV_HEADER_BYTES]){
+int att_wav_header_to_struct(att_wav_header & s, char header[WAV_HEADER_BYTES]){
 
 
     memcpy(&s, header, WAV_HEADER_BYTES);
@@ -52,7 +52,7 @@ int wav_header_to_struct(wav_header & s, char header[WAV_HEADER_BYTES]){
     return 0;
 }
 
-int wav_form_header(char header[WAV_HEADER_BYTES],
+int att_wav_form_header(char header[WAV_HEADER_BYTES],
         short audio_format,
         short num_channels,
         int sample_rate,
@@ -73,7 +73,7 @@ int wav_form_header(char header[WAV_HEADER_BYTES],
     return 0;
 }
 
-void wav_print_header(wav_header & s){
+void att_wav_print_header(att_wav_header & s){
 
     for(unsigned i=0;i<4;i++)
         printf("%c", s.riff_header[i]);
@@ -126,17 +126,17 @@ void wav_print_header(wav_header & s){
     printf("file length: %f seconds\n", (float)num_frames / (float)s.sample_rate);
 }
 
-unsigned wav_get_num_bytes_per_frame(wav_header &s){
+unsigned att_wav_get_num_bytes_per_frame(att_wav_header &s){
     int bytes_per_sample = s.bit_depth/CHAR_BIT;
     return (unsigned)(bytes_per_sample * s.num_channels);
 }
 
-int wav_get_num_frames(wav_header &s){
+int att_wav_get_num_frames(att_wav_header &s){
     unsigned bytes_per_frame = wav_get_num_bytes_per_frame(s);
     return s.data_bytes / bytes_per_frame;
 }
 
-long wav_get_frame_start(wav_header &s, unsigned frame_number){
+long att_wav_get_frame_start(att_wav_header &s, unsigned frame_number){
     return WAV_HEADER_BYTES + frame_number * wav_get_num_bytes_per_frame(s);
 }
 

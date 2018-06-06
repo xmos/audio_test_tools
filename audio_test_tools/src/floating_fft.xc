@@ -8,7 +8,7 @@
 #include "audio_test_tools.h"
 
 #pragma unsafe arrays
-void bit_reverse( dsp_complex_fp pts[], const uint32_t N )
+void att_bit_reverse( dsp_complex_fp pts[], const uint32_t N )
 {
     uint32_t shift = clz(N);
     for(uint32_t i = 1; i < N-1; i++) {
@@ -28,7 +28,7 @@ void bit_reverse( dsp_complex_fp pts[], const uint32_t N )
 }
 
 #pragma unsafe arrays
-void forward_fft (
+void att_forward_fft (
     dsp_complex_fp pts[],
     const uint32_t  N,
     const double   sine[] )
@@ -78,7 +78,7 @@ void forward_fft (
 }
 
 #pragma unsafe arrays
-void inverse_fft (
+void att_inverse_fft (
     dsp_complex_fp pts[],
     const uint32_t  N,
     const double   sine[] )
@@ -128,7 +128,7 @@ void inverse_fft (
 }
 
 #pragma unsafe arrays
-void split_spectrum( dsp_complex_fp pts[], const uint32_t N ){
+void att_split_spectrum( dsp_complex_fp pts[], const uint32_t N ){
 
     for(uint32_t i=1;i<N/2;i++){
         double a_re = (pts[i].re + pts[N-i].re)/2;
@@ -159,7 +159,7 @@ void split_spectrum( dsp_complex_fp pts[], const uint32_t N ){
 }
 
 #pragma unsafe arrays
-void merge_spectra( dsp_complex_fp pts[], const uint32_t N ){
+void att_merge_spectra( dsp_complex_fp pts[], const uint32_t N ){
     for(uint32_t i=1;i<N/4;i++){
         dsp_complex_fp a = pts[N/2 + i];
         dsp_complex_fp b = pts[N - i];

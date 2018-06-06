@@ -7,17 +7,17 @@
 #include <xclib.h>
 #include <math.h>
 
-int32_t random_int32(unsigned &r){
+int32_t att_random_int32(unsigned &r){
     crc32(r, -1, CRC_POLY);
     return (int32_t)r;
 }
 
-uint32_t random_uint32(unsigned &r){
+uint32_t att_random_uint32(unsigned &r){
     crc32(r, -1, CRC_POLY);
     return (uint32_t)r;
 }
 
-int64_t random_int64(unsigned &r){
+int64_t att_random_int64(unsigned &r){
     crc32(r, -1, CRC_POLY);
     int64_t a = (int64_t)r;
     crc32(r, -1, CRC_POLY);
@@ -25,7 +25,7 @@ int64_t random_int64(unsigned &r){
     return (int64_t)(a + (b<<32));
 }
 
-uint64_t random_uint64(unsigned &r){
+uint64_t att_random_uint64(unsigned &r){
     crc32(r, -1, CRC_POLY);
     int64_t a = (int64_t)r;
     crc32(r, -1, CRC_POLY);
@@ -33,23 +33,23 @@ uint64_t random_uint64(unsigned &r){
     return (uint64_t)(a + (b<<32));
 }
 
-double int64_to_double(int64_t x, int x_exp){
+double att_int64_to_double(int64_t x, int x_exp){
   return ldexp((double)x, x_exp);
 }
 
-double uint64_to_double(uint64_t x, int x_exp){
+double att_uint64_to_double(uint64_t x, int x_exp){
   return ldexp((double)x, x_exp);
 }
 
-double int32_to_double(int32_t x, int x_exp){
+double att_int32_to_double(int32_t x, int x_exp){
   return ldexp((double)x, x_exp);
 }
 
-double uint32_to_double(uint32_t x, int x_exp){
+double att_uint32_to_double(uint32_t x, int x_exp){
   return ldexp((double)x, x_exp);
 }
 
-int32_t double_to_int32(double d, const int d_exp){
+int32_t att_double_to_int32(double d, const int d_exp){
     int m_exp;
     double m = frexp (d, &m_exp);
 
@@ -63,7 +63,7 @@ int32_t double_to_int32(double d, const int d_exp){
     return r;
 }
 
-uint32_t double_to_uint32(double d, const int d_exp){
+uint32_t att_double_to_uint32(double d, const int d_exp){
     int m_exp;
     double m = frexp (d, &m_exp);
     if(m<0.0){
@@ -73,7 +73,7 @@ uint32_t double_to_uint32(double d, const int d_exp){
     return ldexp(m, m_exp - d_exp);
 }
 
-dsp_complex_t double_to_complex(dsp_complex_fp d, const int d_exp){
+dsp_complex_t att_double_to_complex(dsp_complex_fp d, const int d_exp){
     dsp_complex_t r;
     r.re = double_to_int32(d.re, d_exp);
     r.im = double_to_int32(d.im, d_exp);
@@ -81,7 +81,7 @@ dsp_complex_t double_to_complex(dsp_complex_fp d, const int d_exp){
 }
 
 
-dsp_complex_fp complex_int32_to_double(dsp_complex_t x, int x_exp){
+dsp_complex_fp att_complex_int32_to_double(dsp_complex_t x, int x_exp){
     dsp_complex_fp f;
     f.re = int32_to_double(x.re, x_exp);
     f.im = int32_to_double(x.im, x_exp);
@@ -89,13 +89,13 @@ dsp_complex_fp complex_int32_to_double(dsp_complex_t x, int x_exp){
 }
 
 
-unsigned bfp_vector_complex(dsp_complex_t * B, int B_exp, dsp_complex_fp * f, size_t start, size_t count){
+unsigned att_bfp_vector_complex(dsp_complex_t * B, int B_exp, dsp_complex_fp * f, size_t start, size_t count){
     int32_t * b_int = (int32_t *) B;
     double * f_double = (double *) f;
     return bfp_vector_int32(b_int, B_exp, f_double, start*2, count*2);
 }
 
-unsigned bfp_vector_uint32(uint32_t * B, int B_exp, double * f, size_t start, size_t count){
+unsigned att_bfp_vector_uint32(uint32_t * B, int B_exp, double * f, size_t start, size_t count){
     unsigned max_diff = 0;
     for(size_t i=start;i<start + count;i++){
         uint32_t v = double_to_uint32(f[i], B_exp);
@@ -109,7 +109,7 @@ unsigned bfp_vector_uint32(uint32_t * B, int B_exp, double * f, size_t start, si
     return max_diff;
 }
 
-unsigned bfp_vector_int32(int32_t * B, int B_exp, double * f, size_t start, size_t count){
+unsigned att_bfp_vector_int32(int32_t * B, int B_exp, double * f, size_t start, size_t count){
     unsigned max_diff = 0;
 
     for(size_t i=start;i<start + count;i++){
@@ -123,7 +123,7 @@ unsigned bfp_vector_int32(int32_t * B, int B_exp, double * f, size_t start, size
     return max_diff;
 }
 
-void print_python_fd(dsp_complex_t * d, size_t length, int d_exp){
+void att_print_python_fd(dsp_complex_t * d, size_t length, int d_exp){
     printf("np.asarray([%.12f, ", int32_to_double( d[0].re, d_exp));
     for(size_t i=1;i<length;i++){
         printf("%.12f + %.12fj, ", int32_to_double( d[i].re, d_exp),
@@ -131,7 +131,7 @@ void print_python_fd(dsp_complex_t * d, size_t length, int d_exp){
     }
     printf("%.12f])\n", int32_to_double( d[0].im, d_exp));
 }
-void print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_imag){
+void att_print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_imag){
     printf("np.asarray([");
     if(print_imag){
         for(size_t i=0;i<length;i++)
@@ -143,14 +143,14 @@ void print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_imag
     printf("])\n");
 }
 
-void print_python_int(int32_t * d, size_t length, int d_exp){
+void att_print_python_int(int32_t * d, size_t length, int d_exp){
     printf("np.asarray([");
     for(size_t i=0;i<length;i++)
         printf("%.12f, ", int32_to_double( d[i], d_exp));
     printf("])\n");
 }
 
-void print_python_uint(uint32_t * d, size_t length, int d_exp){
+void att_print_python_uint(uint32_t * d, size_t length, int d_exp){
     printf("np.asarray([");
     for(size_t i=0;i<length;i++)
         printf("%.12f, ", uint32_to_double( d[i], d_exp));
@@ -165,7 +165,7 @@ static uint64_t shr64(uint64_t v, int s){
     }
 }
 
-{uint32_t, int} get_fd_frame_power(dsp_complex_t * X, int X_shift, size_t bin_count){
+{uint32_t, int} att_get_fd_frame_power(dsp_complex_t * X, int X_shift, size_t bin_count){
     uint64_t power = 0;
     unsigned hr = dsp_bfp_cls(X, bin_count) - 1;
     unsigned hr_removal = 2*hr;
@@ -182,7 +182,7 @@ static uint64_t shr64(uint64_t v, int s){
 }
 
 
-{uint32_t, int} get_td_frame_power(dsp_complex_t * x, int x_shift, size_t frame_length, int imag_channel){
+{uint32_t, int} att_get_td_frame_power(dsp_complex_t * x, int x_shift, size_t frame_length, int imag_channel){
     uint64_t power = 0;
 
     unsigned mask = 0;
