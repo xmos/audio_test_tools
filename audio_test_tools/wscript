@@ -1,0 +1,12 @@
+#MODULE_XCC_XC_FLAGS = $(XCC_XC_FLAGS)
+#DEPENDENT_MODULES = lib_dsp
+#VERSION = 0.0.1
+
+def use_module(bld):
+    sources = bld.path.ant_glob(['src/**/*.xc', 'src/**/*.S'])
+    bld.env.MODULE_XCC_XC_FLAGS = ['-O2', '-g']
+    bld.module(
+        source=sources,
+        includes=['api'],
+        depends_on=['lib_dsp'],
+        version='0.0.1')

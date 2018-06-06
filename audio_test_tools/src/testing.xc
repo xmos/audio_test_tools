@@ -1,0 +1,216 @@
+// Copyright (c) 2017, XMOS Ltd, All rights reserved
+#include "audio_test_tools.h"
+
+#include <xs1.h>
+#include <limits.h>
+#include <stdio.h>
+#include <xclib.h>
+#include <math.h>
+
+int32_t random_int32(unsigned &r){
+    crc32(r, -1, CRC_POLY);
+    return (int32_t)r;
+}
+
+uint32_t random_uint32(unsigned &r){
+    crc32(r, -1, CRC_POLY);
+    return (uint32_t)r;
+}
+
+int64_t random_int64(unsigned &r){
+    crc32(r, -1, CRC_POLY);
+    int64_t a = (int64_t)r;
+    crc32(r, -1, CRC_POLY);
+    int64_t b = (int64_t)r;
+    return (int64_t)(a + (b<<32));
+}
+
+uint64_t random_uint64(unsigned &r){
+    crc32(r, -1, CRC_POLY);
+    int64_t a = (int64_t)r;
+    crc32(r, -1, CRC_POLY);
+    int64_t b = (int64_t)r;
+    return (uint64_t)(a + (b<<32));
+}
+
+double int64_to_double(int64_t x, int x_exp){
+  return ldexp((double)x, x_exp);
+}
+
+double uint64_to_double(uint64_t x, int x_exp){
+  return ldexp((double)x, x_exp);
+}
+
+double int32_to_double(int32_t x, int x_exp){
+  return ldexp((double)x, x_exp);
+}
+
+double uint32_to_double(uint32_t x, int x_exp){
+  return ldexp((double)x, x_exp);
+}
+
+int32_t double_to_int32(double d, const int d_exp){
+    int m_exp;
+    double m = frexp (d, &m_exp);
+
+    double r = ldexp(m, m_exp - d_exp);
+    int output_exponent;
+    frexp(r, &output_exponent);
+    if(output_exponent>31){
+        printf("exponent is too high to cast to an int32_t (%d)\n", output_exponent);
+        _Exit(1);
+    }
+    return r;
+}
+
+uint32_t double_to_uint32(double d, const int d_exp){
+    int m_exp;
+    double m = frexp (d, &m_exp);
+    if(m<0.0){
+        printf("negative trying to cast to a unsigned");
+        _Exit(1);
+    }
+    return ldexp(m, m_exp - d_exp);
+}
+
+dsp_complex_t double_to_complex(dsp_complex_fp d, const int d_exp){
+    dsp_complex_t r;
+    r.re = double_to_int32(d.re, d_exp);
+    r.im = double_to_int32(d.im, d_exp);
+    return r;
+}
+
+
+dsp_complex_fp complex_int32_to_double(dsp_complex_t x, int x_exp){
+    dsp_complex_fp f;
+    f.re = int32_to_double(x.re, x_exp);
+    f.im = int32_to_double(x.im, x_exp);
+    return f;
+}
+
+
+unsigned bfp_vector_complex(dsp_complex_t * B, int B_exp, dsp_complex_fp * f, size_t start, size_t count){
+    int32_t * b_int = (int32_t *) B;
+    double * f_double = (double *) f;
+    return bfp_vector_int32(b_int, B_exp, f_double, start*2, count*2);
+}
+
+unsigned bfp_vector_uint32(uint32_t * B, int B_exp, double * f, size_t start, size_t count){
+    unsigned max_diff = 0;
+    for(size_t i=start;i<start + count;i++){
+        uint32_t v = double_to_uint32(f[i], B_exp);
+
+        int diff = v-B[i];
+        if (diff < 0 ) diff = -diff;
+        if( (unsigned)diff > max_diff){
+            max_diff = (unsigned)diff;
+        }
+    }
+    return max_diff;
+}
+
+unsigned bfp_vector_int32(int32_t * B, int B_exp, double * f, size_t start, size_t count){
+    unsigned max_diff = 0;
+
+    for(size_t i=start;i<start + count;i++){
+        int32_t v = double_to_int32(f[i], B_exp);
+        int diff = v-B[i];
+        if (diff < 0 ) diff = -diff;
+        if( (unsigned)diff > max_diff){
+            max_diff = (unsigned)diff;
+        }
+    }
+    return max_diff;
+}
+
+void print_python_fd(dsp_complex_t * d, size_t length, int d_exp){
+    printf("np.asarray([%.12f, ", int32_to_double( d[0].re, d_exp));
+    for(size_t i=1;i<length;i++){
+        printf("%.12f + %.12fj, ", int32_to_double( d[i].re, d_exp),
+                int32_to_double( d[i].im, d_exp));
+    }
+    printf("%.12f])\n", int32_to_double( d[0].im, d_exp));
+}
+void print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_imag){
+    printf("np.asarray([");
+    if(print_imag){
+        for(size_t i=0;i<length;i++)
+            printf("%.12f, ", int32_to_double( d[i].im, d_exp));
+    } else {
+        for(size_t i=0;i<length;i++)
+            printf("%.12f, ", int32_to_double( d[i].re, d_exp));
+    }
+    printf("])\n");
+}
+
+void print_python_int(int32_t * d, size_t length, int d_exp){
+    printf("np.asarray([");
+    for(size_t i=0;i<length;i++)
+        printf("%.12f, ", int32_to_double( d[i], d_exp));
+    printf("])\n");
+}
+
+void print_python_uint(uint32_t * d, size_t length, int d_exp){
+    printf("np.asarray([");
+    for(size_t i=0;i<length;i++)
+        printf("%.12f, ", uint32_to_double( d[i], d_exp));
+    printf("])\n");
+}
+
+static uint64_t shr64(uint64_t v, int s){
+    if(s<0){
+        return v << (-s);
+    } else {
+        return v >> s;
+    }
+}
+
+{uint32_t, int} get_fd_frame_power(dsp_complex_t * X, int X_shift, size_t bin_count){
+    uint64_t power = 0;
+    unsigned hr = dsp_bfp_cls(X, bin_count) - 1;
+    unsigned hr_removal = 2*hr;
+
+    unsigned bin_count_log_2 = 32 - clz(bin_count);
+    int power_shift = 2*X_shift - 1 - bin_count_log_2;
+    for(size_t s = 0; s < bin_count; s++){
+        int64_t re = X[s].re;
+        int64_t im = X[s].im;
+        uint64_t t = (uint64_t)((re*re) + (im*im));
+        power += shr64(t, (bin_count_log_2-1 - hr_removal));
+    }
+    return {power>>32, power_shift - hr_removal};
+}
+
+
+{uint32_t, int} get_td_frame_power(dsp_complex_t * x, int x_shift, size_t frame_length, int imag_channel){
+    uint64_t power = 0;
+
+    unsigned mask = 0;
+    for(size_t s = 0; s < frame_length; s++){
+        if(imag_channel){
+            int32_t v=x[s].im;
+            if(v<0)v=-v;
+            mask |= v;
+        } else {
+            int32_t v=x[s].re;
+            if(v<0)v=-v;
+            mask |= v;
+        }
+    }
+
+    unsigned hr = clz(mask) - 1;
+    unsigned hr_removal = 2*hr;
+
+    unsigned frame_length_log_2 = 32 - clz(frame_length);
+    int power_shift = 2*x_shift - frame_length_log_2;
+    for(size_t s = 0; s < frame_length; s++){
+        if(imag_channel){
+            uint64_t t = (uint64_t)((int64_t)x[s].im*(int64_t)x[s].im);
+            power += shr64(t,(frame_length_log_2-2 - hr_removal));
+        } else {
+            uint64_t t = (uint64_t)((int64_t)x[s].re*(int64_t)x[s].re);
+            power += shr64(t,(frame_length_log_2-2 - hr_removal));
+        }
+    }
+    return {power>>32, power_shift - hr_removal};
+}
