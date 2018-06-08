@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?fileVersion 4.0.0?>
-
-<cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
-		<cconfiguration id="com.xmos.cdt.toolchain.37404587">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.xmos.cdt.toolchain.37404587" moduleId="org.eclipse.cdt.core.settings" name="Default">
+		<cconfiguration id="com.xmos.cdt.toolchain.1099079877">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.xmos.cdt.toolchain.1099079877" moduleId="org.eclipse.cdt.core.settings" name="Default">
 				<externalSettings/>
 				<extensions>
 					<extension id="com.xmos.cdt.core.XEBinaryParser" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -14,56 +12,17 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration buildProperties="" description="" id="com.xmos.cdt.toolchain.37404587" name="Default" parent="org.eclipse.cdt.build.core.emptycfg">
-					<folderInfo id="com.xmos.cdt.toolchain.37404587.459822171" name="/" resourcePath="">
-						<toolChain id="com.xmos.cdt.toolchain.1279847407" name="com.xmos.cdt.toolchain" superClass="com.xmos.cdt.toolchain">
-							<targetPlatform archList="all" binaryParser="com.xmos.cdt.core.XEBinaryParser;org.eclipse.cdt.core.GNU_ELF" id="com.xmos.cdt.core.platform.2090050527" isAbstract="false" osList="linux,win32,macosx" superClass="com.xmos.cdt.core.platform"/>
-							<builder arguments="build" autoBuildTarget="" cleanBuildTarget="clean" command="xwaf" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="com.xmos.cdt.builder.base.1948177834" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" superClass="com.xmos.cdt.builder.base">
+				<configuration buildProperties="" description="" id="com.xmos.cdt.toolchain.1099079877" name="Default" parent="org.eclipse.cdt.build.core.emptycfg">
+					<folderInfo id="com.xmos.cdt.toolchain.1099079877.1091429525" name="/" resourcePath="">
+						<toolChain id="com.xmos.cdt.toolchain.1837649398" name="com.xmos.cdt.toolchain" superClass="com.xmos.cdt.toolchain">
+							<targetPlatform archList="all" binaryParser="com.xmos.cdt.core.XEBinaryParser;org.eclipse.cdt.core.GNU_ELF" id="com.xmos.cdt.core.platform.590466898" isAbstract="false" osList="linux,win32,macosx" superClass="com.xmos.cdt.core.platform"/>
+							<builder arguments="-f .makefile" id="com.xmos.cdt.builder.base.1341604663" keepEnvironmentInBuildfile="false" managedBuildOn="false" superClass="com.xmos.cdt.builder.base">
 								<outputEntries>
 									<entry flags="VALUE_WORKSPACE_PATH" kind="outputPath" name="bin"/>
 								</outputEntries>
 							</builder>
-							<tool id="com.xmos.cdt.xc.compiler.1421935467" name="com.xmos.cdt.xc.compiler" superClass="com.xmos.cdt.xc.compiler">
-								<option id="com.xmos.xc.compiler.option.include.paths.1729095131" name="com.xmos.xc.compiler.option.include.paths" superClass="com.xmos.xc.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging/api}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/api}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/src/fir}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/api}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/ds3/FilterData}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/os3}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/ds3}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/gen}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert/api}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/os3/FilterData}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/fft}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert/src}&quot;"/>
-									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/test_box/Installs/Mac/target/include/xc"/>
-									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/test_box/Installs/Mac/target/include"/>
-									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/test_box/Installs/Mac/target/include/clang"/>
-									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/xc&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/clang&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert/doc/rst}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/doc/rst}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/doc/rst}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert/doc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/bfp}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/doc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging/doc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging/doc/rst}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/doc}&quot;"/>
-									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/moby_dick/Installs/Mac/target/include/xc"/>
-									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/moby_dick/Installs/Mac/target/include"/>
-									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/moby_dick/Installs/Mac/target/include/clang"/>
-								</option>
-								<option id="com.xmos.xc.compiler.option.defined.symbols.593334528" name="com.xmos.xc.compiler.option.defined.symbols" superClass="com.xmos.xc.compiler.option.defined.symbols" valueType="definedSymbols">
+							<tool id="com.xmos.cdt.xc.compiler.583468254" name="com.xmos.cdt.xc.compiler" superClass="com.xmos.cdt.xc.compiler">
+								<option id="com.xmos.xc.compiler.option.defined.symbols.1384259964" name="com.xmos.xc.compiler.option.defined.symbols" superClass="com.xmos.xc.compiler.option.defined.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__XC__=1"/>
 									<listOptionValue builtIn="false" value="__llvm__=1"/>
 									<listOptionValue builtIn="false" value="__ATOMIC_RELAXED=0"/>
@@ -208,50 +167,30 @@
 									<listOptionValue builtIn="false" value="XCC_VERSION_YEAR=14"/>
 									<listOptionValue builtIn="false" value="XCC_VERSION_MONTH=3"/>
 									<listOptionValue builtIn="false" value="XCC_VERSION_MAJOR=1403"/>
-									<listOptionValue builtIn="false" value="XCC_VERSION_MINOR=0"/>
+									<listOptionValue builtIn="false" value="XCC_VERSION_MINOR=2"/>
 									<listOptionValue builtIn="false" value="__XCC_HAVE_FLOAT__=1"/>
-									<listOptionValue builtIn="false" value="_XSCOPE_PROBES_INCLUDE_FILE=&quot;/var/folders/gs/27j52vtx67nd76djl2knvtd40000gp/T//ccJSgBuk.h&quot;"/>
+									<listOptionValue builtIn="false" value="_XSCOPE_PROBES_INCLUDE_FILE=&quot;/var/folders/gs/27j52vtx67nd76djl2knvtd40000gp/T//ccO3LWF9.h&quot;"/>
 								</option>
-								<inputType id="com.xmos.cdt.xc.compiler.input.739683520" name="XC" superClass="com.xmos.cdt.xc.compiler.input"/>
-							</tool>
-							<tool id="com.xmos.cdt.c.compiler.1663316014" name="com.xmos.cdt.c.compiler" superClass="com.xmos.cdt.c.compiler">
-								<option id="com.xmos.c.compiler.option.include.paths.34088026" name="com.xmos.c.compiler.option.include.paths" superClass="com.xmos.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging/api}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/api}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/src/fir}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/api}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/ds3/FilterData}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/os3}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/ds3}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/gen}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert/api}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/os3/FilterData}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/fft}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert/src}&quot;"/>
+								<option id="com.xmos.xc.compiler.option.include.paths.47944548" name="com.xmos.xc.compiler.option.include.paths" superClass="com.xmos.xc.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/test_box/Installs/Mac/target/include/xc"/>
 									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/test_box/Installs/Mac/target/include"/>
 									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/test_box/Installs/Mac/target/include/clang"/>
+									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/xc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/clang&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert/doc/rst}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/doc/rst}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/fft}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/api}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/doc/rst}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert/doc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/bfp}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/doc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging/doc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging/doc/rst}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/doc}&quot;"/>
-									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/moby_dick/Installs/Mac/target/include"/>
-									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/moby_dick/Installs/Mac/target/include/clang"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/gen}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/bfp}&quot;"/>
 								</option>
-								<option id="com.xmos.c.compiler.option.defined.symbols.1680520428" name="com.xmos.c.compiler.option.defined.symbols" superClass="com.xmos.c.compiler.option.defined.symbols" valueType="definedSymbols">
+								<inputType id="com.xmos.cdt.xc.compiler.input.728183447" name="XC" superClass="com.xmos.cdt.xc.compiler.input"/>
+							</tool>
+							<tool id="com.xmos.cdt.c.compiler.1031295801" name="com.xmos.cdt.c.compiler" superClass="com.xmos.cdt.c.compiler">
+								<option id="com.xmos.c.compiler.option.defined.symbols.759064730" name="com.xmos.c.compiler.option.defined.symbols" superClass="com.xmos.c.compiler.option.defined.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__llvm__=1"/>
 									<listOptionValue builtIn="false" value="__clang__=1"/>
 									<listOptionValue builtIn="false" value="__clang_major__=3"/>
@@ -543,53 +482,28 @@
 									<listOptionValue builtIn="false" value="XCC_VERSION_YEAR=14"/>
 									<listOptionValue builtIn="false" value="XCC_VERSION_MONTH=3"/>
 									<listOptionValue builtIn="false" value="XCC_VERSION_MAJOR=1403"/>
-									<listOptionValue builtIn="false" value="XCC_VERSION_MINOR=0"/>
+									<listOptionValue builtIn="false" value="XCC_VERSION_MINOR=2"/>
 									<listOptionValue builtIn="false" value="__XCC_HAVE_FLOAT__=1"/>
-									<listOptionValue builtIn="false" value="_XSCOPE_PROBES_INCLUDE_FILE=&quot;/var/folders/gs/27j52vtx67nd76djl2knvtd40000gp/T//cc416YTp.h&quot;"/>
+									<listOptionValue builtIn="false" value="_XSCOPE_PROBES_INCLUDE_FILE=&quot;/var/folders/gs/27j52vtx67nd76djl2knvtd40000gp/T//ccLAffau.h&quot;"/>
 								</option>
-								<inputType id="com.xmos.cdt.c.compiler.input.c.654792273" name="C" superClass="com.xmos.cdt.c.compiler.input.c"/>
-							</tool>
-							<tool id="com.xmos.cdt.cxx.compiler.834584672" name="com.xmos.cdt.cxx.compiler" superClass="com.xmos.cdt.cxx.compiler">
-								<option id="com.xmos.cxx.compiler.option.include.paths.1020211924" name="com.xmos.cxx.compiler.option.include.paths" superClass="com.xmos.cxx.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging/api}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/api}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/src/fir}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/api}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/ds3/FilterData}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/os3}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/ds3}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/gen}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert/api}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/os3/FilterData}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/fft}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert/src}&quot;"/>
+								<option id="com.xmos.c.compiler.option.include.paths.377946398" name="com.xmos.c.compiler.option.include.paths" superClass="com.xmos.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/test_box/Installs/Mac/target/include"/>
 									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/test_box/Installs/Mac/target/include/clang"/>
-									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/test_box/Installs/Mac/target/include/c++/v1"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/clang&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/c++/v1&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert/doc/rst}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/doc/rst}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/fft}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/api}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/doc/rst}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_xassert/doc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/bfp}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_mic_array/doc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging/doc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_logging/doc/rst}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/doc}&quot;"/>
-									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/moby_dick/Installs/Mac/target/include"/>
-									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/moby_dick/Installs/Mac/target/include/clang"/>
-									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/moby_dick/Installs/Mac/target/include/c++/v1"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/gen}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/bfp}&quot;"/>
 								</option>
-								<option id="com.xmos.cxx.compiler.option.defined.symbols.944700604" name="com.xmos.cxx.compiler.option.defined.symbols" superClass="com.xmos.cxx.compiler.option.defined.symbols" valueType="definedSymbols">
+								<inputType id="com.xmos.cdt.c.compiler.input.c.1775521630" name="C" superClass="com.xmos.cdt.c.compiler.input.c"/>
+							</tool>
+							<tool id="com.xmos.cdt.cxx.compiler.19903394" name="com.xmos.cdt.cxx.compiler" superClass="com.xmos.cdt.cxx.compiler">
+								<option id="com.xmos.cxx.compiler.option.defined.symbols.1171246582" name="com.xmos.cxx.compiler.option.defined.symbols" superClass="com.xmos.cxx.compiler.option.defined.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__llvm__=1"/>
 									<listOptionValue builtIn="false" value="__clang__=1"/>
 									<listOptionValue builtIn="false" value="__clang_major__=3"/>
@@ -885,11 +799,27 @@
 									<listOptionValue builtIn="false" value="XCC_VERSION_YEAR=14"/>
 									<listOptionValue builtIn="false" value="XCC_VERSION_MONTH=3"/>
 									<listOptionValue builtIn="false" value="XCC_VERSION_MAJOR=1403"/>
-									<listOptionValue builtIn="false" value="XCC_VERSION_MINOR=0"/>
+									<listOptionValue builtIn="false" value="XCC_VERSION_MINOR=2"/>
 									<listOptionValue builtIn="false" value="__XCC_HAVE_FLOAT__=1"/>
-									<listOptionValue builtIn="false" value="_XSCOPE_PROBES_INCLUDE_FILE=&quot;/var/folders/gs/27j52vtx67nd76djl2knvtd40000gp/T//ccCP98ey.h&quot;"/>
+									<listOptionValue builtIn="false" value="_XSCOPE_PROBES_INCLUDE_FILE=&quot;/var/folders/gs/27j52vtx67nd76djl2knvtd40000gp/T//ccMefqNg.h&quot;"/>
 								</option>
-								<inputType id="com.xmos.cdt.cxx.compiler.input.cpp.234894404" name="C++" superClass="com.xmos.cdt.cxx.compiler.input.cpp"/>
+								<option id="com.xmos.cxx.compiler.option.include.paths.442702999" name="com.xmos.cxx.compiler.option.include.paths" superClass="com.xmos.cxx.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/test_box/Installs/Mac/target/include"/>
+									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/test_box/Installs/Mac/target/include/clang"/>
+									<listOptionValue builtIn="false" value="/Users/andrew/sandboxes/test_box/Installs/Mac/target/include/c++/v1"/>
+									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/clang&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/c++/v1&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/fft}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/api}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/doc/rst}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/gen}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib_dsp/src/bfp}&quot;"/>
+								</option>
+								<inputType id="com.xmos.cdt.cxx.compiler.input.cpp.364563139" name="C++" superClass="com.xmos.cdt.cxx.compiler.input.cpp"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
@@ -902,7 +832,7 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="lib_aec.null.1586986193" name="lib_aec"/>
+		<project id="audio_test_tools.null.1645416770" name="audio_test_tools"/>
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>

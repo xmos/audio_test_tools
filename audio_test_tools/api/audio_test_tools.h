@@ -39,20 +39,19 @@ typedef struct att_wav_header {
     int data_bytes;         // frame count * num_channels * (bit_depth/8)
 } att_wav_header;
 
-int wav_header_to_struct(att_wav_header & s, char header[WAV_HEADER_BYTES]);
-int wav_form_header(char header[WAV_HEADER_BYTES],
+int att_wav_header_to_struct(att_wav_header & s, char header[WAV_HEADER_BYTES]);
+int att_wav_form_header(char header[WAV_HEADER_BYTES],
         short audio_format,
         short num_channels,
         int sample_rate,
         short bit_depth,
         int num_frames);
 
-void wav_print_header(att_wav_header & s);
+void att_wav_print_header(att_wav_header & s);
 
-unsigned wav_get_num_bytes_per_frame(att_wav_header &s);
-int wav_get_num_frames(att_wav_header &s);
-long wav_get_frame_start(att_wav_header &s, unsigned frame_number);
-
+unsigned att_wav_get_num_bytes_per_frame(att_wav_header &s);
+int att_wav_get_num_frames(att_wav_header &s);
+long att_wav_get_frame_start(att_wav_header &s, unsigned frame_number);
 
 /*
  * Double precision DTF
@@ -84,7 +83,6 @@ uint32_t att_double_to_uint32(double d, const int d_exp);
 dsp_complex_fp att_complex_int32_to_double(dsp_complex_t x, int x_exp);
 
 q8_24 att_uint32_to_q24(uint32_t v, int v_exp);
-
 
 /*
  * Float/Fixed vector comparision

@@ -60,15 +60,15 @@ int att_wav_form_header(char header[WAV_HEADER_BYTES],
         int num_frames){
     memcpy(header, wav_default_header, WAV_HEADER_BYTES);
 
-    (header, wav_header).audio_format = audio_format;
-    (header, wav_header).num_channels = num_channels;
-    (header, wav_header).sample_rate = sample_rate;
-    (header, wav_header).bit_depth = bit_depth;
+    (header, att_wav_header).audio_format = audio_format;
+    (header, att_wav_header).num_channels = num_channels;
+    (header, att_wav_header).sample_rate = sample_rate;
+    (header, att_wav_header).bit_depth = bit_depth;
 
-    (header, wav_header).sample_alignment = num_channels* (bit_depth/8);
+    (header, att_wav_header).sample_alignment = num_channels* (bit_depth/8);
     int data_bytes = num_frames * num_channels * (bit_depth/8);
-    (header, wav_header).data_bytes = data_bytes;
-    (header, wav_header).wav_size = data_bytes + WAV_HEADER_BYTES - 8;
+    (header, att_wav_header).data_bytes = data_bytes;
+    (header, att_wav_header).wav_size = data_bytes + WAV_HEADER_BYTES - 8;
 
     return 0;
 }
@@ -132,11 +132,11 @@ unsigned att_wav_get_num_bytes_per_frame(att_wav_header &s){
 }
 
 int att_wav_get_num_frames(att_wav_header &s){
-    unsigned bytes_per_frame = wav_get_num_bytes_per_frame(s);
+    unsigned bytes_per_frame = att_wav_get_num_bytes_per_frame(s);
     return s.data_bytes / bytes_per_frame;
 }
 
 long att_wav_get_frame_start(att_wav_header &s, unsigned frame_number){
-    return WAV_HEADER_BYTES + frame_number * wav_get_num_bytes_per_frame(s);
+    return WAV_HEADER_BYTES + frame_number * att_wav_get_num_bytes_per_frame(s);
 }
 
