@@ -143,17 +143,31 @@ void att_print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_
     printf("])\n");
 }
 
-void att_print_python_int(int32_t * d, size_t length, int d_exp){
+void att_print_python_int32(int32_t * d, size_t length, int d_exp){
     printf("np.asarray([");
     for(size_t i=0;i<length;i++)
         printf("%.12f, ", att_int32_to_double( d[i], d_exp));
     printf("])\n");
 }
 
-void att_print_python_uint(uint32_t * d, size_t length, int d_exp){
+void att_print_python_uint32(uint32_t * d, size_t length, int d_exp){
     printf("np.asarray([");
     for(size_t i=0;i<length;i++)
         printf("%.12f, ", att_uint32_to_double( d[i], d_exp));
+    printf("])\n");
+}
+
+void att_print_python_int64(int64_t * d, size_t length, int d_exp){
+    printf("np.asarray([");
+    for(size_t i=0;i<length;i++)
+        printf("%.12f, ", att_int64_to_double( d[i], d_exp));
+    printf("])\n");
+}
+
+void att_print_python_uint64(uint64_t * d, size_t length, int d_exp){
+    printf("np.asarray([");
+    for(size_t i=0;i<length;i++)
+        printf("%.12f, ", att_uint64_to_double( d[i], d_exp));
     printf("])\n");
 }
 

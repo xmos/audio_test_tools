@@ -96,8 +96,10 @@ unsigned att_bfp_vector_int32(int32_t * B, int B_exp, double * f, size_t start, 
  */
 void att_print_python_fd(dsp_complex_t * d, size_t length, int d_exp);
 void att_print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_imag);
-void att_print_python_int(int32_t * d, size_t length, int d_exp);
-void att_print_python_uint(uint32_t * d, size_t length, int d_exp);
+void att_print_python_int32(int32_t * d, size_t length, int d_exp);
+void att_print_python_uint32(uint32_t * d, size_t length, int d_exp);
+void att_print_python_int64(int64_t * d, size_t length, int d_exp);
+void att_print_python_uint64(uint64_t * d, size_t length, int d_exp);
 
 /*
  * Frame power calculation
