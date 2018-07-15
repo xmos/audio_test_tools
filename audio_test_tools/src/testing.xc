@@ -143,6 +143,25 @@ void att_print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_
     printf("])\n");
 }
 
+void att_print_python_fd_fp(dsp_complex_fp * d, size_t length){
+    printf("np.asarray([%.12f, ", d[0].re);
+    for(size_t i=1;i<length;i++){
+        printf("%.12f + %.12fj, ", d[i].re,d[i].im);
+    }
+    printf("%.12f])\n", d[0].im);
+}
+void att_print_python_td_fp(dsp_complex_fp * d, size_t length, int print_imag){
+    printf("np.asarray([");
+    if(print_imag){
+        for(size_t i=0;i<length;i++)
+            printf("%.12f, ", d[i].im);
+    } else {
+        for(size_t i=0;i<length;i++)
+            printf("%.12f, ", d[i].re);
+    }
+    printf("])\n");
+}
+
 void att_print_python_int32(int32_t * d, size_t length, int d_exp){
     printf("np.asarray([");
     for(size_t i=0;i<length;i++)

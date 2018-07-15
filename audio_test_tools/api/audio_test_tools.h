@@ -100,6 +100,9 @@ void att_print_python_int32(int32_t * d, size_t length, int d_exp);
 void att_print_python_uint32(uint32_t * d, size_t length, int d_exp);
 void att_print_python_int64(int64_t * d, size_t length, int d_exp);
 void att_print_python_uint64(uint64_t * d, size_t length, int d_exp);
+void att_print_python_fd_fp(dsp_complex_fp * d, size_t length);
+void att_print_python_td_fp(dsp_complex_fp * d, size_t length, int print_imag);
+
 
 /*
  * Frame power calculation
