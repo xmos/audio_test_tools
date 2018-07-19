@@ -123,6 +123,27 @@ unsigned att_bfp_vector_int32(int32_t * B, int B_exp, double * f, size_t start, 
     return max_diff;
 }
 
+void att_print_int_python_fd(dsp_complex_t * d, size_t length){
+    printf("np.asarray([%d, ", d[0].re);
+    for(size_t i=1;i<length;i++){
+        printf("%d + %dj, ", d[i].re, d[i].im);
+    }
+    printf("%.12f])\n", d[0].im);
+}
+void att_print_int_python_td(dsp_complex_t * d, size_t length, int print_imag){
+    printf("np.asarray([");
+    if(print_imag){
+        for(size_t i=0;i<length;i++)
+            printf("%.12f, ", d[i].im);
+    } else {
+        for(size_t i=0;i<length;i++)
+            printf("%.12f, ", d[i].re);
+    }
+    printf("])\n");
+}
+
+
+
 void att_print_python_fd(dsp_complex_t * d, size_t length, int d_exp){
     printf("np.asarray([%.12f, ", att_int32_to_double( d[0].re, d_exp));
     for(size_t i=1;i<length;i++){
@@ -172,7 +193,7 @@ void att_print_python_int32(int32_t * d, size_t length, int d_exp){
 void att_print_python_uint32(uint32_t * d, size_t length, int d_exp){
     printf("np.asarray([");
     for(size_t i=0;i<length;i++)
-        printf("%.12f, ", att_uint32_to_double( d[i], d_exp));
+        printf("%.22f, ", att_uint32_to_double( d[i], d_exp));
     printf("])\n");
 }
 
@@ -186,7 +207,7 @@ void att_print_python_int64(int64_t * d, size_t length, int d_exp){
 void att_print_python_uint64(uint64_t * d, size_t length, int d_exp){
     printf("np.asarray([");
     for(size_t i=0;i<length;i++)
-        printf("%.12f, ", att_uint64_to_double( d[i], d_exp));
+        printf("%.22f, ", att_uint64_to_double( d[i], d_exp));
     printf("])\n");
 }
 
