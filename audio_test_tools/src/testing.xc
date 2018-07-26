@@ -73,6 +73,30 @@ uint32_t att_double_to_uint32(double d, const int d_exp){
     return ldexp(m, m_exp - d_exp);
 }
 
+int64_t att_double_to_int64(double d, const int d_exp){
+    int m_exp;
+    double m = frexp (d, &m_exp);
+
+    double r = ldexp(m, m_exp - d_exp);
+    int output_exponent;
+    frexp(r, &output_exponent);
+    if(output_exponent>63){
+        printf("exponent is too high to cast to an int64_t (%d)\n", output_exponent);
+        _Exit(1);
+    }
+    return r;
+}
+
+uint64_t att_double_to_uint64(double d, const int d_exp){
+    int m_exp;
+    double m = frexp (d, &m_exp);
+    if(m<0.0){
+        printf("negative trying to cast to a unsigned");
+        _Exit(1);
+    }
+    return (uint64_t)ldexp(m, m_exp - d_exp);
+}
+
 dsp_complex_t att_double_to_complex(dsp_complex_fp d, const int d_exp){
     dsp_complex_t r;
     r.re = att_double_to_int32(d.re, d_exp);
@@ -123,21 +147,50 @@ unsigned att_bfp_vector_int32(int32_t * B, int B_exp, double * f, size_t start, 
     return max_diff;
 }
 
+
+unsigned long long att_bfp_vector_uint64(uint64_t * B, int B_exp, double * f, size_t start, size_t count){
+    unsigned long long max_diff = 0;
+    for(size_t i=start;i<start + count;i++){
+        uint64_t v = att_double_to_uint64(f[i], B_exp);
+
+        long long diff = v-B[i];
+        if (diff < 0 ) diff = -diff;
+        if( (unsigned long long)diff > max_diff){
+            max_diff = (unsigned long long)diff;
+        }
+    }
+    return max_diff;
+}
+
+unsigned long long att_bfp_vector_int64(int64_t * B, int B_exp, double * f, size_t start, size_t count){
+    unsigned max_diff = 0;
+
+    for(size_t i=start;i<start + count;i++){
+        int64_t v = att_double_to_int64(f[i], B_exp);
+        long long diff = v-B[i];
+        if (diff < 0 ) diff = -diff;
+        if( (unsigned long long)diff > max_diff){
+            max_diff = (unsigned long long)diff;
+        }
+    }
+    return max_diff;
+}
+
 void att_print_int_python_fd(dsp_complex_t * d, size_t length){
     printf("np.asarray([%d, ", d[0].re);
     for(size_t i=1;i<length;i++){
         printf("%d + %dj, ", d[i].re, d[i].im);
     }
-    printf("%.12f])\n", d[0].im);
+    printf("%d])\n", d[0].im);
 }
 void att_print_int_python_td(dsp_complex_t * d, size_t length, int print_imag){
     printf("np.asarray([");
     if(print_imag){
         for(size_t i=0;i<length;i++)
-            printf("%.12f, ", d[i].im);
+            printf("%d, ", d[i].im);
     } else {
         for(size_t i=0;i<length;i++)
-            printf("%.12f, ", d[i].re);
+            printf("%d, ", d[i].re);
     }
     printf("])\n");
 }

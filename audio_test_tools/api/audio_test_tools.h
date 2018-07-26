@@ -79,6 +79,8 @@ double att_int32_to_double(int32_t x, int x_exp);
 double att_uint32_to_double(uint32_t x, int x_exp);
 int32_t att_double_to_int32(double d, const int d_exp);
 uint32_t att_double_to_uint32(double d, const int d_exp);
+int64_t att_double_to_int64(double d, const int d_exp);
+uint64_t att_double_to_uint64(double d, const int d_exp);
 
 dsp_complex_fp att_complex_int32_to_double(dsp_complex_t x, int x_exp);
 
@@ -90,6 +92,8 @@ q8_24 att_uint32_to_q24(uint32_t v, int v_exp);
 unsigned att_bfp_vector_complex(dsp_complex_t * B, int B_exp, dsp_complex_fp * f, size_t start, size_t count);
 unsigned att_bfp_vector_uint32(uint32_t * B, int B_exp, double * f, size_t start, size_t count);
 unsigned att_bfp_vector_int32(int32_t * B, int B_exp, double * f, size_t start, size_t count);
+unsigned long long att_bfp_vector_uint64(uint64_t * B, int B_exp, double * f, size_t start, size_t count);
+unsigned long long att_bfp_vector_int64(int64_t * B, int B_exp, double * f, size_t start, size_t count);
 
 /*
  * Python pretty printers
