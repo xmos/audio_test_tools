@@ -183,6 +183,7 @@ void att_print_int_python_fd(dsp_complex_t * d, size_t length){
     }
     printf("%d])\n", d[0].im);
 }
+
 void att_print_int_python_td(dsp_complex_t * d, size_t length, int print_imag){
     printf("np.asarray([");
     if(print_imag){
@@ -194,8 +195,6 @@ void att_print_int_python_td(dsp_complex_t * d, size_t length, int print_imag){
     }
     printf("])\n");
 }
-
-
 
 void att_print_python_fd(dsp_complex_t * d, size_t length, int d_exp){
     printf("np.asarray([%.12f, ", att_int32_to_double( d[0].re, d_exp));

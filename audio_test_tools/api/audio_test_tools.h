@@ -117,4 +117,13 @@ void att_print_python_td_fp(dsp_complex_fp * d, size_t length, int print_imag);
 {uint32_t, int} att_get_fd_frame_power(dsp_complex_t * X, int X_shift, size_t bin_count);
 {uint32_t, int} att_get_td_frame_power(dsp_complex_t * x, int x_shift, size_t frame_length, int imag_channel);
 
+/*
+ * Thread burning
+ */
+
+void att_burn_thread();
+void att_burn_thread_div();
+
+
+
 #endif /* AUDIO_TEST_TOOLS_H_ */
