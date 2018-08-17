@@ -65,6 +65,8 @@ int att_wav_form_header(char header[WAV_HEADER_BYTES],
     (header, att_wav_header).sample_rate = sample_rate;
     (header, att_wav_header).bit_depth = bit_depth;
 
+    (header, att_wav_header).byte_rate = sample_rate*bit_depth*num_channels/8;
+
     (header, att_wav_header).sample_alignment = num_channels* (bit_depth/8);
     int data_bytes = num_frames * num_channels * (bit_depth/8);
     (header, att_wav_header).data_bytes = data_bytes;
@@ -124,6 +126,11 @@ void att_wav_print_header(att_wav_header & s){
     printf("number of samples: %d\n", num_samples);
     printf("number of frames: %d\n", num_frames);
     printf("file length: %f seconds\n", (float)num_frames / (float)s.sample_rate);
+
+//    for(unsigned i=0;i<WAV_HEADER_BYTES;i++)
+//        printf("%02x ", ((char*)&s)[i]);
+//    printf("\n");
+
 }
 
 unsigned att_wav_get_num_bytes_per_frame(att_wav_header &s){
