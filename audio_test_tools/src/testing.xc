@@ -320,3 +320,17 @@ static uint64_t shr64(uint64_t v, int s){
     }
     return {power>>32, power_shift - hr_removal};
 }
+
+/*
+ * This partitions a space (0 to space_to_divide-1) into array_length chunks. Chunks may be zero length.
+ */
+void att_divide_array(unsigned * array, unsigned array_length, unsigned space_to_divide, int use_all_space, unsigned &r){
+    unsigned base = 0;
+    for(unsigned i=0;i<array_length-use_all_space;i++){
+        unsigned chunk = (att_random_uint32(r)%(space_to_divide - base));
+        array[i] = chunk;
+        base += chunk;
+    }
+    if(use_all_space)
+        array[array_length-1] = space_to_divide - base;
+}

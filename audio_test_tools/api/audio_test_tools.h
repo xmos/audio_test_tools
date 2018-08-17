@@ -124,6 +124,9 @@ void att_print_python_td_fp(dsp_complex_fp * d, size_t length, int print_imag);
 void att_burn_thread();
 void att_burn_thread_div();
 
-
+/*
+ * Other
+ */
+void att_divide_array(unsigned * array, unsigned array_length, unsigned space_to_divide, int use_all_space, unsigned &r);
 
 #endif /* AUDIO_TEST_TOOLS_H_ */
