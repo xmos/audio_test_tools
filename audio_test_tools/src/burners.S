@@ -1,6 +1,4 @@
-// Copyright (c) 2015-2018, XMOS Ltd, All rights reserved
-
-
+// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
 	.text
     .issue_mode  dual
 	.globl	att_burn_thread_div

@@ -1,4 +1,4 @@
-// Copyright (c) 2017, XMOS Ltd, All rights reserved
+// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
 #include "audio_test_tools.h"
 
 #include <xs1.h>
