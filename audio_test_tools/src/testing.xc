@@ -176,6 +176,36 @@ unsigned long long att_bfp_vector_int64(int64_t * B, int B_exp, double * f, size
     return max_diff;
 }
 
+void att_print_int_python_int32(int32_t * d, size_t length){
+    printf("np.asarray([");
+    for(size_t i=0;i<length;i++){
+        printf("%d, ", d[i]);
+    }
+    printf("])\n");
+}
+void att_print_int_python_uint32(uint32_t * d, size_t length){
+    printf("np.asarray([");
+    for(size_t i=0;i<length;i++){
+        printf("%u, ", d[i]);
+    }
+    printf("])\n");
+}
+void att_print_int_python_int64(int64_t * d, size_t length){
+    printf("np.asarray([");
+    for(size_t i=0;i<length;i++){
+        printf("%lld, ", d[i]);
+    }
+    printf("])\n");
+}
+void att_print_int_python_uint64(uint64_t * d, size_t length){
+    printf("np.asarray([");
+    for(size_t i=0;i<length;i++){
+        printf("%llu, ", d[i]);
+    }
+    printf("])\n");
+}
+
+
 void att_print_int_python_fd(dsp_complex_t * d, size_t length){
     printf("np.asarray([%d, ", d[0].re);
     for(size_t i=1;i<length;i++){
