@@ -1,0 +1,177 @@
+
+# -*- coding: utf-8 -*-
+"""
+@author: Andrew
+"""
+import numpy as np
+import scipy.io.wavfile
+import matplotlib.pyplot as plt
+
+speed_of_sound = 342.0
+
+mic_d    = 0.043
+
+circular_mic_array = np.asarray(
+        [  [0.0,     0.0,                0.0], 
+        [mic_d/2.0,   np.sin(np.pi/3)*mic_d,  0.0], 
+        [mic_d,       0.0,                0.0], 
+        [mic_d/2.0,  -np.sin(np.pi/3)*mic_d,  0.0], 
+        [-mic_d/2.0,  -np.sin(np.pi/3)*mic_d, 0.0], 
+        [-mic_d,       0.0,                0.0], 
+        [-mic_d/2.0,   np.sin(np.pi/3)*mic_d,  0.0]]
+    )
+
+def distance_between_points(a, b):
+    return np.sqrt(sum((a-b)**2))
+
+def translate_position(p, x, y, z):
+    p_t = p + np.asarray([x, y, z])
+    return p_t
+
+def rotate_around_x_axis(p, theta):
+    R = np.asarray([[1., 0., 0.],[0., np.cos(theta), -np.sin(theta)],[0., np.sin(theta), np.cos(theta)]])
+    p_t = np.dot(p, R)
+    return p_t
+
+def rotate_around_y_axis(p, theta):
+    R = np.asarray([[np.cos(theta), 0., np.sin(theta)],[0., 1., 0.],[-np.sin(theta), 0., np.cos(theta)]])
+    p_t = np.dot(p, R)
+    return p_t
+
+def rotate_around_z_axis(p, theta):
+    R = np.asarray([[np.cos(theta), -np.sin(theta), 0.],[np.sin(theta), np.cos(theta), 0.],[0., 0., 1.,]])
+    p_t = np.dot(p, R)
+    return p_t
+
+def print_phi(phi):
+    for i in range(len(phi)):
+        for j in range(len(phi[i])):
+            print('% .4f '%phi[i][j]),
+        print ''
+    print ''
+    print ''
+    return
+
+def make_mvdr_matrices(f_bin_count, fft_length, channel_count, rate):
+    W = np.zeros((f_bin_count, channel_count, channel_count))
+    mu = 0.0000001
+    for f_bin in range(f_bin_count):
+        freq = 2.0*np.pi*float(f_bin) / float(fft_length)  * float(rate)
+        for i in range(channel_count):
+            for j in range(channel_count):
+                v = np.sinc(freq*d(i, j)/speed_of_sound)
+                if i==j:
+                    v += mu
+                W[f_bin][i][j] = v
+        W[f_bin] = np.linalg.pinv(W[f_bin])
+    return W
+
+def get_channel_count(wav_file):
+    s = np.shape(wav_file)
+    if len(s) == 1:
+        channel_count = 1
+    else:
+        channel_count = len(wav_file[0])
+    return channel_count
+    
+# This converts a wav file opened with scipy.io.wavfile
+def parse_audio(wav_file):
+    channel_count = get_channel_count(wav_file)
+    file_length = len(wav_file)
+
+    if len(wav_file.shape ) == 1:
+       wav_file = np.reshape(wav_file, (file_length, 1))
+
+    wav_data = wav_file.T
+
+    # assume at least one sample in at least one channel!
+    data_type = type(wav_data[0][0])
+
+    if data_type == np.int16:
+        max_val = np.iinfo(np.int16).max
+        wav_data = wav_data.astype(dtype=np.float64)/float(max_val)
+    elif data_type == np.int8:
+        max_val = np.iinfo(np.int8).max
+        wav_data = wav_data.astype(dtype=np.float64)/float(max_val)
+    elif data_type == np.int32:
+        max_val = np.iinfo(np.int32).max
+        wav_data = wav_data.astype(dtype=np.float64)/float(max_val)
+    elif data_type == np.uint8:
+        max_val = np.iinfo(np.uint8).max
+        min_val = np.iinfo(np.uint8).min
+        mid = (max_val - min_val)/2 + 1
+        wav_data = (wav_data.astype(dtype=np.float64) - mid)/float(max_val-mid)
+    elif data_type == np.float32:
+        wav_data = wav_data.astype(dtype=np.float64)
+    elif  data_type == np.float64:
+        pass
+    else:
+        print "Error: unknown data type for parse_audio() " + str(data_type)
+
+    return wav_data, channel_count, file_length
+
+#Return the time domain data extracted and padded
+def get_frame(wav_data, frame_start, data_length, pre_padding_length=0, post_padding_length=0):
+    
+    padded_length = pre_padding_length + data_length + post_padding_length
+
+    channel_count = len(wav_data)
+
+    if frame_start < 0:
+        zero_count = -frame_start
+
+        if zero_count > data_length:
+            return np.zeros((channel_count, padded_length)), np.zeros(padded_length)
+        else:
+            frame = np.zeros((channel_count, padded_length))
+            for ch in range(channel_count):
+                frame[ch][zero_count:padded_length - post_padding_length] = wav_data[ch][0:0+data_length - zero_count] 
+            return frame, np.zeros(padded_length)
+    else:
+        frame = np.zeros((channel_count, padded_length))
+
+
+        # w = wav_data[:, frame_start:frame_start+data_length] 
+        # frame[:, pre_padding_length:padded_length - post_padding_length] = w
+
+
+        for ch in range(channel_count):
+            w = wav_data[ch][frame_start:frame_start+data_length] 
+            if len(w) < padded_length:
+                w = np.append(w, np.zeros(data_length - len(w)))
+            frame[ch][pre_padding_length:padded_length - post_padding_length] = w
+    return frame
+
+# Apply a sample delay to a frequency domain frame (can be -ve as well)
+def steer_channel(Channel, delay):
+    fft_length = ((len(Channel)-1) *2)
+    w = np.exp(-2.0j*np.pi*np.arange(len(Channel))/float(fft_length) * float(delay))
+    return Channel * w
+
+def output_tdoa_graph(gcc_results, filename, max_spread = 2.0):
+    plt.clf()
+    plt.cla()
+    for c in range(len(gcc_results)):
+        plt.plot( gcc_results[c], label='ch ' + str(c))
+    plt.ylim(-max_spread, max_spread)
+    plt.title('TDOA')
+    plt.legend()
+    plt.xlabel('frame number')
+    plt.ylabel('TDOA (samples)')
+    plt.savefig(filename, dpi=100)  
+    return
+
+def output_multiple_tdoa_graphs(multiple_gcc_results, filename, max_spread = 2.0):
+    plt.clf()
+    plt.cla()
+    for g in range(len(multiple_gcc_results)):
+        plt.subplot(len(multiple_gcc_results), 1, g+1)
+        for c in range(len(multiple_gcc_results[g])):
+            plt.plot( multiple_gcc_results[g][c], label='ch ' + str(c))
+        plt.ylim(-max_spread, max_spread)
+        plt.title('TDOA')
+        plt.legend()
+        plt.xlabel('frame number')
+        plt.ylabel('TDOA (samples)')
+    plt.savefig(filename, dpi=100)  
+    return
