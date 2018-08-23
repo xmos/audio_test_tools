@@ -293,64 +293,6 @@ void att_print_python_uint64(uint64_t * d, size_t length, int d_exp){
     printf("])\n");
 }
 
-static uint64_t shr64(uint64_t v, int s){
-    if(s<0){
-        return v << (-s);
-    } else {
-        return v >> s;
-    }
-}
-
-{uint32_t, int} att_get_fd_frame_power(dsp_complex_t * X, int X_shift, size_t bin_count){
-    uint64_t power = 0;
-    unsigned hr = dsp_bfp_cls(X, bin_count) - 1;
-    unsigned hr_removal = 2*hr;
-
-    unsigned bin_count_log_2 = 32 - clz(bin_count);
-    int power_shift = 2*X_shift - 1 - bin_count_log_2;
-    for(size_t s = 0; s < bin_count; s++){
-        int64_t re = X[s].re;
-        int64_t im = X[s].im;
-        uint64_t t = (uint64_t)((re*re) + (im*im));
-        power += shr64(t, (bin_count_log_2-1 - hr_removal));
-    }
-    return {power>>32, power_shift - hr_removal};
-}
-
-
-{uint32_t, int} att_get_td_frame_power(dsp_complex_t * x, int x_shift, size_t frame_length, int imag_channel){
-    uint64_t power = 0;
-
-    unsigned mask = 0;
-    for(size_t s = 0; s < frame_length; s++){
-        if(imag_channel){
-            int32_t v=x[s].im;
-            if(v<0)v=-v;
-            mask |= v;
-        } else {
-            int32_t v=x[s].re;
-            if(v<0)v=-v;
-            mask |= v;
-        }
-    }
-
-    unsigned hr = clz(mask) - 1;
-    unsigned hr_removal = 2*hr;
-
-    unsigned frame_length_log_2 = 32 - clz(frame_length);
-    int power_shift = 2*x_shift - frame_length_log_2;
-    for(size_t s = 0; s < frame_length; s++){
-        if(imag_channel){
-            uint64_t t = (uint64_t)((int64_t)x[s].im*(int64_t)x[s].im);
-            power += shr64(t,(frame_length_log_2-2 - hr_removal));
-        } else {
-            uint64_t t = (uint64_t)((int64_t)x[s].re*(int64_t)x[s].re);
-            power += shr64(t,(frame_length_log_2-2 - hr_removal));
-        }
-    }
-    return {power>>32, power_shift - hr_removal};
-}
-
 /*
  * This partitions a space (0 to space_to_divide-1) into array_length chunks. Chunks may be zero length.
  */

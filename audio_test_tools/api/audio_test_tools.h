@@ -117,13 +117,6 @@ void att_print_python_uint64(uint64_t * d, size_t length, int d_exp);
 void att_print_python_fd_fp(dsp_complex_fp * d, size_t length);
 void att_print_python_td_fp(dsp_complex_fp * d, size_t length, int print_imag);
 
-
-/*
- * Frame power calculation
- */
-{uint32_t, int} att_get_fd_frame_power(dsp_complex_t * X, int X_shift, size_t bin_count);
-{uint32_t, int} att_get_td_frame_power(dsp_complex_t * x, int x_shift, size_t frame_length, int imag_channel);
-
 /*
  * Thread burning
  */
