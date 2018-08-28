@@ -133,12 +133,19 @@ def write_data(data, filename, sample_rate=DEFAULT_SAMPLE_RATE, dtype=np.int16,
     output = np.asarray(data*np.iinfo(np.int16).max, dtype=dtype) >> rshift
     scipy.io.wavfile.write(filename, sample_rate, output.T)
 
+def get_filenames(testname, echo_type, ref_type, headroom):
+    """ Generates filenames for AEC wavs (without .wav extension)  """
+    filename = '%s-%s-%s-hr%d-%s'\
+                % (testname, echo_type, ref_type, headroom, "%s")
+    audio_in = filename % "AudioIn"
+    audio_ref = filename % "AudioRef"
+    audio_out = filename % "Error"
+    return audio_in, audio_ref, audio_out
 
 def write_audio(test_class, echo_type, ref_type, headroom, AudioIn, AudioRef,
                 sample_rate=DEFAULT_SAMPLE_RATE, audio_dir='spec_audio',
                 dtype=np.int16):
     """ Writes test audio to wav files with a specific naming convention. """
-    filename = '%s-%s-%s-hr%d-%s' % (test_class, echo_type, ref_type, headroom, "%s")
     try:
         os.makedirs(audio_dir)
     except os.error:
@@ -146,8 +153,10 @@ def write_audio(test_class, echo_type, ref_type, headroom, AudioIn, AudioRef,
     divisor = get_headroom_divisor(AudioIn, headroom)
     AudioIn = AudioIn / divisor
     AudioRef = AudioRef / divisor
-    write_data(AudioIn, os.path.join(audio_dir, filename % "AudioIn.wav"),
-               sample_rate, dtype)
-    write_data(AudioRef, os.path.join(audio_dir, filename % "AudioRef.wav"),
-               sample_rate, dtype)
+    in_filename, ref_filename, _ = get_filenames(test_class, echo_type,
+                                                 ref_type, headroom)
+    write_data(AudioIn, os.path.join(audio_dir, in_filename), sample_rate,
+               dtype)
+    write_data(AudioRef, os.path.join(audio_dir, ref_filename), sample_rate,
+               dtype)
 
