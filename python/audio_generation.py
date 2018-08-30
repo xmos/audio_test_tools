@@ -7,10 +7,12 @@ import numpy as np
 DEFAULT_SAMPLE_RATE = 16000
 SYSTEM_DELAY_SAMPLES = 40
 
+
 def reverb_filter(duration_ms, amplitude, delay_ms,
                          sample_rate=DEFAULT_SAMPLE_RATE):
     """ Generates the impulse response for a reverberation.
-    The amplitude parameter should be < 1. Larger amplitude = longer reverb."""
+    The amplitude parameter should be < 1. Larger amplitude = longer reverb.
+    Duration is in milliseconds."""
     delay = int(sample_rate * delay_ms / 1000)
     signal = np.zeros((sample_rate * duration_ms / 1000, ))
     signal[SYSTEM_DELAY_SAMPLES] = 1
@@ -24,7 +26,8 @@ def reverb_filter(duration_ms, amplitude, delay_ms,
 
 def echo_filter(duration_ms, amplitude, delay_ms,
                 sample_rate=DEFAULT_SAMPLE_RATE):
-    """ Generates an echo impulse response. """
+    """ Generates an echo impulse response.
+    Duration is in milliseconds."""
     delay = int(sample_rate * delay_ms / 1000)
     signal = np.zeros((sample_rate * duration_ms / 1000, ))
     signal[SYSTEM_DELAY_SAMPLES] = 1
@@ -79,7 +82,8 @@ def get_sine(duration, frequencies, sample_rate=DEFAULT_SAMPLE_RATE, rshift=0):
 
 def get_near_end(duration, frequencies=[700], sample_rate=DEFAULT_SAMPLE_RATE,
                  rshift=4):
-    """ Gets a near-end signal (alias for get_sine) """
+    """ Gets a near-end signal (alias for get_sine)
+    Duration is in seconds."""
     return get_sine(duration, frequencies, sample_rate, rshift)
 
 
@@ -88,7 +92,8 @@ def get_ref_discrete(duration, freq_a=1000, freq_b=2000, period=1,
     """ Gets a reference signal which oscillates between two frequencies
 
     The signal produced will have magnitude in the frequency domain at only
-    those two frequencies."""
+    those two frequencies.
+    Duration is in seconds."""
     x = np.linspace(0, duration * 2 * np.pi, duration * sample_rate)
     y_1 = np.sin(freq_a * x)
     y_2 = np.sin(freq_b * x)
@@ -102,7 +107,9 @@ def get_ref_continuous(duration, freq_a=500, freq_b=4000, period=0.2,
     frequencies
 
     The signal produced will have magnitude in the frequency domain at all
-    frequencies between the two frequencies."""
+    frequencies between the two frequencies.
+    Duration is in seconds."""
+    # Using a cumulative sum to avoid phase error when changing frequency
     x = np.linspace(0, duration * 2 * np.pi, duration * sample_rate)
     f = np.sin(x/period)*(freq_b-freq_a)/2 + (freq_a+freq_b)/2
     y = np.cumsum(f) / sample_rate * 2 * np.pi
@@ -112,7 +119,8 @@ def get_ref_continuous(duration, freq_a=500, freq_b=4000, period=0.2,
 
 
 def get_ref(duration, ref='continuous', sample_rate=DEFAULT_SAMPLE_RATE):
-    """ Generates a reference signal """
+    """ Generates a reference signal 
+    Duration is in seconds."""
     if ref == "continuous":
         return get_ref_continuous(duration, sample_rate=sample_rate)
     if ref == "discrete":
@@ -140,6 +148,7 @@ def write_data(data, filename, sample_rate=DEFAULT_SAMPLE_RATE, dtype=np.int16,
     output = np.asarray(data*np.iinfo(np.int16).max, dtype=dtype) >> rshift
     scipy.io.wavfile.write(filename, sample_rate, output.T)
 
+
 def get_filenames(testname, echo_type, ref_type, headroom):
     """ Generates filenames for AEC wavs (without .wav extension)  """
     filename = '%s-%s-%s-hr%d-%s'\
@@ -148,6 +157,7 @@ def get_filenames(testname, echo_type, ref_type, headroom):
     audio_ref = filename % "AudioRef"
     audio_out = filename % "Error"
     return audio_in, audio_ref, audio_out
+
 
 def write_audio(test_class, echo_type, ref_type, headroom, AudioIn, AudioRef,
                 sample_rate=DEFAULT_SAMPLE_RATE, audio_dir='spec_audio',
@@ -162,8 +172,8 @@ def write_audio(test_class, echo_type, ref_type, headroom, AudioIn, AudioRef,
     AudioRef = AudioRef / divisor
     in_filename, ref_filename, _ = get_filenames(test_class, echo_type,
                                                  ref_type, headroom)
-    write_data(AudioIn, os.path.join(audio_dir, in_filename), sample_rate,
-               dtype)
-    write_data(AudioRef, os.path.join(audio_dir, ref_filename), sample_rate,
-               dtype)
+    write_data(AudioIn, os.path.join(audio_dir, in_filename + ".wav"),
+               sample_rate, dtype)
+    write_data(AudioRef, os.path.join(audio_dir, ref_filename + ".wav"),
+               sample_rate, dtype)
 
