@@ -56,11 +56,15 @@ long att_wav_get_frame_start(att_wav_header &s, unsigned frame_number);
 /*
  * Double precision DTF
  */
+void att_make_sine_table(double * sine_lut, unsigned proc_frame_length);
 void att_bit_reverse    ( dsp_complex_fp pts[], const uint32_t N );
 void att_forward_fft    ( dsp_complex_fp pts[], const uint32_t N, const double sine[]);
 void att_inverse_fft    ( dsp_complex_fp pts[], const uint32_t N, const double sine[]);
 void att_split_spectrum ( dsp_complex_fp pts[], const uint32_t N );
 void att_merge_spectra  ( dsp_complex_fp pts[], const uint32_t N );
+
+//Returns the interpolated center bin and interpolated peak
+{double, double} att_poly_interpolate(double left, double peak, double right, double center_bin);
 
 /*
  * Random number generation

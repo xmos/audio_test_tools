@@ -8,6 +8,18 @@
 
 #include "audio_test_tools.h"
 
+{double, double} att_poly_interpolate(double left, double peak, double right, double center_bin){
+    double bin_offset = (left - right) / (2. * (2. * peak - left -right));
+    double new_peak = peak - 0.25 * (left - right) * bin_offset;
+
+    return {center_bin + bin_offset, new_peak};
+}
+
+void att_make_sine_table(double * sine_lut, unsigned proc_frame_length){
+    for(unsigned i=0;i<(proc_frame_length/4) + 1;i++)
+        sine_lut[i] = (double)sin(2.0*M_PI*(double)i / (double)proc_frame_length);
+}
+
 #pragma unsafe arrays
 void att_bit_reverse( dsp_complex_fp pts[], const uint32_t N )
 {
