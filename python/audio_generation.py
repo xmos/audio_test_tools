@@ -85,8 +85,8 @@ def get_sine(duration, frequencies, amplitudes=[], phases=[], sample_rate=DEFAUL
     assert (len(frequencies) == len(phases)), "Error: Frequencies and phases have different size"
     assert (len(frequencies) == len(amplitudes)), "Error: Frequencies and phases have different size"
 
-    x = np.linspace(0, duration * 2 * np.pi, duration * sample_rate)
-    signal = np.zeros((duration * sample_rate,))
+    x = np.linspace(0, duration * 2 * np.pi, int(duration * sample_rate))
+    signal = np.zeros((int(duration * sample_rate),))
     for idx in range(len(frequencies)):
         signal += amplitudes[idx] * np.sin(frequencies[idx] * x + phases[idx])
     return signal / (1<<rshift)
