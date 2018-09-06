@@ -111,12 +111,12 @@ def parse_audio(wav_file):
     return wav_data, channel_count, file_length
 
 #Return the time domain data extracted 
-def get_frame(wav_data, frame_start, data_length, delays = 0):
+def get_frame(wav_data, frame_start, data_length, delays = None):
     
 
     channel_count = len(wav_data)
 
-    if delays == 0:
+    if delays is None:
         delays = np.zeros(channel_count, dtype= int)
 
     start_index = frame_start - np.asarray(delays, dtype= int)
