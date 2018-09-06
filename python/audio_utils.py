@@ -110,38 +110,24 @@ def parse_audio(wav_file):
 
     return wav_data, channel_count, file_length
 
-#Return the time domain data extracted and padded
-def get_frame(wav_data, frame_start, data_length, pre_padding_length=0, post_padding_length=0):
+#Return the time domain data extracted 
+def get_frame(wav_data, frame_start, data_length, delays = 0):
     
-    padded_length = pre_padding_length + data_length + post_padding_length
 
     channel_count = len(wav_data)
 
-    if frame_start < 0:
-        zero_count = -frame_start
+    if delays == 0:
+        delays = np.zeros(channel_count, dtype= int)
 
-        if zero_count > data_length:
-            return np.zeros((channel_count, padded_length)), np.zeros(padded_length)
+    start_index = frame_start - np.asarray(delays, dtype= int)
+    frame = np.zeros((channel_count, data_length), dtype=np.float64)
+    for ch in range(channel_count):
+        if start_index[ch] < 0 :
+            if start_index[ch] + data_length > 0:
+                frame[ch][ -start_index[ch]:] =  wav_data[ch][:start_index[ch] + data_length]
         else:
-            frame = np.zeros((channel_count, padded_length))
-            for ch in range(channel_count):
-                frame[ch][zero_count:padded_length - post_padding_length] = wav_data[ch][0:0+data_length - zero_count] 
-            return frame, np.zeros(padded_length)
-    else:
-        frame = np.zeros((channel_count, padded_length))
-
-
-        # w = wav_data[:, frame_start:frame_start+data_length] 
-        # frame[:, pre_padding_length:padded_length - post_padding_length] = w
-
-
-        for ch in range(channel_count):
-            w = wav_data[ch][frame_start:frame_start+data_length] 
-            if len(w) < padded_length:
-                w = np.append(w, np.zeros(data_length - len(w)))
-            frame[ch][pre_padding_length:padded_length - post_padding_length] = w
+           frame[ch] = wav_data[ch, start_index[ch]:start_index[ch] + data_length]
     return frame
-
 # Apply a sample delay to a frequency domain frame (can be -ve as well)
 def steer_channel(Channel, delay):
     fft_length = ((len(Channel)-1) *2)
