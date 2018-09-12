@@ -58,7 +58,9 @@ def get_h(h_type='short', normalise=True):
     elif h_type == 'excessive':
         h = echo_filter(200, 0.7, 190)
     elif h_type == 'decaying':
-        h = reverb_filter(500, -0.9, 12)
+        h = reverb_filter(190, -0.9, 12)
+    elif h_type == 'random':
+        h = np.random.normal(size=(200,))
     else:
         raise Exception("h_type invalid")
 
@@ -119,7 +121,7 @@ def get_ref_continuous(duration, freq_a=500, freq_b=4000, period=0.2,
 
 
 def get_ref(duration, ref='continuous', sample_rate=DEFAULT_SAMPLE_RATE):
-    """ Generates a reference signal 
+    """ Generates a reference signal
     Duration is in seconds."""
     if ref == "continuous":
         return get_ref_continuous(duration, sample_rate=sample_rate)
