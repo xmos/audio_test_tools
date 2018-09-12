@@ -69,7 +69,8 @@ def get_h(h_type='short', normalise=True):
     raise Exception("H type '%s' not valid" % h_type)
 
 
-def get_sine(duration, frequencies, amplitudes=[], phases=[], sample_rate=DEFAULT_SAMPLE_RATE, rshift=0):
+def get_sine(duration, frequencies, amplitudes=None, phases=None, 
+        sample_rate=DEFAULT_SAMPLE_RATE, rshift=0):
     """ Generates a signal containing one or more sine waves of constant
     frequency.
     Duration is in seconds.
@@ -79,12 +80,14 @@ def get_sine(duration, frequencies, amplitudes=[], phases=[], sample_rate=DEFAUL
     assert (type(frequencies) == list), "Error: frequencies not given as a list"
     assert (len(frequencies) != 0), "Error: empty list of frequencies"
     # Set default values for optional parameters
-    if amplitudes == []:
+    if not amplitudes:
         amplitudes = np.ones(len(frequencies))
-    if phases == []:
+    if not phases:
         phases = np.zeros(len(frequencies))
-    assert (len(frequencies) == len(phases)), "Error: Frequencies and phases have different size"
-    assert (len(frequencies) == len(amplitudes)), "Error: Frequencies and phases have different size"
+    assert (len(frequencies) == len(phases)), \
+            "Error: Frequencies and phases have different size"
+    assert (len(frequencies) == len(amplitudes)), \
+            "Error: Frequencies and phases have different size"
 
     x = np.linspace(0, duration * 2 * np.pi, int(duration * sample_rate))
     signal = np.zeros((int(duration * sample_rate),))
