@@ -163,15 +163,16 @@ def get_filenames(testname, echo_type, ref_type, headroom):
 
 def write_audio(test_class, echo_type, ref_type, headroom, AudioIn, AudioRef,
                 sample_rate=DEFAULT_SAMPLE_RATE, audio_dir='spec_audio',
-                dtype=np.int16):
+                dtype=np.int16, adjust_headroom=True):
     """ Writes test audio to wav files with a specific naming convention. """
     try:
         os.makedirs(audio_dir)
     except os.error:
         pass
-    divisor = get_headroom_divisor(AudioIn, headroom)
-    AudioIn = AudioIn / divisor
-    AudioRef = AudioRef / divisor
+    if adjust_headroom:
+        divisor = get_headroom_divisor(AudioIn, headroom)
+        AudioIn = AudioIn / divisor
+        AudioRef = AudioRef / divisor
     in_filename, ref_filename, _ = get_filenames(test_class, echo_type,
                                                  ref_type, headroom)
     write_data(AudioIn, os.path.join(audio_dir, in_filename + ".wav"),
