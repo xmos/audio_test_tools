@@ -49,6 +49,35 @@ def get_noise(duration=None, samples=None, db=0,
     return y
 
 
+def get_band_limited_noise(min_freq, max_freq, duration=None, samples=None,
+                           sample_rate=16000.0, clip=False):
+    """ Generates white noise band-limited between the min/max frequencies.
+    The noise is normally distributed in the time domain.
+
+    Optionally, values outside 4 standard deviations of the mean can be
+    clipped to 4 standard deviations. This produces a small amount of noise
+    in the frequency domain."""
+    if duration:
+        samples = int(duration * sample_rate)
+    # Generate random phase
+    max_i = int(samples * max_freq / sample_rate)
+    min_i = int(samples * min_freq / sample_rate)
+    phase = np.random.rand(max_i - min_i) * 2 * np.pi
+    vals = 100 * (np.cos(phase) + 1j * np.sin(phase))
+    # Generate band-limited noise
+    noise = ag.get_noise(duration)
+    Noise = np.fft.rfft(noise)
+    Noise[:] = 0
+    Noise[min_i:max_i] = vals
+    noise = np.fft.irfft(Noise)
+    # Clip noise (if enabled)
+    limit = 4 * np.std(noise)
+    clipped_noise = np.clip(noise, -limit, limit) if clip else noise
+    # Normalise to be within [-1, 1] range
+    clipped_noise = clipped_noise / limit
+    return clipped_noise
+
+
 def get_h(h_type='short', normalise=True):
     """ Generates a transfer function """
     if h_type == 'short':
