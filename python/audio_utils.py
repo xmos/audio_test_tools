@@ -110,6 +110,12 @@ def parse_audio(wav_file):
 
     return wav_data, channel_count, file_length
 
+
+
+def convert_to_32_bit(wav_data):
+    output_32bit = np.asarray(wav_data*np.iinfo(np.int32).max, dtype=np.int32)
+    return  output_32bit
+
 #Return the time domain data extracted 
 def get_frame(wav_data, frame_start, data_length, delays = None):
     
