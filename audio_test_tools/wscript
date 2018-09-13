@@ -9,4 +9,4 @@ def use_module(bld):
         source=sources,
         includes=['api'],
         depends_on=['lib_dsp'],
-        version='0.0.1')
+        version='1.0.0')
