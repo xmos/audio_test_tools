@@ -50,6 +50,26 @@ def get_noise(duration=None, samples=None, db=0,
     return y
 
 
+def get_band_limited_noise(min_freq, max_freq, duration=None, samples=None,
+                           sample_rate=16000.0):
+    """ Generates white noise band-limited between the min/max frequencies.
+    The noise is normally distributed in the time domain."""
+    if duration:
+        samples = int(duration * sample_rate)
+    # Generate random phase
+    max_i = int(samples * max_freq / sample_rate)
+    min_i = int(samples * min_freq / sample_rate)
+    # Generate band-limited noise
+    noise = get_noise(duration)
+    Noise = np.fft.rfft(noise)
+    Noise[:min_i] = 0
+    Noise[max_i:] = 0
+    noise = np.fft.irfft(Noise)
+    # Normalise to be within [-1, 1] range
+    normalised_noise = noise / np.max(np.abs(noise))
+    return normalised_noise
+
+
 def get_h(h_type='short', normalise=True):
     """ Generates a transfer function """
     if h_type == 'short':
