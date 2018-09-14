@@ -143,11 +143,11 @@ def get_headroom_divisor(data, headroom):
     return divisor
 
 
-def write_data(data, filename, sample_rate=DEFAULT_SAMPLE_RATE, dtype=np.int16, 
+def write_data(data, filename, sample_rate=DEFAULT_SAMPLE_RATE, dtype=np.int32, 
                rshift=0):
     """ Writes array data in the range [-1, 1] to a wav file of arbitrary
     data type."""
-    output = np.asarray(data*np.iinfo(np.int16).max, dtype=dtype) >> rshift
+    output = np.asarray(data*np.iinfo(dtype).max, dtype=dtype) >> rshift
     scipy.io.wavfile.write(filename, sample_rate, output.T)
 
 
@@ -163,7 +163,7 @@ def get_filenames(testname, echo_type, ref_type, headroom):
 
 def write_audio(test_class, echo_type, ref_type, headroom, AudioIn, AudioRef,
                 sample_rate=DEFAULT_SAMPLE_RATE, audio_dir='spec_audio',
-                dtype=np.int16, adjust_headroom=True):
+                dtype=np.int32, adjust_headroom=True):
     """ Writes test audio to wav files with a specific naming convention. """
     try:
         os.makedirs(audio_dir)
