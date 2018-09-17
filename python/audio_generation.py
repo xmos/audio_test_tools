@@ -25,21 +25,21 @@ def reverb_filter(duration_ms, amplitude, delay_ms,
     return signal
 
 
-def get_rt60(duration, delay_ms=12, sample_rate=DEFAULT_SAMPLE_RATE):
+def get_rt60(duration_ms, delay_ms=12, sample_rate=DEFAULT_SAMPLE_RATE):
     """Generates an RT60 impulse response using reverb_filter()
 
     Args:
-        duration: length in seconds of the RT60
+        duration_ms: length in milliseconds of the RT60
 
     Returns:
         Impulse response of RT60
     """
     target = 1e-3 # -60dB
     delay = int(sample_rate * delay_ms / 1000)
-    total_time = (sample_rate * duration) - SYSTEM_DELAY_SAMPLES
+    total_time = (sample_rate * duration_ms / 1000) - SYSTEM_DELAY_SAMPLES
     n = total_time / delay
     amplitude = np.power(target, 1.0 / n)
-    return reverb_filter(int(1.2 * duration * 1000), -amplitude, delay_ms,
+    return reverb_filter(int(1.2 * duration_ms), -amplitude, delay_ms,
                          sample_rate)
 
 
