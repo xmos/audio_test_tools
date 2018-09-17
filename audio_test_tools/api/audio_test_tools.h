@@ -14,7 +14,7 @@ typedef struct  {
 
 #define CRC_POLY (0xEB31D82E)
 #define WAV_HEADER_BYTES 44
-#define MAX_WAV_HEADER_BYTES 100
+#define MAX_WAV_HEADER_BYTES 80 //extended header
 
 /*
  * Wav file stuff
