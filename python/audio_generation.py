@@ -140,7 +140,8 @@ def get_near_end(duration, frequencies=[700], sample_rate=DEFAULT_SAMPLE_RATE,
                  rshift=4):
     """ Gets a near-end signal (alias for get_sine)
     Duration is in seconds."""
-    return get_sine(duration, frequencies, sample_rate, rshift)
+    return get_sine(duration, frequencies, sample_rate=sample_rate,
+                    rshift=rshift)
 
 
 def get_ref_discrete(duration, freq_a=1000, freq_b=2000, period=1,
