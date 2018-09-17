@@ -9,6 +9,35 @@ DEFAULT_SAMPLE_RATE = 16000
 SYSTEM_DELAY_SAMPLES = 40
 
 
+def get_magnitude(freq, X, Fs, tolerance_hz, normalise=False):
+    X = np.abs(X)
+    i = 2 * freq * len(X) / Fs
+    tol_i = 2 * tolerance_hz * len(X) / Fs
+    normalisation_factor = 1
+    if normalise:
+        normalisation_factor = 1.0 / len(X)
+    return np.max(X[i - tol_i:i + tol_i]) * normalisation_factor
+
+
+def get_suppressed_magnitude(frequencies, X, Fs, tolerance_hz,
+                             normalise=False):
+    X = np.abs(X)
+    tol_i = 2 * tolerance_hz * len(X) / Fs
+    X_nulled = np.array(X)
+    for freq in frequencies:
+        i = 2 * freq * len(X) / Fs
+        X_nulled[i - tol_i:i + tol_i] = 0
+    normalisation_factor = 1
+    if normalise:
+        normalisation_factor = 1.0 / len(X)
+    return np.max(X_nulled) * normalisation_factor,\
+           np.argmax(X_nulled) / (2.0 * len(X) / Fs)
+
+
+def db(a, b):
+    return 20 * np.log10(float(a)/b)
+
+
 def reverb_filter(duration_ms, amplitude, delay_ms,
                          sample_rate=DEFAULT_SAMPLE_RATE):
     """ Generates the impulse response for a reverberation.
@@ -23,6 +52,24 @@ def reverb_filter(duration_ms, amplitude, delay_ms,
             break
         signal[delay_i] = signal[i] * amplitude
     return signal
+
+
+def get_rt60(duration_ms, delay_ms=12, sample_rate=DEFAULT_SAMPLE_RATE):
+    """Generates an RT60 impulse response using reverb_filter()
+
+    Args:
+        duration_ms: length in milliseconds of the RT60
+
+    Returns:
+        Impulse response of RT60
+    """
+    target = 1e-3 # -60dB
+    delay = int(sample_rate * delay_ms / 1000)
+    total_time = (sample_rate * duration_ms / 1000) - SYSTEM_DELAY_SAMPLES
+    n = total_time / delay
+    amplitude = np.power(target, 1.0 / n)
+    return reverb_filter(int(1.2 * duration_ms), -amplitude, delay_ms,
+                         sample_rate)
 
 
 def echo_filter(duration_ms, amplitude, delay_ms,
@@ -122,7 +169,8 @@ def get_near_end(duration, frequencies=[700], sample_rate=DEFAULT_SAMPLE_RATE,
                  rshift=4):
     """ Gets a near-end signal (alias for get_sine)
     Duration is in seconds."""
-    return get_sine(duration, frequencies, sample_rate, rshift)
+    return get_sine(duration, frequencies, sample_rate=sample_rate,
+                    rshift=rshift)
 
 
 def get_ref_discrete(duration, freq_a=1000, freq_b=2000, period=1,
@@ -161,12 +209,17 @@ def get_ref(duration, ref='continuous', sample_rate=DEFAULT_SAMPLE_RATE):
     Duration is in seconds."""
     if ref == "continuous":
         return get_ref_continuous(duration, sample_rate=sample_rate)
-    if ref == "discrete":
+    elif ref == "discrete":
         return get_ref_discrete(duration, sample_rate=sample_rate)
-    if ref == "single":
+    elif ref == "single":
         return get_sine(duration, frequencies=[1000], sample_rate=sample_rate)
-    if ref == "noise":
+    elif ref == "noise":
         return get_noise(duration, sample_rate=sample_rate, db=0)
+    elif ref == "bandlimited":
+        return get_band_limited_noise(1000, 4000, duration,
+                                      sample_rate=sample_rate)
+    else:
+        raise Exception("ref name \"{}\" invalid.".format(ref))
 
 
 def get_headroom_divisor(data, headroom):
