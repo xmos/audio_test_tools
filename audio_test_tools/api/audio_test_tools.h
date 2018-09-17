@@ -14,6 +14,7 @@ typedef struct  {
 
 #define CRC_POLY (0xEB31D82E)
 #define WAV_HEADER_BYTES 44
+#define MAX_WAV_HEADER_BYTES 100
 
 /*
  * Wav file stuff
@@ -39,8 +40,8 @@ typedef struct att_wav_header {
     int data_bytes;         // frame count * num_channels * (bit_depth/8)
 } att_wav_header;
 
-int att_wav_header_to_struct(att_wav_header & s, char header[WAV_HEADER_BYTES]);
-int att_wav_form_header(char header[WAV_HEADER_BYTES],
+int att_wav_header_to_struct(att_wav_header & s, char header[MAX_WAV_HEADER_BYTES], uint32_t &wav_header_size);
+int att_wav_form_header(char header[MAX_WAV_HEADER_BYTES],
         short audio_format,
         short num_channels,
         int sample_rate,
@@ -51,7 +52,7 @@ void att_wav_print_header(att_wav_header & s);
 
 unsigned att_wav_get_num_bytes_per_frame(att_wav_header &s);
 int att_wav_get_num_frames(att_wav_header &s);
-long att_wav_get_frame_start(att_wav_header &s, unsigned frame_number);
+long att_wav_get_frame_start(att_wav_header &s, unsigned frame_number, uint32_t wavheader_size);
 
 /*
  * Double precision DTF
