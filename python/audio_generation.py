@@ -180,12 +180,17 @@ def get_ref(duration, ref='continuous', sample_rate=DEFAULT_SAMPLE_RATE):
     Duration is in seconds."""
     if ref == "continuous":
         return get_ref_continuous(duration, sample_rate=sample_rate)
-    if ref == "discrete":
+    elif ref == "discrete":
         return get_ref_discrete(duration, sample_rate=sample_rate)
-    if ref == "single":
+    elif ref == "single":
         return get_sine(duration, frequencies=[1000], sample_rate=sample_rate)
-    if ref == "noise":
+    elif ref == "noise":
         return get_noise(duration, sample_rate=sample_rate, db=0)
+    elif ref == "bandlimited":
+        return get_band_limited_noise(1000, 4000, duration,
+                                      sample_rate=sample_rate)
+    else:
+        raise Exception("ref name \"{}\" invalid.".format(ref))
 
 
 def get_headroom_divisor(data, headroom):
