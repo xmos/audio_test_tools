@@ -20,10 +20,16 @@ def get_magnitude(freq, X, Fs, tolerance_hz, normalise=False):
 
 
 def get_suppressed_magnitude(frequencies, X, Fs, tolerance_hz,
-                             normalise=False):
+                             normalise=False, band_min=0, band_max=None):
+    if not band_max:
+        band_max = Fs/2
     X = np.abs(X)
     tol_i = 2 * tolerance_hz * len(X) / Fs
+    min_i = 2 * band_min * len(X) / Fs
+    max_i = 2 * band_max * len(X) / Fs
     X_nulled = np.array(X)
+    X_nulled[:min_i] = 0
+    X_nulled[max_i:] = 0
     for freq in frequencies:
         i = 2 * freq * len(X) / Fs
         X_nulled[i - tol_i:i + tol_i] = 0
