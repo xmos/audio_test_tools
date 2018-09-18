@@ -11,6 +11,6 @@ def build(bld):
 	bld.env.XSCOPE = bld.path.find_resource('config.xscope')
 
 	depends_on = ['audio_test_tools']
-	bld.env.XCC_FLAGS = ['-O2', '-g', '-Wall', '-fcmdline-buffer-bytes=512', '-report']
+	bld.env.XCC_FLAGS = ['-O2', '-g', '-Wall', '-fcmdline-buffer-bytes=2048', '-report']
 	source = bld.path.ant_glob('src/**/*.xc')
 	bld.program(source=source, depends_on=depends_on,target=target_path)
