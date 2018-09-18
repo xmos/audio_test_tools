@@ -36,13 +36,13 @@ void process_wav(const char* input_file_1, const char* input_file_2, const char*
     att_wav_header header_struct_2;
     unsigned size_header_1, size_header_2;
     printf("parse %s\n", input_file_1);
-    if(att_get_wav_header_details("test_audio_16b.wav", header_struct_1, size_header_1) != 0)
+    if(att_get_wav_header_details(input_file_1, header_struct_1, size_header_1) != 0)
     {
       printf("error in att_get_wav_header_details()\n");
       _Exit(1);
     }
     printf("parse %s\n", input_file_2);
-    if(att_get_wav_header_details("test_audio_32b.wav", header_struct_2, size_header_2) != 0)
+    if(att_get_wav_header_details(input_file_2, header_struct_2, size_header_2) != 0)
     {
       printf("error in att_get_wav_header_details()\n");
       _Exit(1);
