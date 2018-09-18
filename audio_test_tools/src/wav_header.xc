@@ -51,7 +51,7 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
   
   unsigned fmt_subchunk_actual_size = s.fmt_chunk_size + 8; //fmt_chunk_size doesn't include the fmt_header(4) and size(4) bytes
   unsigned fmt_subchunk_remaining_size = fmt_subchunk_actual_size - FMT_SUBCHUNK_MIN_SIZE;
-  //go back to the beginning of fmt subchunk (24 bytes) and then go forward fmt_chunk_size + 8
+  //if audio_format indicates extended (0xfffe), read the actual audio_format present in GUID in the extended part of fmt subchunk. 
   if(s.audio_format == (short)0xfffe)
   {
     //seek to the end of fmt subchunk and rewind 16bytes to the beginning of GUID
@@ -63,6 +63,7 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
   }
   else
   {
+    //go to the end of fmt subchunk
     lseek(fid, fmt_subchunk_remaining_size, SEEK_CUR);
   }
 
