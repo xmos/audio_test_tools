@@ -49,9 +49,9 @@ int att_wav_form_header(att_wav_header & header,
 
 void att_wav_print_header(att_wav_header & s);
 
-unsigned att_wav_get_num_bytes_per_frame(att_wav_header &s);
-int att_wav_get_num_frames(att_wav_header &s);
-long att_wav_get_frame_start(att_wav_header &s, unsigned frame_number, uint32_t wavheader_size);
+unsigned att_wav_get_num_bytes_per_frame(const att_wav_header &s);
+int att_wav_get_num_frames(const att_wav_header &s);
+long att_wav_get_frame_start(const att_wav_header &s, unsigned frame_number, uint32_t wavheader_size);
 
 /*
  * Double precision DTF
