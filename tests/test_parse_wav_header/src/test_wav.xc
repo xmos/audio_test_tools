@@ -27,21 +27,20 @@ void process_wav(){
         _Exit(1);
     }
 
-    char header_1[MAX_WAV_HEADER_BYTES], header_2[MAX_WAV_HEADER_BYTES];
-    read (file1, header_1, MAX_WAV_HEADER_BYTES);
-    read (file2, header_2, MAX_WAV_HEADER_BYTES);
 
     att_wav_header header_struct_1;
     att_wav_header header_struct_2;
-    uint32_t size_header_1, size_header_2;
-    if(att_wav_header_to_struct(header_struct_1, header_1, size_header_1) != 0)
+    unsigned size_header_1, size_header_2;
+    printf("parse test_audio_16b.wav\n");
+    if(att_get_wav_header_details("test_audio_16b.wav", header_struct_1, size_header_1) != 0)
     {
-      printf("error in att_wav_header_to_struct()\n");
+      printf("error in att_get_wav_header_details()\n");
       _Exit(1);
     }
-    if(att_wav_header_to_struct(header_struct_2, header_2, size_header_2) != 0)
+    printf("parse test_audio_32b.wav\n");
+    if(att_get_wav_header_details("test_audio_32b.wav", header_struct_2, size_header_2) != 0)
     {
-      printf("error in att_wav_header_to_struct()\n");
+      printf("error in att_get_wav_header_details()\n");
       _Exit(1);
     }
 

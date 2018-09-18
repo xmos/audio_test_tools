@@ -13,8 +13,7 @@ typedef struct  {
 } dsp_complex_fp;
 
 #define CRC_POLY (0xEB31D82E)
-#define WAV_HEADER_BYTES 44
-#define MAX_WAV_HEADER_BYTES 80 //extended header
+#define ATT_WAV_HEADER_BYTES 44
 
 /*
  * Wav file stuff
@@ -40,8 +39,8 @@ typedef struct att_wav_header {
     int data_bytes;         // frame count * num_channels * (bit_depth/8)
 } att_wav_header;
 
-int att_wav_header_to_struct(att_wav_header & s, char header[MAX_WAV_HEADER_BYTES], uint32_t &wav_header_size);
-int att_wav_form_header(char header[MAX_WAV_HEADER_BYTES],
+int att_get_wav_header_details(const char* filename, att_wav_header & s, unsigned &wav_header_size);
+int att_wav_form_header(att_wav_header & header,
         short audio_format,
         short num_channels,
         int sample_rate,
