@@ -22,9 +22,7 @@ pipeline {
             sh "xwaf configure build"
             withEnv(["PATH+PYDIR=/usr/local/bin"]) {
               // Continue to next stage if a test fails, the test is set as failure at the end
-              catchError {
-                sh "python -m pytest test_wav.py"
-              }
+              sh "python -m pytest test_wav.py"
             }
           }
         }
