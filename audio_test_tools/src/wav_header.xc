@@ -22,6 +22,7 @@ const char wav_default_header[ATT_WAV_HEADER_BYTES] = {
 
 #define RIFF_SECTION_SIZE (12)
 #define FMT_SUBCHUNK_MIN_SIZE (24)
+#define EXTENDED_FMT_GUID_SIZE (16)
 
 int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigned &header_size){
   int fid = open ( filename , O_RDONLY );
@@ -29,13 +30,13 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
   //read riff header section (12 bytes)
   read(fid, (char*)(&s.riff_header[0]), RIFF_SECTION_SIZE);
 
-  if(memcmp(s.riff_header, "RIFF", 4) != 0)
+  if(memcmp(s.riff_header, "RIFF", sizeof(s.riff_header)) != 0)
   {
     printf("Error: couldn't find RIFF: 0x%x, 0x%x, 0x%x, 0x%x\n", s.riff_header[0], s.riff_header[1], s.riff_header[2], s.riff_header[3]);
     return 1;
   }
 
-  if(memcmp(s.wave_header, "WAVE", 4) != 0)
+  if(memcmp(s.wave_header, "WAVE", sizeof(s.wave_header)) != 0)
   {
     printf("couldn't find WAVE:, 0x%x, 0x%x, 0x%x, 0x%x\n", s.wave_header[0], s.wave_header[1], s.wave_header[2], s.wave_header[3]);
     return 1;
@@ -43,23 +44,23 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
   
   //read fmt subchunk (24, 26 or 48 bytes depending on the extension). We read 24 bytes since this covers all information common to all 3 types 
   read(fid, (char*)&s.fmt_header[0], FMT_SUBCHUNK_MIN_SIZE);
-  if(memcmp(s.fmt_header, "fmt ", 4) != 0)
+  if(memcmp(s.fmt_header, "fmt ", sizeof(s.fmt_header)) != 0)
   {
     printf("Error: couldn't find fmt: 0x%x, 0x%x, 0x%x, 0x%x\n", s.fmt_header[0], s.fmt_header[1], s.fmt_header[2], s.fmt_header[3]);
     return 1;
   }
   
-  unsigned fmt_subchunk_actual_size = s.fmt_chunk_size + 8; //fmt_chunk_size doesn't include the fmt_header(4) and size(4) bytes
+  unsigned fmt_subchunk_actual_size = s.fmt_chunk_size + sizeof(s.fmt_header) + sizeof(s.fmt_chunk_size); //fmt_chunk_size doesn't include the fmt_header(4) and size(4) bytes
   unsigned fmt_subchunk_remaining_size = fmt_subchunk_actual_size - FMT_SUBCHUNK_MIN_SIZE;
   //if audio_format indicates extended (0xfffe), read the actual audio_format present in GUID in the extended part of fmt subchunk. 
   if(s.audio_format == (short)0xfffe)
   {
     //seek to the end of fmt subchunk and rewind 16bytes to the beginning of GUID
-    lseek(fid, fmt_subchunk_remaining_size - 16, SEEK_CUR);
+    lseek(fid, fmt_subchunk_remaining_size - EXTENDED_FMT_GUID_SIZE, SEEK_CUR);
     //The first 2 bytes of GUID is the audio_format.
-    read(fid, &s.audio_format, 2);
+    read(fid, &s.audio_format, sizeof(s.audio_format));
     //skip the rest of GUID
-    lseek(fid, 14, SEEK_CUR);
+    lseek(fid, EXTENDED_FMT_GUID_SIZE - sizeof(s.audio_format), SEEK_CUR);
   }
   else
   {
@@ -74,23 +75,23 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
   }
   
   //read header (4 bytes) for the next subchunk
-  read(fid, (char*)&s.data_header[0], 4);
+  read(fid, (char*)&s.data_header[0], sizeof(s.data_header));
   //if next subchunk is fact, read subchunk size and skip it
-  if(memcmp(s.data_header, "fact", 4) == 0)
+  if(memcmp(s.data_header, "fact", sizeof(s.data_header)) == 0)
   {
     uint32_t chunksize;
-    read(fid, &chunksize, 4);
+    read(fid, &chunksize, sizeof(s.data_bytes));
     lseek(fid, chunksize, SEEK_CUR);
-    read(fid, (char*)(&s.data_header[0]), 4);
+    read(fid, (char*)(&s.data_header[0]), sizeof(s.data_header));
   }
   //only thing expected at this point is the 'data' subchunk. Throw error if not found.
-  if(memcmp(s.data_header, "data", 4) != 0)
+  if(memcmp(s.data_header, "data", sizeof(s.data_header)) != 0)
   {
     printf("Error: couldn't find data: 0x%x, 0x%x, 0x%x, 0x%x\n", s.data_header[0], s.data_header[1], s.data_header[2], s.data_header[3]);
     return 1;
   }
   //read data subchunk size. 
-  read(fid, &s.data_bytes, 4);
+  read(fid, &s.data_bytes, sizeof(s.data_bytes));
   header_size = lseek(fid, 0, SEEK_CUR); //total file size should be header_size + data_bytes
 
   close(fid);
@@ -179,17 +180,17 @@ void att_wav_print_header(att_wav_header & s){
 
 }
 
-unsigned att_wav_get_num_bytes_per_frame(att_wav_header &s){
+unsigned att_wav_get_num_bytes_per_frame(const att_wav_header &s){
     int bytes_per_sample = s.bit_depth/CHAR_BIT;
     return (unsigned)(bytes_per_sample * s.num_channels);
 }
 
-int att_wav_get_num_frames(att_wav_header &s){
+int att_wav_get_num_frames(const att_wav_header &s){
     unsigned bytes_per_frame = att_wav_get_num_bytes_per_frame(s);
     return s.data_bytes / bytes_per_frame;
 }
 
-long att_wav_get_frame_start(att_wav_header &s, unsigned frame_number, uint32_t wavheader_size){
+long att_wav_get_frame_start(const att_wav_header &s, unsigned frame_number, uint32_t wavheader_size){
     return wavheader_size + frame_number * att_wav_get_num_bytes_per_frame(s);
 }
 

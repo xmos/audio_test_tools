@@ -20,7 +20,12 @@ pipeline {
         viewEnv() {
           dir("${REPO}/tests/test_parse_wav_header") {
             sh "xwaf configure build"
-            sh "axe bin/test_wav.xe"
+            withEnv(["PATH+PYDIR=/usr/local/bin"]) {
+              // Continue to next stage if a test fails, the test is set as failure at the end
+              catchError {
+                sh "python -m pytest test_wav.py"
+              }
+            }
           }
         }
       }
