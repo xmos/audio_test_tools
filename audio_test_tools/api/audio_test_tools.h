@@ -15,6 +15,15 @@ typedef struct  {
 #define CRC_POLY (0xEB31D82E)
 #define ATT_WAV_HEADER_BYTES 44
 
+#ifdef __process_wav_conf_h_exists__
+#include "process_wav_conf.h"
+#define ATT_PW_INPUT_CHANNEL_PAIRS ((ATT_PW_INPUT_CHANNELS+1)/2)
+#define ATT_PW_OUTPUT_CHANNEL_PAIRS ((ATT_PW_OUTPUT_CHANNELS+1)/2)
+#endif
+
+void att_process_wav(chanend app_to_ic, chanend ic_to_app);
+
+
 /*
  * Wav file stuff
  */
