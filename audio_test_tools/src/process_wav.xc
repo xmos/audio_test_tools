@@ -108,6 +108,9 @@ void att_process_wav(chanend app_to_ic, chanend ic_to_app){
         }
     }
     close(output_file);
+#else
+    printf("att_process_wav requires a process_wav_conf.h (and it is missing)\n");
+    _Exit(1);
 #endif
 }
 
