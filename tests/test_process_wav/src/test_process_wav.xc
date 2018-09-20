@@ -1,5 +1,7 @@
 // Copyright (c) 2018, XMOS Ltd, All rights reserved
 
+#include <platform.h>
+#include <string.h>
 #include "voice_toolbox.h"
 #include "audio_test_tools.h"
 
@@ -26,16 +28,16 @@ void null_dsp(chanend app_to_dsp, chanend dsp_to_app){
     }
 }
 
-int main(unsigned int argC, char *unsafe argV[argC]){
+int main(){
     chan app_to_dsp;
     chan dsp_to_app;
 
     par {
-        {
+        on tile[0]:{
             att_process_wav(app_to_dsp, dsp_to_app);
             _Exit(0);
         }
-        null_dsp (app_to_dsp, dsp_to_app);
+        on tile[1]:null_dsp (app_to_dsp, dsp_to_app);
     }
     return 0;
 }

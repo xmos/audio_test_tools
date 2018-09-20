@@ -1,12 +1,8 @@
 // Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
 
 #include <fcntl.h>
-//#include <xs1.h>
-#include <xclib.h>
 #include <string.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include <unistd.h>
 
 #include "voice_toolbox.h"
@@ -17,16 +13,15 @@
 void att_process_wav(chanend app_to_ic, chanend ic_to_app){
 
 #ifdef __process_wav_conf_h_exists__
+
     char * input_file_name = ATT_PW_INPUT_FILE_NAME;
     char * output_file_name = ATT_PW_OUTPUT_FILE_NAME;
-    int input_file;
-    int output_file;
 
     int32_t input_read_buffer  [ATT_PW_PROC_FRAME_LENGTH*ATT_PW_INPUT_CHANNELS];
     int output_write_buffer[ATT_PW_FRAME_ADVANCE*ATT_PW_OUTPUT_CHANNELS];
 
-    input_file = open ( input_file_name , O_RDONLY );
-    output_file = open( output_file_name , O_WRONLY|O_CREAT, 0644 );
+    int input_file = open ( input_file_name , O_RDONLY );
+    int output_file = open( output_file_name , O_WRONLY|O_CREAT, 0644 );
 
     if ((input_file==-1)) {
         printf("x_file file missing (%s)\n", input_file_name);
@@ -35,15 +30,13 @@ void att_process_wav(chanend app_to_ic, chanend ic_to_app){
 
     att_wav_header input_header_struct;
     unsigned input_wavheader_size;
-    if(att_get_wav_header_details(input_file_name, input_header_struct, input_wavheader_size) != 0)
-    {
+    if(att_get_wav_header_details(input_file_name, input_header_struct, input_wavheader_size) != 0){
       printf("error in att_get_wav_header_details()\n");
       _Exit(1);
     }
     lseek(input_file, input_wavheader_size, SEEK_SET);
 
-    if(input_header_struct.bit_depth != 32)
-     {
+    if(input_header_struct.bit_depth != 32){
          printf("Error: unsupported wav bit depth (%d) for %s file. Only 16 supported\n", input_header_struct.bit_depth, input_file);
          _Exit(1);
      }
@@ -67,16 +60,13 @@ void att_process_wav(chanend app_to_ic, chanend ic_to_app){
             input_header_struct.bit_depth,
             block_count*ATT_PW_FRAME_ADVANCE);
 
-
     write(output_file, (char*)(&output_header_struct),  ATT_WAV_HEADER_BYTES);
 
     unsigned input_bytes_per_frame = att_wav_get_num_bytes_per_frame(input_header_struct);
 
-#define SUP_TO_APP_STATE VTB_RX_STATE_UINT64_SIZE(ATT_PW_OUTPUT_CHANNEL_PAIRS*2, ATT_PW_PROC_FRAME_LENGTH, ATT_PW_FRAME_ADVANCE, 0)
-    uint64_t rx_state[SUP_TO_APP_STATE];
-    vtb_rx_state_init(rx_state, ATT_PW_OUTPUT_CHANNEL_PAIRS*2, ATT_PW_PROC_FRAME_LENGTH, ATT_PW_FRAME_ADVANCE, null, SUP_TO_APP_STATE);
-
-//    block_count = 4;
+#define DSP_TO_APP_STATE VTB_RX_STATE_UINT64_SIZE(ATT_PW_OUTPUT_CHANNEL_PAIRS*2, ATT_PW_PROC_FRAME_LENGTH, ATT_PW_FRAME_ADVANCE, 0)
+    uint64_t rx_state[DSP_TO_APP_STATE];
+    vtb_rx_state_init(rx_state, ATT_PW_OUTPUT_CHANNEL_PAIRS*2, ATT_PW_PROC_FRAME_LENGTH, ATT_PW_FRAME_ADVANCE, null, DSP_TO_APP_STATE);
 
     for(unsigned b=0;b<block_count;b++){
 
@@ -87,9 +77,6 @@ void att_process_wav(chanend app_to_ic, chanend ic_to_app){
         read (input_file, (char*)&input_read_buffer[0],
                 input_bytes_per_frame * ATT_PW_FRAME_ADVANCE);
 
-
-        // This will hold the x and y inputs. (y will be the first SUP_X_CHANNELS then
-        // x will be the next SUP_PASSTHROUGH_CHANNELS
         dsp_complex_t [[aligned(8)]] frame[ATT_PW_INPUT_CHANNELS][ATT_PW_FRAME_ADVANCE];
         memset(frame, 0, sizeof(frame));
 
@@ -97,11 +84,7 @@ void att_process_wav(chanend app_to_ic, chanend ic_to_app){
             for(unsigned ch=0;ch<ATT_PW_INPUT_CHANNELS;ch++){
                 unsigned ch_pair = ch/2;
                 unsigned i =(f * ATT_PW_INPUT_CHANNELS) + ch;
-                if(ch&1){
-                    frame[ch_pair][f].im = input_read_buffer[i];
-                } else {
-                    frame[ch_pair][f].re = input_read_buffer[i];
-                }
+                (frame[ch_pair][f], int32_t[2])[ch&1] = input_read_buffer[i];
             }
         }
 
@@ -114,10 +97,7 @@ void att_process_wav(chanend app_to_ic, chanend ic_to_app){
 
         for (unsigned ch=0;ch<ATT_PW_OUTPUT_CHANNELS;ch++){
             for(unsigned i=0;i<ATT_PW_FRAME_ADVANCE;i++){
-                if(ch&1)
-                    output_write_buffer[i*ATT_PW_OUTPUT_CHANNELS + ch] = processed_frame[ch/2][i].im;
-                else
-                    output_write_buffer[i*ATT_PW_OUTPUT_CHANNELS + ch] = processed_frame[ch/2][i].re;
+                output_write_buffer[i*ATT_PW_OUTPUT_CHANNELS + ch] = (processed_frame[ch/2][i], int32_t[2])[ch&1];
             }
         }
 
