@@ -34,7 +34,7 @@ int main(){
 
     par {
         on tile[0]:{
-            att_process_wav(app_to_dsp, dsp_to_app);
+            att_process_wav(app_to_dsp, dsp_to_app, null);
             _Exit(0);
         }
         on tile[1]:null_dsp (app_to_dsp, dsp_to_app);
