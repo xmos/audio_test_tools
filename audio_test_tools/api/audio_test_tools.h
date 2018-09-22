@@ -15,13 +15,40 @@ typedef struct  {
 #define CRC_POLY (0xEB31D82E)
 #define ATT_WAV_HEADER_BYTES 44
 
+
+
+
 #ifdef __process_wav_conf_h_exists__
 #include "process_wav_conf.h"
 #define ATT_PW_INPUT_CHANNEL_PAIRS ((ATT_PW_INPUT_CHANNELS+1)/2)
 #define ATT_PW_OUTPUT_CHANNEL_PAIRS ((ATT_PW_OUTPUT_CHANNELS+1)/2)
 #endif
 
-void att_process_wav(chanend app_to_ic, chanend ic_to_app);
+void att_pw_play(chanend c_comms);
+void att_pw_pause(chanend c_comms);
+void att_pw_stop(chanend c_comms);
+void att_pw_play_until_sample_passes(chanend c_comms, long sample);
+
+/*
+ * This opens the 32 bit signed WAV file ATT_PW_INPUT_FILE_NAME of ATT_PW_INPUT_CHANNEL_PAIRS
+ * channels. It will write to the file ATT_PW_OUTPUT_FILE_NAME of ATT_PW_OUTPUT_CHANNELS
+ * channels.
+ *
+ * If c_comms is not null then the wav will begin paused and await instructions to continue.
+ * If c_comms is null then the wav will play.
+ *
+ * Commands:
+ *  - att_pw_play
+ *          This will play the wav file
+ *  - att_pw_pause
+ *          This will pause the wav file playing. It is useful for issuing multiple commands
+ *          to the DSP before continuing.
+ *  - att_pw_play_until_sample_passes SAMPLE
+ *          This will play the wav until the sample number passes SAMPLE
+ *  - att_pw_stop
+ *          This will stop the wav playing and finish the task.
+ */
+void att_process_wav(chanend app_to_ic, chanend ic_to_app, chanend ?c_comms);
 
 
 /*
