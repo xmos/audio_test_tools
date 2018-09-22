@@ -8,9 +8,31 @@
 #include "voice_toolbox.h"
 #include "audio_test_tools.h"
 
-//axe.dms --args ./bin/test_wav_ix.xe input_file_name output_file_name
+typedef enum {
+    ATT_PW_PLAY,
+    ATT_PW_PAUSE,
+    ATT_PW_PLAY_UNTIL_SAMPLE_PASSES,
+    ATT_PW_STOP
+} att_pw_commands;
 
-void att_process_wav(chanend app_to_ic, chanend ic_to_app){
+void att_pw_play(chanend c_comms){
+    c_comms <: ATT_PW_PLAY;
+}
+
+void att_pw_pause(chanend c_comms){
+    c_comms <: ATT_PW_PAUSE;
+}
+
+void att_pw_stop(chanend c_comms){
+    c_comms <: ATT_PW_STOP;
+}
+
+void att_pw_play_until_sample_passes(chanend c_comms, long sample){
+    c_comms <: ATT_PW_PLAY_UNTIL_SAMPLE_PASSES;
+    c_comms <: sample;
+}
+
+void att_process_wav(chanend app_to_ic, chanend ic_to_app, chanend ?c_comms){
 
 #ifdef __process_wav_conf_h_exists__
 
@@ -50,7 +72,7 @@ void att_process_wav(chanend app_to_ic, chanend ic_to_app){
 
     unsigned frame_count = input_frame_count;
 
-    unsigned block_count =frame_count / ATT_PW_FRAME_ADVANCE; //TODO check this - it might be off by one
+    unsigned block_count = frame_count / ATT_PW_FRAME_ADVANCE; //TODO check this - it might be off by one
 
     att_wav_header output_header_struct;
     att_wav_form_header(output_header_struct,
@@ -68,7 +90,48 @@ void att_process_wav(chanend app_to_ic, chanend ic_to_app){
     uint64_t rx_state[DSP_TO_APP_STATE];
     vtb_rx_state_init(rx_state, ATT_PW_OUTPUT_CHANNEL_PAIRS*2, ATT_PW_PROC_FRAME_LENGTH, ATT_PW_FRAME_ADVANCE, null, DSP_TO_APP_STATE);
 
+
+    int playing = 1;
+
+    unsigned waiting_for_time;
+    if(isnull(c_comms)){
+        waiting_for_time = UINT_MAX;
+    } else {
+        waiting_for_time = 0;
+    }
+
     for(unsigned b=0;b<block_count;b++){
+        unsigned start_sample_of_frame = b*ATT_PW_FRAME_ADVANCE;
+
+        if(start_sample_of_frame >= waiting_for_time){
+            playing = 0;
+        }
+
+        while (!playing){
+            select {
+                case c_comms:> int cmd:{
+                    switch(cmd){
+                    case ATT_PW_PLAY:
+                        playing = 1;
+                        waiting_for_time = UINT_MAX;
+                        break;
+                    case ATT_PW_PAUSE:
+                        playing = 0;
+                        break;
+                    case ATT_PW_PLAY_UNTIL_SAMPLE_PASSES:
+                        playing = 1;
+                        c_comms :> waiting_for_time;
+                        break;
+                    case ATT_PW_STOP:
+                        //TODO patch the header
+                        close(output_file);
+                        _exit(0);
+                        break;
+                    }
+                    break;
+                }
+            }
+        }
 
         long input_location =  att_wav_get_frame_start(input_header_struct, b * ATT_PW_FRAME_ADVANCE, input_wavheader_size);
 
