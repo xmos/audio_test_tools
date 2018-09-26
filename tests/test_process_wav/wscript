@@ -1,5 +1,5 @@
 def options(ctx):
-        ctx.add_option('--target', action='store', default='test_wav.xe')
+        ctx.add_option('--target', action='store', default='test_process_wav.xe')
 
 def configure(conf):
 	conf.load('xwaf.compiler_xcc')
@@ -10,7 +10,7 @@ def build(bld):
 	bld.env.TARGET_ARCH = 'XCORE-200-EXPLORER'
 	bld.env.XSCOPE = bld.path.find_resource('config.xscope')
 
-	depends_on = ['audio_test_tools', 'lib_voice_toolbox']
-	bld.env.XCC_FLAGS = ['-O2', '-g', '-Wall', '-fcmdline-buffer-bytes=2048', '-report']
+	depends_on = ['audio_test_tools', 'lib_dsp', 'lib_voice_toolbox']
+	bld.env.XCC_FLAGS = ['-O2', '-g', '-Wall', '-report']
 	source = bld.path.ant_glob('src/**/*.xc')
 	bld.program(source=source, depends_on=depends_on,target=target_path)
