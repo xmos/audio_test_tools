@@ -160,7 +160,7 @@ void att_process_wav(chanend app_to_ic, chanend ic_to_app, chanend ?c_comms){
 
         for (unsigned ch=0;ch<ATT_PW_OUTPUT_CHANNELS;ch++){
             for(unsigned i=0;i<ATT_PW_FRAME_ADVANCE;i++){
-                output_write_buffer[i*ATT_PW_OUTPUT_CHANNELS + ch] = (processed_frame[ch/2][i], int32_t[2])[ch&1];
+                output_write_buffer[(i)*ATT_PW_OUTPUT_CHANNELS + ch] = (processed_frame[ch/2][i + (ATT_PW_PROC_FRAME_LENGTH-ATT_PW_FRAME_ADVANCE)], int32_t[2])[ch&1];
             }
         }
 
