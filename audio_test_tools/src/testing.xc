@@ -7,6 +7,14 @@
 #include <xclib.h>
 #include <math.h>
 
+int att_is_double_word_aligned(int * p){
+    if((int)p&7){
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
 int32_t att_random_int32(unsigned &r){
     crc32(r, -1, CRC_POLY);
     return (int32_t)r;

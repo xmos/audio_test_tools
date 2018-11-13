@@ -15,7 +15,11 @@ typedef struct  {
 #define CRC_POLY (0xEB31D82E)
 #define ATT_WAV_HEADER_BYTES 44
 
-
+/*
+ * return non-zero when f is double word aligned
+ * return zero otherwise.
+ */
+int att_is_double_word_aligned(int * f);
 
 
 #ifdef __process_wav_conf_h_exists__
