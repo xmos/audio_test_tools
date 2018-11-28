@@ -47,9 +47,9 @@ def print_phi(phi):
     for i in range(len(phi)):
         for j in range(len(phi[i])):
             print('% .4f '%phi[i][j]),
-        print ''
-    print ''
-    print ''
+        print ('')
+    print ('')
+    print ('')
     return
 
 def make_mvdr_matrices(f_bin_count, fft_length, channel_count, rate):
@@ -106,7 +106,7 @@ def parse_audio(wav_file):
     elif  data_type == np.float64:
         pass
     else:
-        print "Error: unknown data type for parse_audio() " + str(data_type)
+        print ("Error: unknown data type for parse_audio() " + str(data_type))
 
     return wav_data, channel_count, file_length
 

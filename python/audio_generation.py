@@ -97,6 +97,7 @@ def get_noise(duration=None, samples=None, db=0,
     Either specify a duration in seconds, or number of samples."""
     if duration:
         samples = duration*sample_rate
+    np.random.seed(samples+db+sample_rate) # Seed using inputs
     x = np.random.normal(size=(samples,))
     factor = np.power(10, db / 20.0)
     y = x * factor
@@ -104,7 +105,7 @@ def get_noise(duration=None, samples=None, db=0,
 
 
 def get_band_limited_noise(min_freq, max_freq, duration=None, samples=None,
-                           sample_rate=16000.0):
+                           sample_rate=16000.0, db=0):
     """ Generates white noise band-limited between the min/max frequencies.
     The noise is normally distributed in the time domain."""
     if duration:
@@ -113,14 +114,23 @@ def get_band_limited_noise(min_freq, max_freq, duration=None, samples=None,
     max_i = int(samples * max_freq / sample_rate)
     min_i = int(samples * min_freq / sample_rate)
     # Generate band-limited noise
-    noise = get_noise(duration)
+    noise = np.array([])
+    if duration:
+        noise = get_noise(duration=duration)
+    elif samples:
+        noise = get_noise(samples=samples)
+    else:
+        print "Error: must provide duration or samples"
+        return noise
     Noise = np.fft.rfft(noise)
     Noise[:min_i] = 0
     Noise[max_i:] = 0
     noise = np.fft.irfft(Noise)
     # Normalise to be within [-1, 1] range
     normalised_noise = noise / np.max(np.abs(noise))
-    return normalised_noise
+    factor = np.power(10, db / 20.0)
+    attenuated_noise = normalised_noise * factor
+    return attenuated_noise
 
 
 def get_h(h_type='short', normalise=True):
@@ -144,7 +154,7 @@ def get_h(h_type='short', normalise=True):
     raise Exception("H type '%s' not valid" % h_type)
 
 
-def get_sine(duration, frequencies, amplitudes=None, phases=None, 
+def get_sine(duration, frequencies, amplitudes=None, phases=None,
         sample_rate=DEFAULT_SAMPLE_RATE, rshift=0):
     """ Generates a signal containing one or more sine waves of constant
     frequency.
@@ -238,7 +248,7 @@ def get_headroom_divisor(data, headroom):
     return divisor
 
 
-def write_data(data, filename, sample_rate=DEFAULT_SAMPLE_RATE, dtype=np.int32, 
+def write_data(data, filename, sample_rate=DEFAULT_SAMPLE_RATE, dtype=np.int32,
                rshift=0):
     """ Writes array data in the range [-1, 1] to a wav file of arbitrary
     data type."""
@@ -274,4 +284,3 @@ def write_audio(test_class, echo_type, ref_type, headroom, AudioIn, AudioRef,
                sample_rate, dtype)
     write_data(AudioRef, os.path.join(audio_dir, ref_filename + ".wav"),
                sample_rate, dtype)
-
