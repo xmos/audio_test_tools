@@ -7,6 +7,14 @@
 #include <xclib.h>
 #include <math.h>
 
+int att_is_double_word_aligned(int * p){
+    if((int)p&7){
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
 int32_t att_random_int32(unsigned &r){
     crc32(r, -1, CRC_POLY);
     return (int32_t)r;
@@ -292,6 +300,66 @@ void att_print_python_uint64(uint64_t * d, size_t length, int d_exp){
         printf("%.22f, ", att_uint64_to_double( d[i], d_exp));
     printf("])\n");
 }
+
+void att_make_1d_name(char name[], unsigned i){
+    sprintf (name, "%s[%u]", name, i);
+}
+
+void att_make_2d_name(char name[], unsigned i, unsigned j){
+    sprintf (name, "%s[%u][%u]", name, i, j);
+}
+
+void att_make_3d_name(char name[], unsigned i, unsigned j, unsigned k){
+    sprintf (name, "%s[%u][%u][%u]", name, i, j, k);
+}
+
+void att_trace_new_frame(unsigned &frame_no){
+    printf("### Frame %u ###\n", frame_no);
+    frame_no++;
+}
+
+void att_trace_complex_td(char name[], dsp_complex_t * d, int exponent, unsigned length, int print_imag){
+    printf("%s = ldexp([", name);
+    for(unsigned i=0;i<length;i++)
+        printf("%d, ", (d[i], int32_t[2])[print_imag]);
+    printf("], %d)\n", exponent);
+}
+
+void att_trace_complex_fd(char name[], dsp_complex_t * d, int exponent, unsigned length){
+    printf("%s = ldexp([%d, ", name, d[0].re);
+    for(unsigned i=1;i<length;i++){
+        printf("%d+%dj, ", d[i].re, d[i].im);
+    }
+    printf("%d], %d)\n", d[0].im, exponent);
+}
+
+void att_trace_uint64(char name[], uint64_t *d, int exponent, unsigned length){
+    printf("%s = ldexp([ ", name);
+    for(unsigned i=0;i<length;i++)
+        printf("%llu, ", d[i]);
+    printf("], %d)\n", exponent);
+}
+void att_trace_int64(char name[], int64_t *d, int exponent, unsigned length){
+    printf("%s = ldexp([ ", name);
+    for(unsigned i=0;i<length;i++)
+        printf("%lld, ", d[i]);
+    printf("], %d)\n", exponent);
+}
+
+
+void att_trace_uint32(char name[], uint32_t *d, int exponent, unsigned length){
+    printf("%s = ldexp([ ", name);
+    for(unsigned i=0;i<length;i++)
+        printf("%u, ", d[i]);
+    printf("], %d)\n", exponent);
+}
+void att_trace_int32(char name[], int32_t *d, int exponent, unsigned length){
+    printf("%s = ldexp([ ", name);
+    for(unsigned i=0;i<length;i++)
+        printf("%d, ", d[i]);
+    printf("], %d)\n", exponent);
+}
+
 
 /*
  * This partitions a space (0 to space_to_divide-1) into array_length chunks. Chunks may be zero length.
