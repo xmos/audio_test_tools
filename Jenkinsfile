@@ -4,7 +4,7 @@ pipeline {
   }
   environment {
     VIEW = 'hydra'
-    REPO = 'audio_test_tools'
+    REPO = 'lib_audio_test_tools'
   }
   options {
     skipDefaultCheckout()

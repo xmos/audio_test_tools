@@ -10,7 +10,7 @@ def build(bld):
 	bld.env.TARGET_ARCH = 'XCORE-200-EXPLORER'
 	bld.env.XSCOPE = bld.path.find_resource('config.xscope')
 
-	depends_on = ['audio_test_tools', 'lib_voice_toolbox']
+	depends_on = ['lib_audio_test_tools', 'lib_voice_toolbox']
 	bld.env.XCC_FLAGS = ['-O2', '-g', '-Wall', '-fcmdline-buffer-bytes=2048', '-report']
 	source = bld.path.ant_glob('src/**/*.xc')
 	bld.program(source=source, depends_on=depends_on,target=target_path)
