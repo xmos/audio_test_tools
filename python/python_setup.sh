@@ -1,2 +1,2 @@
 #!/bin/bash
-export PYTHONPATH=`pwd`:`dirname $BASH_SOURCE`:`dirname $BASH_SOURCE`/../../lib_vad/python:`dirname $BASH_SOURCE`/../../lib_aec/python:`dirname $BASH_SOURCE`/../../lib_beamsteering/python:`dirname $BASH_SOURCE`/../../lib_interference_canceller/python:`dirname $BASH_SOURCE`/../../lib_noise_suppression/python:`dirname $BASH_SOURCE`/../../lib_agc/python:$PYTHONPATH
+export PYTHONPATH=`pwd`:$XMOS_ROOT/audio_test_tools/python:$XMOS_ROOT/lib_vad/python:$XMOS_ROOT/lib_aec/python:$XMOS_ROOT/lib_beamsteering/python:$XMOS_ROOT/lib_interference_canceller/python:$XMOS_ROOT/lib_noise_suppression/python:$XMOS_ROOT/lib_agc/python:$PYTHONPATH
