@@ -15,7 +15,11 @@ typedef struct  {
 #define CRC_POLY (0xEB31D82E)
 #define ATT_WAV_HEADER_BYTES 44
 
-
+/*
+ * return non-zero when f is double word aligned
+ * return zero otherwise.
+ */
+int att_is_double_word_aligned(int * f);
 
 
 #ifdef __process_wav_conf_h_exists__
@@ -147,7 +151,6 @@ void att_print_int_python_int64(int64_t * d, size_t length);
 void att_print_int_python_uint64(uint64_t * d, size_t length);
 
 
-
 void att_print_python_fd(dsp_complex_t * d, size_t length, int d_exp);
 void att_print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_imag);
 void att_print_python_int32(int32_t * d, size_t length, int d_exp);
@@ -156,6 +159,23 @@ void att_print_python_int64(int64_t * d, size_t length, int d_exp);
 void att_print_python_uint64(uint64_t * d, size_t length, int d_exp);
 void att_print_python_fd_fp(dsp_complex_fp * d, size_t length);
 void att_print_python_td_fp(dsp_complex_fp * d, size_t length, int print_imag);
+
+/*
+ * DSP tracers
+ */
+#define ATT_FRAME_NUMBER_INIT (-1)
+void att_trace_new_frame(unsigned & frame_number);
+void att_trace_complex_fd(char name[], dsp_complex_t * d, int exponent, unsigned length);
+void att_trace_complex_td(char name[], dsp_complex_t * d, int exponent, unsigned length, int print_imag);
+
+void att_trace_uint32(char name[], uint32_t *d, int exponent, unsigned length);
+void att_trace_int32(char name[], int32_t *d, int exponent, unsigned length);
+void att_trace_uint64(char name[], uint64_t *d, int exponent, unsigned length);
+void att_trace_int64(char name[], int64_t *d, int exponent, unsigned length);
+
+void att_make_1d_name(char name[], unsigned i);
+void att_make_2d_name(char name[], unsigned i, unsigned j);
+void att_make_3d_name(char name[], unsigned i, unsigned j, unsigned k);
 
 /*
  * Thread burning
