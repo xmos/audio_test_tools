@@ -167,21 +167,32 @@ def output_multiple_tdoa_graphs(multiple_gcc_results, filename, max_spread = 2.0
         plt.legend()
         plt.xlabel('frame number')
         plt.ylabel('TDOA (samples)')
-    plt.savefig(filename, dpi=100)  
+    plt.savefig(filename, dpi=100)
     return
 
 def get_erle(in_filename, out_filename, step_size, ch_number):
+    """Returns the ERLE values of the given output/input wav files
+
+    Args:
+        in_filename : input wav file
+        out_filename : output wav file
+        step_size : length in samples of the EWM span
+        ch_number : channel of the wav files to analyse
+
+    Returns:
+        list of ERLE for each step_size
+    """
     in_rate, in_wav_file = scipy.io.wavfile.read(in_filename)
     out_rate, out_wav_file = scipy.io.wavfile.read(out_filename)
 
     in_wav_data, in_channel_count, in_file_length = parse_audio(in_wav_file)
     out_wav_data, out_channel_count, out_file_length = parse_audio(out_wav_file)
 
-    in_data_trimmed = np.trim_zeros(in_wav_data[ch_number,:], trim='f')
-    out_data_trimmed = np.trim_zeros(out_wav_data[ch_number,:], trim='f')
+    in_data_trimmed = np.trim_zeros(in_wav_data[ch_number, :], trim='f')
+    out_data_trimmed = np.trim_zeros(out_wav_data[ch_number, :], trim='f')
 
     sample_count = min(len(in_data_trimmed), len(out_data_trimmed))
-    erle = []
+    erles = []
     for index in range(0, sample_count-step_size, step_size):
         # Calculate EWM of audio power in 1s window
         in_power = np.power(in_data_trimmed[index:index+step_size], 2)
@@ -192,10 +203,9 @@ def get_erle(in_filename, out_filename, step_size, ch_number):
         # Get sum of average power
         in_power_sum = 0
         out_power_sum = 0
-        for i in range(len(out_power_ewm)):
-            in_power_sum += in_power_ewm[i]
-            out_power_sum += out_power_ewm[i]
+        for in_val, out_val in zip(in_power_ewm, out_power_ewm):
+            in_power_sum += in_val
+            out_power_sum += out_val
         next_erle = 10 * np.log10(in_power_sum/out_power_sum) if out_power_sum != 0 else 1000000
-        erle.append(next_erle)
-
-    return erle
+        erles.append(next_erle)
+    return erles

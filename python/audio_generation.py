@@ -81,8 +81,18 @@ def get_rt60(duration_ms, delay_ms=12, sample_rate=DEFAULT_SAMPLE_RATE):
 def echo_filter(duration_ms, amplitude, delay_ms,
                 system_delay_samples=SYSTEM_DELAY_SAMPLES,
                 sample_rate=DEFAULT_SAMPLE_RATE):
-    """ Generates an echo impulse response.
-    Duration is in milliseconds."""
+    """ Generates an echo impulse response
+
+    Args:
+        duration_ms: total length in milliseconds of the impulse response
+        amplitude: amplitude of the echo impulse: max value 1.0
+        delay_ms: delay in millisecond of the echo impulse
+        system_delay_samples: system delay in samples
+        samples_rate: audio sample rate
+
+    Returns:
+        Impulse response of the echo
+    """
     echo_delay_samples = int(sample_rate * delay_ms / 1000)
     signal = np.zeros((sample_rate * duration_ms / 1000, ))
     assert(system_delay_samples+echo_delay_samples < duration_ms*sample_rate/1000)
@@ -136,7 +146,15 @@ def get_band_limited_noise(min_freq, max_freq, duration=None, samples=None,
 
 
 def get_h(h_type='short', normalise=True):
-    """ Generates a transfer function """
+    """ Generates a transfer function 
+
+    Args:
+        h_type: type of echo
+        normalise: normalise values
+
+    Returns:
+        Impulse response
+    """
     if h_type == 'short':
         h = echo_filter(200, 0.7, 40)
     elif h_type == 'long':
