@@ -1,4 +1,4 @@
-# Copyright (c) 2018, XMOS Ltd, All rights reserved
+# Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
 import os
 import os.path
 import scipy.signal
@@ -6,7 +6,7 @@ import scipy.io.wavfile
 import numpy as np
 
 DEFAULT_SAMPLE_RATE = 16000
-SYSTEM_DELAY_SAMPLES = 40
+SYSTEM_DELAY_SAMPLES = 40#+16*140
 
 
 def get_magnitude(freq, X, Fs, tolerance_hz, normalise=False):
@@ -79,13 +79,15 @@ def get_rt60(duration_ms, delay_ms=12, sample_rate=DEFAULT_SAMPLE_RATE):
 
 
 def echo_filter(duration_ms, amplitude, delay_ms,
+                system_delay_samples=SYSTEM_DELAY_SAMPLES,
                 sample_rate=DEFAULT_SAMPLE_RATE):
     """ Generates an echo impulse response.
     Duration is in milliseconds."""
-    delay = int(sample_rate * delay_ms / 1000)
+    echo_delay_samples = int(sample_rate * delay_ms / 1000)
     signal = np.zeros((sample_rate * duration_ms / 1000, ))
-    signal[SYSTEM_DELAY_SAMPLES] = 1
-    signal[delay] = amplitude
+    assert(system_delay_samples+echo_delay_samples < duration_ms*sample_rate/1000)
+    signal[system_delay_samples] = 1
+    signal[system_delay_samples + echo_delay_samples] = amplitude
     return signal
 
 
@@ -143,6 +145,8 @@ def get_h(h_type='short', normalise=True):
         h = echo_filter(200, 0.7, 190)
     elif h_type == 'decaying':
         h = reverb_filter(190, -0.9, 12)
+    elif h_type == 'delayed':
+        h = echo_filter(250, 0.7, 50, system_delay_samples=40+140*16)
     elif h_type == 'random':
         h = np.random.normal(size=(200,))
     else:
