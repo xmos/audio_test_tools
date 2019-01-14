@@ -6,7 +6,7 @@ import scipy.io.wavfile
 import numpy as np
 
 DEFAULT_SAMPLE_RATE = 16000
-SYSTEM_DELAY_SAMPLES = 40#+16*140
+SYSTEM_DELAY_SAMPLES = 40
 
 
 def get_magnitude(freq, X, Fs, tolerance_hz, normalise=False):
