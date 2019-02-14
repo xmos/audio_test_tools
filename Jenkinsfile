@@ -15,11 +15,6 @@ pipeline {
         prepareAppsSandbox("${VIEW}", "${REPO}")
       }
     }
-    stage('Library checks') {
-      steps {
-        xcoreLibraryChecks("${REPO}")
-      }
-    }
     stage('test_parse_wav_header') {
       steps {
         viewEnv() {
