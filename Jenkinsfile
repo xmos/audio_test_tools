@@ -3,7 +3,7 @@ pipeline {
     label 'x86&&macOS&&Apps'
   }
   environment {
-    VIEW = 'hydra'
+    VIEW = 'audio_test_tools'
     REPO = 'audio_test_tools'
   }
   options {
@@ -13,6 +13,11 @@ pipeline {
     stage('Get view') {
       steps {
         prepareAppsSandbox("${VIEW}", "${REPO}")
+      }
+    }
+    stage('Library checks') {
+      steps {
+        xcoreLibraryChecks("${REPO}")
       }
     }
     stage('test_parse_wav_header') {
