@@ -3,7 +3,7 @@ pipeline {
     label 'x86&&macOS&&Apps'
   }
   environment {
-    VIEW = 'hydra'
+    VIEW = 'audio_test_tools_master'
     REPO = 'audio_test_tools'
   }
   options {
