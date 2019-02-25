@@ -6,6 +6,12 @@ Audio test tools change log
 
   * Added function to limit the number of bits represented by a complex array
 
+1.0.3
+-----
+
+  * ADDED: get_erle() function, moved from lib_audio_pipelines
+  * ADDED: generation of delayed echo function
+
 1.0.2
 -----
 
@@ -15,5 +21,3 @@ Audio test tools change log
 -----
 
   * Initial version
-
-
