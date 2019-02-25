@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#ifdef _VOICE_TOOLBOX_H_
 #include "voice_toolbox.h"
 #include "audio_test_tools.h"
 
@@ -176,4 +177,4 @@ void att_process_wav(chanend app_to_ic, chanend ic_to_app, chanend ?c_comms){
     _Exit(1);
 #endif
 }
-
+#endif
