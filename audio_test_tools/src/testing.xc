@@ -375,3 +375,20 @@ void att_divide_array(unsigned * array, unsigned array_length, unsigned space_to
     if(use_all_space)
         array[array_length-1] = space_to_divide - base;
 }
+
+
+void att_limit_bits(dsp_complex_t * a, unsigned length, unsigned bits){
+
+    if(bits >= 32)
+        return;
+
+    unsigned hr = dsp_bfp_cls(a, length)-1;
+    int mask = bitrev((1<<bits)-1);
+
+    mask >>= hr;
+
+    for(unsigned i=0;i<length;i++){
+        a[i].re &= mask;
+        a[i].im &= mask;
+    }
+}

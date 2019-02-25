@@ -189,4 +189,7 @@ void att_burn_thread_div();
  */
 void att_divide_array(unsigned * array, unsigned array_length, unsigned space_to_divide, int use_all_space, unsigned &r);
 
+//Limit the number of significant bit of information in a complex array.
+void att_limit_bits(dsp_complex_t * a, unsigned length, unsigned bits);
+
 #endif /* AUDIO_TEST_TOOLS_H_ */
