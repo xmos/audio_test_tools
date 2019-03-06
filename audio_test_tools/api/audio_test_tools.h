@@ -109,6 +109,8 @@ void att_merge_spectra  ( dsp_complex_fp pts[], const uint32_t N );
 /*
  * Random number generation
  */
+int16_t  att_random_int16(unsigned &r);
+uint16_t att_random_uint16(unsigned &r);
 int32_t  att_random_int32(unsigned &r);
 uint32_t att_random_uint32(unsigned &r);
 int64_t  att_random_int64(unsigned &r);
@@ -117,15 +119,20 @@ uint64_t att_random_uint64(unsigned &r);
 /*
  * Type conversion
  */
-double att_int64_to_double(int64_t x, int x_exp);
-double att_uint64_to_double(uint64_t x, int x_exp);
+double att_int16_to_double(int16_t x, int x_exp);
+double att_uint16_to_double(uint16_t x, int x_exp);
 double att_int32_to_double(int32_t x, int x_exp);
 double att_uint32_to_double(uint32_t x, int x_exp);
+double att_int64_to_double(int64_t x, int x_exp);
+double att_uint64_to_double(uint64_t x, int x_exp);
+int16_t att_double_to_int16(double d, const int d_exp);
+uint16_t att_double_to_uint16(double d, const int d_exp);
 int32_t att_double_to_int32(double d, const int d_exp);
 uint32_t att_double_to_uint32(double d, const int d_exp);
 int64_t att_double_to_int64(double d, const int d_exp);
 uint64_t att_double_to_uint64(double d, const int d_exp);
 
+dsp_complex_fp att_complex_int16_to_double(dsp_complex_short_t x, int x_exp);
 dsp_complex_fp att_complex_int32_to_double(dsp_complex_t x, int x_exp);
 
 q8_24 att_uint32_to_q24(uint32_t v, int v_exp);
@@ -133,6 +140,9 @@ q8_24 att_uint32_to_q24(uint32_t v, int v_exp);
 /*
  * Float/Fixed vector comparision
  */
+unsigned att_bfp_vector_complex_short(dsp_complex_short_t * B, int B_exp, dsp_complex_fp * f, size_t start, size_t count);
+unsigned att_bfp_vector_uint16(uint16_t * B, int B_exp, double * f, size_t start, size_t count);
+unsigned att_bfp_vector_int16(int16_t * B, int B_exp, double * f, size_t start, size_t count);
 unsigned att_bfp_vector_complex(dsp_complex_t * B, int B_exp, dsp_complex_fp * f, size_t start, size_t count);
 unsigned att_bfp_vector_uint32(uint32_t * B, int B_exp, double * f, size_t start, size_t count);
 unsigned att_bfp_vector_int32(int32_t * B, int B_exp, double * f, size_t start, size_t count);
@@ -151,8 +161,12 @@ void att_print_int_python_int64(int64_t * d, size_t length);
 void att_print_int_python_uint64(uint64_t * d, size_t length);
 
 
+void att_print_python_fd_shortd(dsp_complex_short_t * d, size_t length, int d_exp);
+void att_print_python_td_short(dsp_complex_short_t * d, size_t length, int d_exp, int print_imag);
 void att_print_python_fd(dsp_complex_t * d, size_t length, int d_exp);
 void att_print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_imag);
+void att_print_python_int16(int16_t * d, size_t length, int d_exp);
+void att_print_python_uint16(uint16_t * d, size_t length, int d_exp);
 void att_print_python_int32(int32_t * d, size_t length, int d_exp);
 void att_print_python_uint32(uint32_t * d, size_t length, int d_exp);
 void att_print_python_int64(int64_t * d, size_t length, int d_exp);
@@ -165,9 +179,13 @@ void att_print_python_td_fp(dsp_complex_fp * d, size_t length, int print_imag);
  */
 #define ATT_FRAME_NUMBER_INIT (-1)
 void att_trace_new_frame(unsigned & frame_number);
+void att_trace_complex_fd_short(char name[], dsp_complex_short_t * d, int exponent, unsigned length);
+void att_trace_complex_td_short(char name[], dsp_complex_short_t * d, int exponent, unsigned length, int print_imag);
 void att_trace_complex_fd(char name[], dsp_complex_t * d, int exponent, unsigned length);
 void att_trace_complex_td(char name[], dsp_complex_t * d, int exponent, unsigned length, int print_imag);
 
+void att_trace_uint16(char name[], uint16_t *d, int exponent, unsigned length);
+void att_trace_int16(char name[], int16_t *d, int exponent, unsigned length);
 void att_trace_uint32(char name[], uint32_t *d, int exponent, unsigned length);
 void att_trace_int32(char name[], int32_t *d, int exponent, unsigned length);
 void att_trace_uint64(char name[], uint64_t *d, int exponent, unsigned length);
