@@ -165,8 +165,8 @@ void att_print_python_fd_shortd(dsp_complex_short_t * d, size_t length, int d_ex
 void att_print_python_td_short(dsp_complex_short_t * d, size_t length, int d_exp, int print_imag);
 void att_print_python_fd(dsp_complex_t * d, size_t length, int d_exp);
 void att_print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_imag);
-void att_print_python_int16(int32_t * d, size_t length, int d_exp);
-void att_print_python_uint16(uint32_t * d, size_t length, int d_exp);
+void att_print_python_int16(int16_t * d, size_t length, int d_exp);
+void att_print_python_uint16(uint16_t * d, size_t length, int d_exp);
 void att_print_python_int32(int32_t * d, size_t length, int d_exp);
 void att_print_python_uint32(uint32_t * d, size_t length, int d_exp);
 void att_print_python_int64(int64_t * d, size_t length, int d_exp);
