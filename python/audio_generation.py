@@ -100,7 +100,9 @@ def get_noise(duration=None, samples=None, db=0,
     if duration:
         samples = duration*sample_rate
     if seed is None:
-        np.random.seed(samples+db+sample_rate) # Seed using inputs
+        # Seed using inputs
+        seed = (hash(str(samples)) + hash(str(db)) + hash(str(sample_rate))) % 2**32
+    np.random.seed(seed)
     x = np.random.normal(size=(samples,))
     factor = np.power(10, db / 20.0)
     y = x * factor
