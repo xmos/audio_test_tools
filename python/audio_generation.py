@@ -92,14 +92,17 @@ def echo_filter(duration_ms, amplitude, delay_ms,
 
 
 def get_noise(duration=None, samples=None, db=0,
-              sample_rate=DEFAULT_SAMPLE_RATE):
+              sample_rate=DEFAULT_SAMPLE_RATE, seed=None):
     """ Generates white noise, useful for generating background noise.
     Set dB to a large negative value (e.g. -150) to generate background
     noise.
     Either specify a duration in seconds, or number of samples."""
     if duration:
         samples = duration*sample_rate
-    np.random.seed(samples+db+sample_rate) # Seed using inputs
+    if seed is None:
+        # Seed using inputs
+        seed = (hash(str(samples)) + hash(str(db)) + hash(str(sample_rate))) % 2**32
+    np.random.seed(seed)
     x = np.random.normal(size=(samples,))
     factor = np.power(10, db / 20.0)
     y = x * factor
