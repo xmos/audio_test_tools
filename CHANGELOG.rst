@@ -1,6 +1,12 @@
 Audio test tools change log
 ===========================
 
+1.2.0
+-----
+
+  * ADDED: seed parameter to audio_generation.get_noise function
+  * FIXED: audio_utils.convert_to_32_bit not checking if data is already int32
+
 1.1.0
 -----
 

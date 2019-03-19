@@ -115,6 +115,8 @@ def parse_audio(wav_file):
 
 
 def convert_to_32_bit(wav_data):
+    if wav_data.dtype == np.int32:
+        return wav_data
     output_32bit = np.asarray(wav_data*np.iinfo(np.int32).max, dtype=np.int32)
     return  output_32bit
 
