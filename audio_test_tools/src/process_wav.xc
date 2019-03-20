@@ -33,7 +33,7 @@ void att_pw_play_until_sample_passes(chanend c_comms, long sample){
     c_comms <: sample;
 }
 
-void att_process_wav(chanend app_to_ic, chanend ?ic_to_app, chanend ?c_comms){
+void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_comms){
 
 #ifdef __process_wav_conf_h_exists__
 
@@ -80,7 +80,7 @@ void att_process_wav(chanend app_to_ic, chanend ?ic_to_app, chanend ?c_comms){
 #define DSP_TO_APP_STATE VTB_RX_STATE_UINT64_SIZE(ATT_PW_OUTPUT_CHANNEL_PAIRS*2, ATT_PW_PROC_FRAME_LENGTH, ATT_PW_FRAME_ADVANCE, 0)
     uint64_t rx_state[DSP_TO_APP_STATE];
 
-    if (!isnull(ic_to_app)) {
+    if (!isnull(c_dsp_to_app)) {
         output_file = open( output_file_name , O_WRONLY|O_CREAT, 0644 );
 
         att_wav_form_header(output_header_struct,
@@ -127,7 +127,7 @@ void att_process_wav(chanend app_to_ic, chanend ?ic_to_app, chanend ?c_comms){
                         c_comms :> waiting_for_time;
                         break;
                     case ATT_PW_STOP:
-                        if (!isnull(ic_to_app)) {
+                        if (!isnull(c_dsp_to_app)) {
                             //TODO patch the header
                             close(output_file);
                         }
@@ -157,13 +157,13 @@ void att_process_wav(chanend app_to_ic, chanend ?ic_to_app, chanend ?c_comms){
             }
         }
 
-        vtb_tx_pairs(app_to_ic, (frame, dsp_complex_t[]), ATT_PW_INPUT_CHANNEL_PAIRS*2, ATT_PW_FRAME_ADVANCE);
+        vtb_tx_pairs(c_app_to_dsp, (frame, dsp_complex_t[]), ATT_PW_INPUT_CHANNEL_PAIRS*2, ATT_PW_FRAME_ADVANCE);
 
-        if (!isnull(ic_to_app)) {
+        if (!isnull(c_dsp_to_app)) {
             dsp_complex_t [[aligned(8)]] processed_frame[ATT_PW_OUTPUT_CHANNEL_PAIRS][ATT_PW_PROC_FRAME_LENGTH];
             memset(processed_frame, 0, sizeof(processed_frame));
 
-            vtb_rx_pairs(ic_to_app, rx_state, (processed_frame, dsp_complex_t[]));
+            vtb_rx_pairs(c_dsp_to_app, rx_state, (processed_frame, dsp_complex_t[]));
 
             for (unsigned ch=0;ch<ATT_PW_OUTPUT_CHANNELS;ch++){
                 for(unsigned i=0;i<ATT_PW_FRAME_ADVANCE;i++){
@@ -178,7 +178,7 @@ void att_process_wav(chanend app_to_ic, chanend ?ic_to_app, chanend ?c_comms){
             input_read_buffer[i] = input_read_buffer[i + ATT_PW_FRAME_ADVANCE*ATT_PW_INPUT_CHANNELS];
         }
     }
-    if (!isnull(ic_to_app)) {
+    if (!isnull(c_dsp_to_app)) {
         close(output_file);
     }
 #else
