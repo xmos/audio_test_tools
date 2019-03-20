@@ -52,7 +52,7 @@ void att_pw_play_until_sample_passes(chanend c_comms, long sample);
  *  - att_pw_stop
  *          This will stop the wav playing and finish the task.
  */
-void att_process_wav(chanend app_to_ic, chanend ic_to_app, chanend ?c_comms);
+void att_process_wav(chanend app_to_ic, chanend ?ic_to_app, chanend ?c_comms);
 
 
 /*
