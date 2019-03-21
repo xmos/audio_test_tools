@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+1.2.1
+-----
+
+  * CHANGED: att_process_wav output wav is now optional
+
 1.2.0
 -----
 
