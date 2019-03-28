@@ -101,7 +101,7 @@ def parse_audio(wav_file):
     elif data_type == np.uint8:
         max_val = np.iinfo(np.uint8).max
         min_val = np.iinfo(np.uint8).min
-        mid = (max_val - min_val)/2 + 1
+        mid = (max_val - min_val)//2 + 1
         wav_data = (wav_data.astype(dtype=np.float64) - mid)/float(max_val-mid)
     elif data_type == np.float32:
         wav_data = wav_data.astype(dtype=np.float64)
@@ -197,7 +197,7 @@ def get_erle(in_filename, out_filename, step_size, ch_number):
         for i in range(len(out_power_ewm)):
             in_power_sum += in_power_ewm[i]
             out_power_sum += out_power_ewm[i]
-        next_erle = 10 * np.log10(in_power_sum/out_power_sum) if out_power_sum != 0 else 1000000
+        next_erle = 10 * np.log10(in_power_sum//out_power_sum) if out_power_sum != 0 else 1000000
         erle.append(next_erle)
 
     return erle
