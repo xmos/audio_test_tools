@@ -3,7 +3,7 @@ pipeline {
     label 'x86&&macOS&&Apps'
   }
   environment {
-    VIEW = 'lib_audio_pipelines_vtb_v500'
+    VIEW = 'audio_test_tools_vtb_v500'
     REPO = 'audio_test_tools'
   }
   options {
