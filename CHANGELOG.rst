@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+1.3.0
+-----
+
+  * CHANGED: Updated lib_voice_toolbox dependency to v5.0.0
+
 1.2.1
 -----
 
