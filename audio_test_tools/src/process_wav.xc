@@ -158,7 +158,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
         }
 
         vtb_md_t metadata;
-        vtb_tx_notify_and_data(c_app_to_dsp, (frame, vtb_ch_pair_t[]),
+        vtb_tx_notification_and_data(c_app_to_dsp, (frame, vtb_ch_pair_t[]),
                                ATT_PW_INPUT_CHANNEL_PAIRS*2, ATT_PW_FRAME_ADVANCE,
                                metadata);
 
