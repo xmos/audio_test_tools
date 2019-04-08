@@ -1,5 +1,5 @@
 MODULE_XCC_XC_FLAGS = $(XCC_XC_FLAGS)
 
-DEPENDENT_MODULES = lib_dsp
+DEPENDENT_MODULES = lib_dsp(>=4.1.0) lib_voice_toolbox(>=5.0.0)
 
-VERSION = 1.2.1
+VERSION = 1.3.0
