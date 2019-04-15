@@ -146,7 +146,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
         read (input_file, (char*)&input_read_buffer[0],
                 input_bytes_per_frame * ATT_PW_FRAME_ADVANCE);
 
-        dsp_complex_t [[aligned(8)]] frame[ATT_PW_INPUT_CHANNELS][ATT_PW_FRAME_ADVANCE];
+        vtb_ch_pair_t [[aligned(8)]] frame[ATT_PW_INPUT_CHANNELS][ATT_PW_FRAME_ADVANCE];
         memset(frame, 0, sizeof(frame));
 
         for(unsigned f=0; f<ATT_PW_FRAME_ADVANCE; f++){
@@ -157,13 +157,16 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
             }
         }
 
-        vtb_tx_pairs(c_app_to_dsp, (frame, dsp_complex_t[]), ATT_PW_INPUT_CHANNEL_PAIRS*2, ATT_PW_FRAME_ADVANCE);
+        vtb_md_t metadata;
+        vtb_tx_notification_and_data(c_app_to_dsp, (frame, vtb_ch_pair_t[]),
+                               ATT_PW_INPUT_CHANNEL_PAIRS*2, ATT_PW_FRAME_ADVANCE,
+                               metadata);
 
         if (!isnull(c_dsp_to_app)) {
-            dsp_complex_t [[aligned(8)]] processed_frame[ATT_PW_OUTPUT_CHANNEL_PAIRS][ATT_PW_PROC_FRAME_LENGTH];
+            vtb_ch_pair_t [[aligned(8)]] processed_frame[ATT_PW_OUTPUT_CHANNEL_PAIRS][ATT_PW_PROC_FRAME_LENGTH];
             memset(processed_frame, 0, sizeof(processed_frame));
 
-            vtb_rx_pairs(c_dsp_to_app, rx_state, (processed_frame, dsp_complex_t[]));
+            vtb_rx_notification_and_data(c_dsp_to_app, rx_state, (processed_frame, vtb_ch_pair_t[]), metadata);
 
             for (unsigned ch=0;ch<ATT_PW_OUTPUT_CHANNELS;ch++){
                 for(unsigned i=0;i<ATT_PW_FRAME_ADVANCE;i++){
