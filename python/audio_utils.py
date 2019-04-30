@@ -6,7 +6,6 @@
 from __future__ import division
 from builtins import str
 from builtins import range
-from past.utils import old_div
 import numpy as np
 import scipy.io.wavfile
 import matplotlib.pyplot as plt
@@ -18,12 +17,12 @@ mic_d    = 0.043
 
 circular_mic_array = np.asarray(
         [  [0.0,     0.0,                0.0], 
-        [mic_d/2.0,   np.sin(old_div(np.pi,3))*mic_d,  0.0], 
+        [mic_d/2.0,   np.sin(np.pi/3)*mic_d,  0.0], 
         [mic_d,       0.0,                0.0], 
-        [mic_d/2.0,  -np.sin(old_div(np.pi,3))*mic_d,  0.0], 
-        [-mic_d/2.0,  -np.sin(old_div(np.pi,3))*mic_d, 0.0], 
+        [mic_d/2.0,  -np.sin(np.pi/3)*mic_d,  0.0], 
+        [-mic_d/2.0,  -np.sin(np.pi/3)*mic_d, 0.0], 
         [-mic_d,       0.0,                0.0], 
-        [-mic_d/2.0,   np.sin(old_div(np.pi,3))*mic_d,  0.0]]
+        [-mic_d/2.0,   np.sin(np.pi/3)*mic_d,  0.0]]
     )
 
 def distance_between_points(a, b):
@@ -64,7 +63,7 @@ def make_mvdr_matrices(f_bin_count, fft_length, channel_count, rate):
         freq = 2.0*np.pi*float(f_bin) / float(fft_length)  * float(rate)
         for i in range(channel_count):
             for j in range(channel_count):
-                v = np.sinc(old_div(freq*d(i, j),speed_of_sound))
+                v = np.sinc(freq*d(i, j)/speed_of_sound)
                 if i==j:
                     v += mu
                 W[f_bin][i][j] = v
@@ -104,7 +103,7 @@ def parse_audio(wav_file):
     elif data_type == np.uint8:
         max_val = np.iinfo(np.uint8).max
         min_val = np.iinfo(np.uint8).min
-        mid = old_div((max_val - min_val),2) + 1
+        mid = ((max_val - min_val) // 2) + 1
         wav_data = (wav_data.astype(dtype=np.float64) - mid)/float(max_val-mid)
     elif data_type == np.float32:
         wav_data = wav_data.astype(dtype=np.float64)
@@ -200,7 +199,7 @@ def get_erle(in_filename, out_filename, step_size, ch_number):
         for i in range(len(out_power_ewm)):
             in_power_sum += in_power_ewm[i]
             out_power_sum += out_power_ewm[i]
-        next_erle = 10 * np.log10(old_div(in_power_sum,out_power_sum)) if out_power_sum != 0 else 1000000
+        next_erle = 10 * np.log10(in_power_sum/out_power_sum) if out_power_sum != 0 else 1000000
         erle.append(next_erle)
 
     return erle

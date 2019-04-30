@@ -4,7 +4,6 @@
 from __future__ import division
 from builtins import str
 from builtins import range
-from past.utils import old_div
 import os
 import numpy as np
 import argparse
@@ -80,7 +79,7 @@ def decimate(x, q, n=None, ftype='iir', axis=-1, zero_phase=True):
     a = np.asarray(a)
 
     if a.size == 1:  # FIR case
-        b = old_div(b, a)
+        b = b / a
         if zero_phase:
             y = resample_poly(x, 1, q, axis=axis, window=b)
         else:
@@ -129,8 +128,8 @@ def up_down_ratio(input_rate, output_rate):
   i = int(input_rate)
   o = int(output_rate)
   d =  gcd(i, o)
-  i = old_div(i, d)
-  o = old_div(o, d)
+  i = i // d
+  o = o // d
   return o, i
 
 def get_prime_factors(input):
@@ -194,7 +193,7 @@ def pcm_to_pdm(in_wav_file, out_pdm_file, pdm_sample_rate, verbose = False):
     # Stability limit
     pdm_magnitude_stability_limit = 0.4 # This seems to be safe
 
-    output_length = int(old_div(nsamples*upsample_ratio,downsample_ratio))
+    output_length = int(nsamples*upsample_ratio / downsample_ratio)
 
     pdm_samples = np.zeros((8, output_length))
 
@@ -205,7 +204,7 @@ def pcm_to_pdm(in_wav_file, out_pdm_file, pdm_sample_rate, verbose = False):
       pcm = multi_channel_pcm[ch]
 
       # limit the max pcm input to 0.4 - for stability of the modulator
-      pcm = old_div(np.asarray(pcm, dtype=np.float64), pcm_full_scale)
+      pcm = np.asarray(pcm, dtype=np.float64) / pcm_full_scale
       max_abs_pcm = max(abs(pcm))
       max_abs_pcm_all_channels = max(max_abs_pcm, max_abs_pcm_all_channels)
       if max_abs_pcm >= pdm_magnitude_stability_limit:
@@ -241,7 +240,7 @@ def pcm_to_pdm(in_wav_file, out_pdm_file, pdm_sample_rate, verbose = False):
 
 def butter_highpass(cutoff, fs, order=5):
     nyq = 0.5 * fs
-    normal_cutoff = old_div(cutoff, nyq)
+    normal_cutoff = cutoff / nyq
     b, a = signal.butter(order, normal_cutoff, btype='high', analog=False)
     return b, a
 
@@ -264,7 +263,7 @@ def pdm_to_pcm(input_file, out_file, pdm_sample_rate, pcm_sample_rate,
 
     input_data = np.unpackbits(input_data)
 
-    multi_channel_pdm =  np.reshape(input_data, (old_div(len(input_data),8), -1)).T
+    multi_channel_pdm =  np.reshape(input_data, (len(input_data) // 8, -1)).T
 
     non_zero_channel = []
     if not preserve_all_channels:
@@ -293,7 +292,7 @@ def pdm_to_pcm(input_file, out_file, pdm_sample_rate, pcm_sample_rate,
       print "Upsample ratio: " + str(upsample_ratio)
       print "Downsample ratio: " + str(downsample_ratio)
 
-    pcm = np.zeros((nchannels, old_div(nsamples*upsample_ratio,downsample_ratio)), dtype=np.float64)
+    pcm = np.zeros((nchannels, (nsamples*upsample_ratio // downsample_ratio)), dtype=np.float64)
 
     factors = get_prime_factors(downsample_ratio)
 
