@@ -1,4 +1,8 @@
+from __future__ import division
 # Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import os
 import os.path
 import scipy.signal
@@ -11,8 +15,8 @@ SYSTEM_DELAY_SAMPLES = 40
 
 def get_magnitude(freq, X, Fs, tolerance_hz, normalise=False):
     X = np.abs(X)
-    i = 2 * freq * len(X) / Fs
-    tol_i = 2 * tolerance_hz * len(X) / Fs
+    i = old_div(2 * freq * len(X), Fs)
+    tol_i = old_div(2 * tolerance_hz * len(X), Fs)
     normalisation_factor = 1
     if normalise:
         normalisation_factor = 1.0 / len(X)
@@ -22,22 +26,22 @@ def get_magnitude(freq, X, Fs, tolerance_hz, normalise=False):
 def get_suppressed_magnitude(frequencies, X, Fs, tolerance_hz,
                              normalise=False, band_min=0, band_max=None):
     if not band_max:
-        band_max = Fs/2
+        band_max = old_div(Fs,2)
     X = np.abs(X)
-    tol_i = 2 * tolerance_hz * len(X) / Fs
-    min_i = 2 * band_min * len(X) / Fs
-    max_i = 2 * band_max * len(X) / Fs
+    tol_i = old_div(2 * tolerance_hz * len(X), Fs)
+    min_i = old_div(2 * band_min * len(X), Fs)
+    max_i = old_div(2 * band_max * len(X), Fs)
     X_nulled = np.array(X)
     X_nulled[:min_i] = 0
     X_nulled[max_i:] = 0
     for freq in frequencies:
-        i = 2 * freq * len(X) / Fs
+        i = old_div(2 * freq * len(X), Fs)
         X_nulled[i - tol_i:i + tol_i] = 0
     normalisation_factor = 1
     if normalise:
         normalisation_factor = 1.0 / len(X)
     return np.max(X_nulled) * normalisation_factor,\
-           np.argmax(X_nulled) / (2.0 * len(X) / Fs)
+           old_div(np.argmax(X_nulled), (2.0 * len(X) / Fs))
 
 
 def db(a, b):
@@ -49,12 +53,12 @@ def reverb_filter(duration_ms, amplitude, delay_ms,
     """ Generates the impulse response for a reverberation.
     The amplitude parameter should be < 1. Larger amplitude = longer reverb.
     Duration is in milliseconds."""
-    delay = int(sample_rate * delay_ms / 1000)
-    signal = np.zeros((sample_rate * duration_ms / 1000, ))
+    delay = int(old_div(sample_rate * delay_ms, 1000))
+    signal = np.zeros((old_div(sample_rate * duration_ms, 1000), ))
     signal[SYSTEM_DELAY_SAMPLES] = 1
-    for i in range(SYSTEM_DELAY_SAMPLES, sample_rate*duration_ms / 1000, delay):
+    for i in range(SYSTEM_DELAY_SAMPLES, old_div(sample_rate*duration_ms, 1000), delay):
         delay_i = i + delay
-        if delay_i >= sample_rate * duration_ms / 1000:
+        if delay_i >= old_div(sample_rate * duration_ms, 1000):
             break
         signal[delay_i] = signal[i] * amplitude
     return signal
@@ -70,9 +74,9 @@ def get_rt60(duration_ms, delay_ms=12, sample_rate=DEFAULT_SAMPLE_RATE):
         Impulse response of RT60
     """
     target = 1e-3 # -60dB
-    delay = int(sample_rate * delay_ms / 1000)
-    total_time = (sample_rate * duration_ms / 1000) - SYSTEM_DELAY_SAMPLES
-    n = total_time / delay
+    delay = int(old_div(sample_rate * delay_ms, 1000))
+    total_time = (old_div(sample_rate * duration_ms, 1000)) - SYSTEM_DELAY_SAMPLES
+    n = old_div(total_time, delay)
     amplitude = np.power(target, 1.0 / n)
     return reverb_filter(int(1.2 * duration_ms), -amplitude, delay_ms,
                          sample_rate)
@@ -83,9 +87,9 @@ def echo_filter(duration_ms, amplitude, delay_ms,
                 sample_rate=DEFAULT_SAMPLE_RATE):
     """ Generates an echo impulse response.
     Duration is in milliseconds."""
-    echo_delay_samples = int(sample_rate * delay_ms / 1000)
-    signal = np.zeros((sample_rate * duration_ms / 1000, ))
-    assert(system_delay_samples+echo_delay_samples < duration_ms*sample_rate/1000)
+    echo_delay_samples = int(old_div(sample_rate * delay_ms, 1000))
+    signal = np.zeros((old_div(sample_rate * duration_ms, 1000), ))
+    assert(system_delay_samples+echo_delay_samples < old_div(duration_ms*sample_rate,1000))
     signal[system_delay_samples] = 1
     signal[system_delay_samples + echo_delay_samples] = amplitude
     return signal
@@ -116,8 +120,8 @@ def get_band_limited_noise(min_freq, max_freq, duration=None, samples=None,
     if duration:
         samples = int(duration * sample_rate)
     # Generate random phase
-    max_i = int(samples * max_freq / sample_rate)
-    min_i = int(samples * min_freq / sample_rate)
+    max_i = int(old_div(samples * max_freq, sample_rate))
+    min_i = int(old_div(samples * min_freq, sample_rate))
     # Generate band-limited noise
     noise = np.array([])
     if duration:
@@ -132,7 +136,7 @@ def get_band_limited_noise(min_freq, max_freq, duration=None, samples=None,
     Noise[max_i:] = 0
     noise = np.fft.irfft(Noise)
     # Normalise to be within [-1, 1] range
-    normalised_noise = noise / np.max(np.abs(noise))
+    normalised_noise = old_div(noise, np.max(np.abs(noise)))
     factor = np.power(10, db / 20.0)
     attenuated_noise = normalised_noise * factor
     return attenuated_noise
@@ -156,7 +160,7 @@ def get_h(h_type='short', normalise=True):
         raise Exception("h_type invalid")
 
     if normalise:
-        h = h / np.sum(np.abs(h))
+        h = old_div(h, np.sum(np.abs(h)))
     return h
     raise Exception("H type '%s' not valid" % h_type)
 
@@ -185,7 +189,7 @@ def get_sine(duration, frequencies, amplitudes=None, phases=None,
     signal = np.zeros((int(duration * sample_rate),))
     for idx in range(len(frequencies)):
         signal += amplitudes[idx] * np.sin(frequencies[idx] * x + phases[idx])
-    return signal / (1<<rshift)
+    return old_div(signal, (1<<rshift))
 
 
 def get_near_end(duration, frequencies=[700], sample_rate=DEFAULT_SAMPLE_RATE,
@@ -206,8 +210,8 @@ def get_ref_discrete(duration, freq_a=1000, freq_b=2000, period=1,
     x = np.linspace(0, duration * 2 * np.pi, duration * sample_rate)
     y_1 = np.sin(freq_a * x)
     y_2 = np.sin(freq_b * x)
-    signal = np.sin(x / (period*2))**2 * y_1 + np.cos(x / (period*2))**2 * y_2
-    return signal / (1<<rshift)
+    signal = np.sin(old_div(x, (period*2)))**2 * y_1 + np.cos(old_div(x, (period*2)))**2 * y_2
+    return old_div(signal, (1<<rshift))
 
 
 def get_ref_continuous(duration, freq_a=500, freq_b=4000, period=0.2,
@@ -220,11 +224,11 @@ def get_ref_continuous(duration, freq_a=500, freq_b=4000, period=0.2,
     Duration is in seconds."""
     # Using a cumulative sum to avoid phase error when changing frequency
     x = np.linspace(0, duration * 2 * np.pi, duration * sample_rate)
-    f = np.sin(x/period)*(freq_b-freq_a)/2 + (freq_a+freq_b)/2
-    y = np.cumsum(f) / sample_rate * 2 * np.pi
+    f = old_div(np.sin(old_div(x,period))*(freq_b-freq_a),2) + old_div((freq_a+freq_b),2)
+    y = old_div(np.cumsum(f), sample_rate * 2 * np.pi)
     z = np.sin(y)
     signal = z
-    return signal / (1<<rshift)
+    return old_div(signal, (1<<rshift))
 
 
 def get_ref(duration, ref='continuous', sample_rate=DEFAULT_SAMPLE_RATE):
@@ -283,8 +287,8 @@ def write_audio(test_class, echo_type, ref_type, headroom, AudioIn, AudioRef,
         pass
     if adjust_headroom:
         divisor = get_headroom_divisor(AudioIn, headroom)
-        AudioIn = AudioIn / divisor
-        AudioRef = AudioRef / divisor
+        AudioIn = old_div(AudioIn, divisor)
+        AudioRef = old_div(AudioRef, divisor)
     in_filename, ref_filename, _ = get_filenames(test_class, echo_type,
                                                  ref_type, headroom)
     write_data(AudioIn, os.path.join(audio_dir, in_filename + ".wav"),

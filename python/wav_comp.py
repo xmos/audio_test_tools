@@ -1,3 +1,7 @@
+from __future__ import division
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import numpy as np
 import scipy.io.wavfile
 import matplotlib.pyplot as plt
@@ -40,7 +44,7 @@ if __name__ == "__main__":
     for ch in range(channel_count):
         xcorr = np.zeros(proc_frame_length*2 - 1)
 
-        for frame_start in range(0, file_length, proc_frame_length/2):
+        for frame_start in range(0, file_length, old_div(proc_frame_length,2)):
             if frame_start+proc_frame_length < file_length:
 
                 a_frame = a_wav_data[ch, frame_start:frame_start+proc_frame_length]
@@ -67,7 +71,7 @@ if __name__ == "__main__":
             a_end = file_length 
             b_end = file_length - abs(ch_a_ahead_of_ch_b)
 
-        rms_channel_diff = np.sqrt(np.sum((a_wav_data[ch, a_start:a_end] - b_wav_data[ch, b_start:b_end])**2)/(file_length - abs(ch_a_ahead_of_ch_b)))
+        rms_channel_diff = np.sqrt(old_div(np.sum((a_wav_data[ch, a_start:a_end] - b_wav_data[ch, b_start:b_end])**2),(file_length - abs(ch_a_ahead_of_ch_b))))
 
         if rms_channel_diff != 0 :
             print "Ch: " + str(ch) + ' Difference: ' + str(20.*np.log10(rms_channel_diff)) + ' dB'
