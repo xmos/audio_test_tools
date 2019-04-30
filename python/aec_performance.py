@@ -1,3 +1,5 @@
+# Copyright (c) 2019, XMOS Ltd, All rights reserved
+
 import numpy as np
 
 EPSILON = 1e-99
@@ -12,8 +14,8 @@ def get_misalignment(true_filter, estimated_filter):
     raise('This has not been tested!')
 
     delta = true_filter - estimated_filter
-    misalignment = 0 * np.log10(np.power(numpy.linalg.norm(delta, 2, 1), 2) / 
-                                np.power(numpy.linalg.norm(true_filter, 2, 1), 2))
+    misalignment = 0 * np.log10(np.power(np.linalg.norm(delta, 2, 1), 2) / 
+                                np.power(np.linalg.norm(true_filter, 2, 1), 2))
 
     return misalignment
 
