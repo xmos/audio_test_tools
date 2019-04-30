@@ -1,6 +1,5 @@
-
-# -*- coding: utf-8 -*-
 # Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
+# -*- coding: utf-8 -*-
 """
 @author: Andrew
 """

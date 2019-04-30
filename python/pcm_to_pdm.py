@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
 
 from __future__ import division
 from builtins import str
