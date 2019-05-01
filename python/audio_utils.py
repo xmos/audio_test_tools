@@ -4,6 +4,7 @@
 @author: Andrew
 """
 from __future__ import division
+from __future__ import print_function
 from builtins import str
 from builtins import range
 import numpy as np
@@ -50,7 +51,7 @@ def rotate_around_z_axis(p, theta):
 def print_phi(phi):
     for i in range(len(phi)):
         for j in range(len(phi[i])):
-            print('% .4f '%phi[i][j]),
+            print(('% .4f '%phi[i][j]), end=' ')
         print ('')
     print ('')
     print ('')

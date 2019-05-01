@@ -1,5 +1,6 @@
 # Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
 from __future__ import division
+from __future__ import print_function
 from builtins import str
 from builtins import range
 import os
@@ -128,7 +129,7 @@ def get_band_limited_noise(min_freq, max_freq, duration=None, samples=None,
     elif samples:
         noise = get_noise(samples=samples)
     else:
-        print "Error: must provide duration or samples"
+        print("Error: must provide duration or samples")
         return noise
     Noise = np.fft.rfft(noise)
     Noise[:min_i] = 0
