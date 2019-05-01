@@ -193,7 +193,7 @@ def pcm_to_pdm(in_wav_file, out_pdm_file, pdm_sample_rate, verbose = False):
     # Stability limit
     pdm_magnitude_stability_limit = 0.4 # This seems to be safe
 
-    output_length = int(nsamples*upsample_ratio / downsample_ratio)
+    output_length = nsamples*upsample_ratio // downsample_ratio
 
     pdm_samples = np.zeros((8, output_length))
 
