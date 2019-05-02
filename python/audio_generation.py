@@ -1,4 +1,8 @@
 # Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
+from __future__ import division
+from __future__ import print_function
+from builtins import str
+from builtins import range
 import os
 import os.path
 import scipy.signal
@@ -11,8 +15,8 @@ SYSTEM_DELAY_SAMPLES = 40
 
 def get_magnitude(freq, X, Fs, tolerance_hz, normalise=False):
     X = np.abs(X)
-    i = 2 * freq * len(X) / Fs
-    tol_i = 2 * tolerance_hz * len(X) / Fs
+    i = int(2 * freq * len(X) / Fs)
+    tol_i = int(2 * tolerance_hz * len(X) / Fs)
     normalisation_factor = 1
     if normalise:
         normalisation_factor = 1.0 / len(X)
@@ -22,22 +26,22 @@ def get_magnitude(freq, X, Fs, tolerance_hz, normalise=False):
 def get_suppressed_magnitude(frequencies, X, Fs, tolerance_hz,
                              normalise=False, band_min=0, band_max=None):
     if not band_max:
-        band_max = Fs/2
+        band_max = Fs // 2
     X = np.abs(X)
-    tol_i = 2 * tolerance_hz * len(X) / Fs
-    min_i = 2 * band_min * len(X) / Fs
-    max_i = 2 * band_max * len(X) / Fs
+    tol_i = int(2 * tolerance_hz * len(X) / Fs)
+    min_i = int(2 * band_min * len(X) / Fs)
+    max_i = int(2 * band_max * len(X) / Fs)
     X_nulled = np.array(X)
     X_nulled[:min_i] = 0
     X_nulled[max_i:] = 0
     for freq in frequencies:
-        i = 2 * freq * len(X) / Fs
+        i = int(2 * freq * len(X) / Fs)
         X_nulled[i - tol_i:i + tol_i] = 0
     normalisation_factor = 1
     if normalise:
         normalisation_factor = 1.0 / len(X)
     return np.max(X_nulled) * normalisation_factor,\
-           np.argmax(X_nulled) / (2.0 * len(X) / Fs)
+           int(np.argmax(X_nulled) / (2.0 * len(X) / Fs))
 
 
 def db(a, b):
@@ -50,11 +54,11 @@ def reverb_filter(duration_ms, amplitude, delay_ms,
     The amplitude parameter should be < 1. Larger amplitude = longer reverb.
     Duration is in milliseconds."""
     delay = int(sample_rate * delay_ms / 1000)
-    signal = np.zeros((sample_rate * duration_ms / 1000, ))
+    signal = np.zeros((int(sample_rate * duration_ms / 1000), ))
     signal[SYSTEM_DELAY_SAMPLES] = 1
-    for i in range(SYSTEM_DELAY_SAMPLES, sample_rate*duration_ms / 1000, delay):
+    for i in range(SYSTEM_DELAY_SAMPLES, int(sample_rate*duration_ms / 1000), delay):
         delay_i = i + delay
-        if delay_i >= sample_rate * duration_ms / 1000:
+        if delay_i >= (sample_rate * duration_ms / 1000):
             break
         signal[delay_i] = signal[i] * amplitude
     return signal
@@ -71,7 +75,7 @@ def get_rt60(duration_ms, delay_ms=12, sample_rate=DEFAULT_SAMPLE_RATE):
     """
     target = 1e-3 # -60dB
     delay = int(sample_rate * delay_ms / 1000)
-    total_time = (sample_rate * duration_ms / 1000) - SYSTEM_DELAY_SAMPLES
+    total_time = int(sample_rate * duration_ms / 1000) - SYSTEM_DELAY_SAMPLES
     n = total_time / delay
     amplitude = np.power(target, 1.0 / n)
     return reverb_filter(int(1.2 * duration_ms), -amplitude, delay_ms,
@@ -84,8 +88,8 @@ def echo_filter(duration_ms, amplitude, delay_ms,
     """ Generates an echo impulse response.
     Duration is in milliseconds."""
     echo_delay_samples = int(sample_rate * delay_ms / 1000)
-    signal = np.zeros((sample_rate * duration_ms / 1000, ))
-    assert(system_delay_samples+echo_delay_samples < duration_ms*sample_rate/1000)
+    signal = np.zeros((int(sample_rate * duration_ms / 1000), ))
+    assert(system_delay_samples+echo_delay_samples < int(duration_ms*sample_rate / 1000))
     signal[system_delay_samples] = 1
     signal[system_delay_samples + echo_delay_samples] = amplitude
     return signal
@@ -125,7 +129,7 @@ def get_band_limited_noise(min_freq, max_freq, duration=None, samples=None,
     elif samples:
         noise = get_noise(samples=samples)
     else:
-        print "Error: must provide duration or samples"
+        print("Error: must provide duration or samples")
         return noise
     Noise = np.fft.rfft(noise)
     Noise[:min_i] = 0
@@ -220,7 +224,7 @@ def get_ref_continuous(duration, freq_a=500, freq_b=4000, period=0.2,
     Duration is in seconds."""
     # Using a cumulative sum to avoid phase error when changing frequency
     x = np.linspace(0, duration * 2 * np.pi, duration * sample_rate)
-    f = np.sin(x/period)*(freq_b-freq_a)/2 + (freq_a+freq_b)/2
+    f = (np.sin(x / period)*(freq_b-freq_a) / 2) + ((freq_a+freq_b)/2)
     y = np.cumsum(f) / sample_rate * 2 * np.pi
     z = np.sin(y)
     signal = z
