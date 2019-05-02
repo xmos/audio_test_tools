@@ -6,6 +6,8 @@
 """
 import numpy as np
 import scipy.io.wavfile
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import pandas
 
