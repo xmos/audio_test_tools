@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # Copyright (c) 2019, XMOS Ltd, All rights reserved
 
+import sys
 import os
 import argparse
 import json
@@ -78,7 +79,7 @@ def dispatch_workunit(testset):
                         }
                     )
                 metric['results'] = erle
-            elif metric['type'] == 'ERLE_RECONVERGENCE':
+            elif metric['type'] == 'ERLE_RECONVERGE':
                 start = int((annotation['start'] + 3) * rate)
                 end = start + int(2 * rate)
                 erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
@@ -88,12 +89,13 @@ def dispatch_workunit(testset):
                             'filename':  testset['filename'],
                             'start': annotation['start'],
                             'end': annotation['end'],
-                            'metric': 'ERLE_RECONVERGENCE',
+                            'metric': 'ERLE_RECONVERGE',
                             'result': e
                         }
                     )
                 metric['results'] = erle
-            elif metric['type'] == 'KEYWORD_COUNT':
+            elif metric['type'] == 'KEYWORD_COUNT':    # with open(args.output, 'w') as fd:
+
                 if not output_file_keyword:
                     output_file_keyword = testset['output_file_keyword']
                     cmd = f'sox {output_file} -b 16 {output_file_keyword} remix {ASR_CHANNEL+1}'
@@ -142,7 +144,20 @@ def run_performance(args):
     pool = multiprocessing.Pool(processes=jobs)
     results = pool.map(dispatch_workunit, dataset)
 
-    print(results)
+    # save report
+    if args.report:
+        fd = open(args.report, 'w')
+    else:
+        fd = sys.stdout
+
+    flat_results = [item for sublist in results for item in sublist]
+    w = csv.DictWriter(fd, flat_results[0].keys())
+    w.writeheader()
+    for row in flat_results:
+        w.writerow(row)
+
+    if args.report:
+        fd.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -152,6 +167,7 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--sensory-path', default=None, help="Sensory path")
     parser.add_argument('-j', '--jobs', type=int, default=None,
                         help="Allow N jobs at once; infinite jobs with no arg")
+    parser.add_argument('--report', default=None, help="Output report")
     args = parser.parse_args()
 
     if args.sensory_path:
