@@ -2,9 +2,9 @@
 # Copyright (c) 2019, XMOS Ltd, All rights reserved
 
 import os
-import uuid
 import argparse
 import json
+import csv
 import subprocess
 import multiprocessing
 
@@ -23,6 +23,8 @@ def dispatch_workunit(testset):
     output_file = testset['output_file']
     output_file_keyword = None
     y_channel_count = testset['y_channel_count']
+
+    results = []
 
     print(f'dispatching {input_file}')
 
@@ -46,14 +48,51 @@ def dispatch_workunit(testset):
         for metric in annotation['metrics']:
             if metric['type'] == 'ERLE':
                 erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
+                for ch, e in enumerate(erle):
+                    results.append(
+                        {
+                            'filename':  testset['filename'],
+                            'start': annotation['start'],
+                            'end': annotation['end'],
+                            'metric': 'ERLE',
+                            'result': e
+                        }
+                    )
                 metric['results'] = erle
-            elif metric['type'] == 'ERLE_CONVERGENCE_RATE':
-                h = int(rate / 2)
-                start_erle = aec_performance.get_erle(far_signal[:,start-h:start+h], error_signal[ASR_CHANNEL][start-h:start+h])
-                end_erle = aec_performance.get_erle(far_signal[:,end-h:end+h], error_signal[ASR_CHANNEL][end-h:end+h])
-                duration = annotation['end'] - annotation['start']
-                convergence_rate = (end_erle - start_erle) / duration
-                metric['results'] = convergence_rate
+            elif metric['type'] == 'ERLE_RECOVERY':
+                start = int((annotation['start'] - 2) * rate)
+                end = int((annotation['start'] + 2) * rate)
+                before_erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
+                start = int((annotation['start'] + 2) * rate)
+                end = int((annotation['start'] + 4) * rate)
+                after_erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
+                erle = after_erle - before_erle
+                for ch, e in enumerate(erle):
+                    results.append(
+                        {
+                            'filename':  testset['filename'],
+                            'start': annotation['start'],
+                            'end': annotation['end'],
+                            'metric': 'ERLE_RECOVERY',
+                            'result': e
+                        }
+                    )
+                metric['results'] = erle
+            elif metric['type'] == 'ERLE_RECONVERGENCE':
+                start = int((annotation['start'] + 3) * rate)
+                end = start + int(2 * rate)
+                erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
+                for ch, e in enumerate(erle):
+                    results.append(
+                        {
+                            'filename':  testset['filename'],
+                            'start': annotation['start'],
+                            'end': annotation['end'],
+                            'metric': 'ERLE_RECONVERGENCE',
+                            'result': e
+                        }
+                    )
+                metric['results'] = erle
             elif metric['type'] == 'KEYWORD_COUNT':
                 if not output_file_keyword:
                     output_file_keyword = testset['output_file_keyword']
@@ -61,12 +100,20 @@ def dispatch_workunit(testset):
                     subprocess.call(cmd, stdin=None, stdout=None, stderr=None, shell=True)
 
                 detections = keyword_performance.get_sensory_detections(output_file_keyword)
-                metric['results'] = len(detections)
+                results.append(
+                    {
+                        'filename':  testset['filename'],
+                        'start': annotation['start'],
+                        'end': annotation['end'],
+                        'metric': 'KEYWORD_COUNT',
+                        'result': len(detections)
+                    }
+                )
 
     # clean up
     #os.remove(output_file)
 
-    return testset['annotations']
+    return results
 
 def load_dataset(input_path, output_path, dataset_file):
     output_path = output_path or os.curdir
