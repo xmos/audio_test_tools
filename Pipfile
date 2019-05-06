@@ -10,6 +10,7 @@ scipy = "*"
 matplotlib = "*"
 pandas = "*"
 configparser = "*"
+sounddevice = "*"
 
 [dev-packages]
 
