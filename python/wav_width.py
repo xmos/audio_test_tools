@@ -30,7 +30,7 @@ def wav_width(input_file, start_channel, end_channel):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('wav', help='Input wav file')
-    parser.add_argument('-s', '--start-channel', type=int, default=0, help="Start channel")
+    parser.add_argument('-s', '--start-channel', type=int, default=1, help="Start channel")
     parser.add_argument('-e', '--end-channel', type=int, default=None, help="End channel")
     args = parser.parse_args()
 
