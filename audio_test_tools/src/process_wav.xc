@@ -57,7 +57,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
     lseek(input_file, input_wavheader_size, SEEK_SET);
 
     if(input_header_struct.bit_depth != 32){
-         printf("Error: unsupported wav bit depth (%d) for %s file. Only 16 supported\n", input_header_struct.bit_depth, input_file);
+         printf("Error: unsupported wav bit depth (%d) for %s file. Only 32 supported\n", input_header_struct.bit_depth, input_file);
          _Exit(1);
      }
 
