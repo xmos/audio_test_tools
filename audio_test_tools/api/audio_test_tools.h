@@ -210,4 +210,11 @@ void att_divide_array(unsigned * array, unsigned array_length, unsigned space_to
 //Limit the number of significant bit of information in a complex array.
 void att_limit_bits(dsp_complex_t * a, unsigned length, unsigned bits);
 
+
+/*
+ * Frame file
+ */
+
+#include "frame_file.h"
+
 #endif /* AUDIO_TEST_TOOLS_H_ */
