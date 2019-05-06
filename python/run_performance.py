@@ -50,16 +50,9 @@ def dispatch_workunit(testset):
             if metric['type'] == 'ERLE':
                 erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
                 for ch, e in enumerate(erle):
-                    results.append(
-                        {
-                            'filename':  testset['filename'],
-                            'start': annotation['start'],
-                            'end': annotation['end'],
-                            'metric': 'ERLE',
-                            'result': e
-                        }
+                    results.append(aec_performance.get_result('ERLE',
+                        e, testset['filename'], annotation['start'], annotation['end'])
                     )
-                metric['results'] = erle
             elif metric['type'] == 'ERLE_RECOVERY':
                 start = int((annotation['start'] - 2) * rate)
                 end = int((annotation['start'] + 2) * rate)
@@ -69,51 +62,27 @@ def dispatch_workunit(testset):
                 after_erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
                 erle = after_erle - before_erle
                 for ch, e in enumerate(erle):
-                    results.append(
-                        {
-                            'filename':  testset['filename'],
-                            'start': annotation['start'],
-                            'end': annotation['end'],
-                            'metric': 'ERLE_RECOVERY',
-                            'result': e
-                        }
+                    results.append(aec_performance.get_result('ERLE_RECOVERY',
+                        e, testset['filename'], annotation['start'], annotation['end'])
                     )
-                metric['results'] = erle
             elif metric['type'] == 'ERLE_RECONVERGE':
                 start = int((annotation['start'] + 3) * rate)
                 end = start + int(2 * rate)
                 erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
                 for ch, e in enumerate(erle):
-                    results.append(
-                        {
-                            'filename':  testset['filename'],
-                            'start': annotation['start'],
-                            'end': annotation['end'],
-                            'metric': 'ERLE_RECONVERGE',
-                            'result': e
-                        }
+                    results.append(aec_performance.get_result('ERLE_RECONVERGE',
+                        e, testset['filename'], annotation['start'], annotation['end'])
                     )
-                metric['results'] = erle
-            elif metric['type'] == 'KEYWORD_COUNT':    # with open(args.output, 'w') as fd:
-
+            elif metric['type'] == 'KEYWORD_COUNT':
                 if not output_file_keyword:
                     output_file_keyword = testset['output_file_keyword']
                     cmd = f'sox {output_file} -b 16 {output_file_keyword} remix {ASR_CHANNEL+1}'
                     subprocess.call(cmd, stdin=None, stdout=None, stderr=None, shell=True)
 
                 detections = keyword_performance.get_sensory_detections(output_file_keyword)
-                results.append(
-                    {
-                        'filename':  testset['filename'],
-                        'start': annotation['start'],
-                        'end': annotation['end'],
-                        'metric': 'KEYWORD_COUNT',
-                        'result': len(detections)
-                    }
+                results.append(keyword_performance.get_result('KEYWORD_COUNT',
+                    len(detections), metric['truth'], testset['filename'], annotation['start'], annotation['end'])
                 )
-
-    # clean up
-    #os.remove(output_file)
 
     return results
 

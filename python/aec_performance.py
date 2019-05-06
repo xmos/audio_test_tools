@@ -37,4 +37,43 @@ def get_erle(far_signal, error_signal):
 
     return erle
 
+def get_result(metric, value, filename, start, end):
+    result = {
+        'filename':  filename,
+        'start': start,
+        'end': end,
+        'metric':  metric,
+        'result': value
+    }
 
+    grade = None
+    if metric == 'ERLE':
+        if value >= 40.0:
+            grade = 'Outstanding'
+        elif value >= 30.0:
+            grade = 'Pass'
+        elif value >= 20.0:
+            grade = 'Warning'
+        elif value < 20.0:
+            grade = 'Fail'
+    elif metric == 'ERLE_RECOVERY':
+        if value >= -5.0:
+            grade = 'Outstanding'
+        elif value >= -10.0:
+            grade = 'Pass'
+        elif value >= -15.0:
+            grade = 'Warning'
+        elif value < -15.0:
+            grade = 'Fail'
+    elif metric == 'ERLE_RECONVERGE':
+        if value >= 30.0:
+            grade = 'Outstanding'
+        elif value >= 25.0:
+            grade = 'Pass'
+        elif value >= 20.0:
+            grade = 'Warning'
+        elif value < 20.0:
+            grade = 'Fail'
+
+    result['grade'] = grade
+    return result

@@ -33,6 +33,31 @@ def get_sensory_detections(filename, sensory_path=None):
     
     return detections
 
+def get_result(metric, value, truth, filename, start, end):
+    result = {
+        'filename':  filename,
+        'start': start,
+        'end': end,
+        'metric':  metric,
+        'result': value
+    }
+
+    accuracy = float(value) / float(truth)
+
+    grade = None
+    if metric == 'KEYWORD_COUNT':
+        if accuracy >= .99:
+            grade = 'Outstanding'
+        elif accuracy >= .95:
+            grade = 'Pass'
+        elif accuracy >= .90:
+            grade = 'Warning'
+        else:
+            grade = 'Fail'
+
+    result['grade'] = grade
+    return result
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input', help='input wav file')
