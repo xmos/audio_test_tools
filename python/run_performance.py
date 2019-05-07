@@ -37,9 +37,14 @@ def dispatch_workunit(testset):
     rate, wav_file = scipy.io.wavfile.read(output_file, 'r')
     wav_data, channel_count, file_length = au.parse_audio(wav_file)
     x_channel_count = channel_count - y_channel_count
-    x_wav_data = wav_data[:x_channel_count] # processed audio
-    y_wav_data = wav_data[-y_channel_count:] # reference audio
-    error_signal, far_signal = aec_performance.apply_phase_compensation(x_wav_data, y_wav_data)
+
+    # x_wav_data = wav_data[:x_channel_count] # processed audio
+    # y_wav_data = wav_data[-y_channel_count:] # reference audio
+    error_data = wav_data[0:y_channel_count] # processed audio
+    x_wav_data = wav_data[y_channel_count:] # reference audio
+
+    # error_signal, far_signal = aec_performance.apply_phase_compensation(x_wav_data, y_wav_data)
+    error_signal, far_signal = aec_performance.apply_phase_compensation(error_data, x_wav_data)
 
     # compute metrics
     for annotation in testset['annotations']:

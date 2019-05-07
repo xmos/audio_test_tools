@@ -4,8 +4,8 @@ import numpy as np
 
 EPSILON = 1e-99
 
-def apply_phase_compensation(x_wav_data, y_wav_data, phase_compensation=32):
-    return (x_wav_data[:, phase_compensation:], y_wav_data[:, :-phase_compensation])
+def apply_phase_compensation(y_wav_data, x_wav_data, phase_compensation=32):
+    return (y_wav_data[:, phase_compensation:], x_wav_data[:, :-phase_compensation])
 
 '''
 Misalignment: is a measure of the system identification performance (in dB)
