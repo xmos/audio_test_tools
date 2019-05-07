@@ -17,15 +17,17 @@ def wav_width(input_file, start_channel, end_channel):
     start_channel = start_channel - 1
     end_channel = end_channel or (channel_count - 1)
 
-    for channels in combinations(range(start_channel, end_channel), 2):
-        mid = np.sum([wav_data[channels[0]], wav_data[channels[1]]], axis=0) / 2.0
-        side = np.diff([wav_data[channels[0]], wav_data[channels[1]]], axis=0) / 2.0
+    if end_channel - start_channel == 2:
+        # is stereo
+        mid = np.sum(wav_data[start_channel:end_channel], axis=0) / 2.0
+        side = np.diff(wav_data[start_channel:end_channel], axis=0) / 2.0
 
         # the mid-signal represents those parts of the stereo-signal which are equal on both channels,
         # the side-signal represents the differences between both channels
         width = np.around(10 * np.log10(np.mean(mid**2.0) / (np.mean(side**2.0) + EPSILON)))
-
-        print(f'Channels ({channels[0] + 1}, {channels[1] + 1})    Width = {width}')
+        print(f'Width = {width}')
+    else:
+        print('Only 2 channels supported!')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

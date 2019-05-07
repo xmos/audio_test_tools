@@ -11,6 +11,7 @@ matplotlib = "*"
 pandas = "*"
 configparser = "*"
 sounddevice = "*"
+tensorflow = "*"
 
 [dev-packages]
 
