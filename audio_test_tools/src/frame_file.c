@@ -90,7 +90,7 @@ void att_ff_array_write(
         }
         case att_ff_type_float: {
             vtb_s32_float_t *a_f = (vtb_s32_float_t *) a;
-            fprintf(ff, "%.3f", (double) a_f[i].m / (double) (uint32_t) (1 << -a_f[i].e));
+            fprintf(ff, "%.3f", (double) a_f[i].m / (double) (((uint64_t) 1) << -a_f[i].e));
             break;
         }
         }
