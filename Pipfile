@@ -12,6 +12,7 @@ pandas = "*"
 configparser = "*"
 sounddevice = "*"
 tensorflow = "*"
+sklearn = "*"
 
 [dev-packages]
 
