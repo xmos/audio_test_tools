@@ -13,6 +13,7 @@ configparser = "*"
 sounddevice = "*"
 tensorflow = "*"
 sklearn = "*"
+keras = "*"
 
 [dev-packages]
 
