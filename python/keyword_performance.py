@@ -63,5 +63,9 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--input', help='input wav file')
     args = parser.parse_args()
 
-    detections = run_sensory(args.input)
-    print(f'Wakewords: {detections}')
+    detections = get_sensory_detections(args.input)
+    for d in detections:
+        print(d)
+    
+    print()
+    print(f'Wakewords: {len(detections)}')
