@@ -1,9 +1,12 @@
-
-# -*- coding: utf-8 -*-
 # Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
+# -*- coding: utf-8 -*-
 """
 @author: Andrew
 """
+from __future__ import division
+from __future__ import print_function
+from builtins import str
+from builtins import range
 import numpy as np
 import scipy.io.wavfile
 import matplotlib
@@ -50,7 +53,7 @@ def rotate_around_z_axis(p, theta):
 def print_phi(phi):
     for i in range(len(phi)):
         for j in range(len(phi[i])):
-            print('% .4f '%phi[i][j]),
+            print(('% .4f '%phi[i][j]), end=' ')
         print ('')
     print ('')
     print ('')
@@ -103,7 +106,7 @@ def parse_audio(wav_file):
     elif data_type == np.uint8:
         max_val = np.iinfo(np.uint8).max
         min_val = np.iinfo(np.uint8).min
-        mid = (max_val - min_val)/2 + 1
+        mid = ((max_val - min_val) // 2) + 1
         wav_data = (wav_data.astype(dtype=np.float64) - mid)/float(max_val-mid)
     elif data_type == np.float32:
         wav_data = wav_data.astype(dtype=np.float64)
