@@ -64,7 +64,7 @@ void att_ff_array_write(
         att_ff_type_t type,
         unsigned int len)
 {
-    fprintf(ff, "DATA: %s:\n", array_name);
+    fprintf(ff, "DATA: %s\n", array_name);
     for (int i = 0; i < len; i++) {
 
         switch (type) {
@@ -100,6 +100,6 @@ void att_ff_array_write(
             fprintf(ff, ",%s", (i & 0xF) == 0xF ? "\n" : " ");
         }
     }
-    fprintf(ff, "\n");
+    fprintf(ff, "\nDATA END\n");
 }
 
