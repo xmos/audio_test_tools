@@ -93,13 +93,13 @@ def parse_audio(wav_file):
     data_type = type(wav_data[0][0])
 
     if data_type == np.int16:
-        max_val = np.iinfo(np.int16).max
+        max_val = np.iinfo(np.int16).max + 1
         wav_data = wav_data.astype(dtype=np.float64)/float(max_val)
     elif data_type == np.int8:
-        max_val = np.iinfo(np.int8).max
+        max_val = np.iinfo(np.int8).max + 1
         wav_data = wav_data.astype(dtype=np.float64)/float(max_val)
     elif data_type == np.int32:
-        max_val = np.iinfo(np.int32).max
+        max_val = np.iinfo(np.int32).max + 1
         wav_data = wav_data.astype(dtype=np.float64)/float(max_val)
     elif data_type == np.uint8:
         max_val = np.iinfo(np.uint8).max
