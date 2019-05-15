@@ -90,7 +90,11 @@ void att_ff_array_write(
         }
         case att_ff_type_float: {
             vtb_s32_float_t *a_f = (vtb_s32_float_t *) a;
-            fprintf(ff, "%.3f", (double) a_f[i].m / (double) (((uint64_t) 1) << -a_f[i].e));
+            uint64_t denom = (((uint64_t) 1) << -a_f[i].e);
+            if (a_f[i].m == 0) {
+                denom = 1;
+            }
+            fprintf(ff, "%.3f", (double) a_f[i].m / (double) denom);
             break;
         }
         }
