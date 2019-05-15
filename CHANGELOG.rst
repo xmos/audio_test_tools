@@ -5,6 +5,7 @@ Audio test tools change log
 -----
 
   * ADDED: Function to parse and convert ini files
+  * UPDATED: Python code be python 3 compatible
 
 1.3.0
 -----
