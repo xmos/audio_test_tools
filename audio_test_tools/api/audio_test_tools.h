@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2017-2019, XMOS Ltd, All rights reserved
 
 #ifndef AUDIO_TEST_TOOLS_H_
 #define AUDIO_TEST_TOOLS_H_
