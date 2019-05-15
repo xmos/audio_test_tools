@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+1.4.0
+-----
+
+  * ADDED: Function to parse and convert ini files
+
 1.3.0
 -----
 
