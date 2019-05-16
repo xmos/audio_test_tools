@@ -24,13 +24,16 @@ def get_sensory_detections(filename, sensory_path=None):
     # get result
     detections = []
     lines = output.decode('utf-8').strip().split('\n')
-    for ln in lines:
-        fields = ln.strip().split()
-        detections.append({
-            'start': int(fields[0]),
-            'end': int(fields[1]),
-        })
-    
+    try:
+        for ln in lines:
+            fields = ln.strip().split()
+            detections.append({
+                'start': int(fields[0]),
+                'end': int(fields[1]),
+            })
+    except:
+        pass
+
     return detections
 
 def get_result(metric, value, truth, filename, start, end):

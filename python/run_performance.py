@@ -3,6 +3,7 @@
 
 import sys
 import os
+import hashlib
 import argparse
 import json
 import csv
@@ -38,12 +39,9 @@ def dispatch_workunit(testset):
     wav_data, channel_count, file_length = au.parse_audio(wav_file)
     x_channel_count = channel_count - y_channel_count
 
-    # x_wav_data = wav_data[:x_channel_count] # processed audio
-    # y_wav_data = wav_data[-y_channel_count:] # reference audio
     error_data = wav_data[0:y_channel_count] # processed audio
     x_wav_data = wav_data[y_channel_count:] # reference audio
 
-    # error_signal, far_signal = aec_performance.apply_phase_compensation(x_wav_data, y_wav_data)
     error_signal, far_signal = aec_performance.apply_phase_compensation(error_data, x_wav_data)
 
     # compute metrics
@@ -60,10 +58,10 @@ def dispatch_workunit(testset):
                     )
             elif metric['type'] == 'ERLE_RECOVERY':
                 start = int((annotation['start'] - 2) * rate)
-                end = int((annotation['start'] + 2) * rate)
+                end = int((annotation['start'] - 0.25) * rate)
                 before_erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
-                start = int((annotation['start'] + 2) * rate)
-                end = int((annotation['start'] + 4) * rate)
+                start = int((annotation['end'] + 0.25) * rate)
+                end = int((annotation['end'] + 2) * rate)
                 after_erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
                 erle = after_erle - before_erle
                 for ch, e in enumerate(erle):
@@ -71,11 +69,17 @@ def dispatch_workunit(testset):
                         e, testset['filename'], annotation['start'], annotation['end'])
                     )
             elif metric['type'] == 'ERLE_RECONVERGE':
-                start = int((annotation['start'] + 3) * rate)
+                start = int(annotation['end'] * rate)
                 end = start + int(2 * rate)
                 erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
                 for ch, e in enumerate(erle):
                     results.append(aec_performance.get_result('ERLE_RECONVERGE',
+                        e, testset['filename'], annotation['start'], annotation['end'])
+                    )
+            elif metric['type'] == 'ERLE_INTERFERENCE':
+                erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
+                for ch, e in enumerate(erle):
+                    results.append(aec_performance.get_result('ERLE_INTERFERENCE',
                         e, testset['filename'], annotation['start'], annotation['end'])
                     )
             elif metric['type'] == 'KEYWORD_COUNT':
@@ -91,7 +95,7 @@ def dispatch_workunit(testset):
 
     return results
 
-def load_dataset(input_path, output_path, dataset_file):
+def load_dataset(input_path, output_path, dataset_file, tests):
     output_path = output_path or os.curdir
     if input_path==output_path:
         print('ERROR: Input path can not equal output path, aborting!')
@@ -103,16 +107,22 @@ def load_dataset(input_path, output_path, dataset_file):
     with open(dataset_file, 'r') as fd:
         files = json.load(fd)['files']
         for f in files:
-            basename = os.path.splitext(f['filename'])[0]
-            f['input_file'] = os.path.join(input_path, f['filename'])
-            f['output_file'] = os.path.join(output_path, basename+'.wav')
-            f['output_file_keyword'] = os.path.join(output_path, basename+'-keyword.wav')
-            dataset.append(f)
+            if f['filename'] in tests or len(tests) == 0:
+                basename = os.path.splitext(f['filename'])[0]
+                f['input_file'] = os.path.join(input_path, f['filename'])
+                f['output_file'] = os.path.join(output_path, basename+'.wav')
+                f['output_file_keyword'] = os.path.join(output_path, basename+'-keyword.wav')
+                with open(f['input_file'],'rb') as fd:
+                    md5sum = hashlib.md5(fd.read()).hexdigest()
+                    if md5sum == f['md5sum']:
+                        dataset.append(f)
+                    else:
+                        print(f'WARNING: Skipping {basename} due to checksum failure!')
 
     return dataset
 
 def run_performance(args):
-    dataset = load_dataset(args.input_path, args.output_path, args.dataset_file)
+    dataset = load_dataset(args.input_path, args.output_path, args.dataset_file, set(args.test))
     jobs = args.jobs or len(dataset)
 
     pool = multiprocessing.Pool(processes=jobs)
@@ -142,6 +152,7 @@ if __name__ == "__main__":
     parser.add_argument('-j', '--jobs', type=int, default=None,
                         help="Allow N jobs at once; infinite jobs with no arg")
     parser.add_argument('--report', default=None, help="Output report")
+    parser.add_argument('--test', action='append', default=[], help="Test to run (defaults to all)")
     args = parser.parse_args()
 
     if args.sensory_path:

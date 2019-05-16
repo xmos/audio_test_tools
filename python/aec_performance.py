@@ -56,6 +56,15 @@ def get_result(metric, value, filename, start, end):
             grade = 'Warning'
         elif value < 20.0:
             grade = 'Fail'
+    if metric == 'ERLE_INTERFERENCE':
+        if value <= 15.0:
+            grade = 'Outstanding'
+        elif value <= 20.0:
+            grade = 'Pass'
+        elif value <= 25.0:
+            grade = 'Warning'
+        elif value > 25.0:
+            grade = 'Fail'
     elif metric == 'ERLE_RECOVERY':
         if value >= -5.0:
             grade = 'Outstanding'
