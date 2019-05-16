@@ -1,6 +1,14 @@
 Audio test tools change log
 ===========================
 
+1.4.0
+-----
+
+  * ADDED: Function to parse and convert ini files
+  * ADDED: python_setup.bat
+  * CHANGED: Read and write files as binary in process_wav.xc
+  * UPDATED: Python code be python 3 compatible
+
 1.3.0
 -----
 
