@@ -27,9 +27,13 @@ const char wav_default_header[ATT_WAV_HEADER_BYTES] = {
 
 int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigned &header_size){
   int fid = open ( filename , O_RDONLY );
+
+  int filesize = lseek(fid, 0, SEEK_END);
+  lseek(fid, 0, SEEK_SET);
   
   //read riff header section (12 bytes)
   read(fid, (char*)(&s.riff_header[0]), RIFF_SECTION_SIZE);
+
 
   if(memcmp(s.riff_header, "RIFF", sizeof(s.riff_header)) != 0)
   {
@@ -43,6 +47,11 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
     return 1;
   }
   
+  if (filesize - 8 != s.wav_size) {
+    printf("Warning: Changing wav_size to %d from %d\n", filesize - 8, s.wav_size);
+    s.wav_size = filesize - 8;
+  }
+
   //read fmt subchunk (24, 26 or 48 bytes depending on the extension). We read 24 bytes since this covers all information common to all 3 types 
   read(fid, (char*)&s.fmt_header[0], FMT_SUBCHUNK_MIN_SIZE);
   if(memcmp(s.fmt_header, "fmt ", sizeof(s.fmt_header)) != 0)
@@ -81,7 +90,7 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
   if(memcmp(s.data_header, "fact", sizeof(s.data_header)) == 0)
   {
     uint32_t chunksize;
-    read(fid, &chunksize, sizeof(s.data_bytes));
+    read(fid, &chunksize, sizeof(chunksize));
     lseek(fid, chunksize, SEEK_CUR);
     read(fid, (char*)(&s.data_header[0]), sizeof(s.data_header));
   }
@@ -94,6 +103,11 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
   //read data subchunk size. 
   read(fid, &s.data_bytes, sizeof(s.data_bytes));
   header_size = lseek(fid, 0, SEEK_CUR); //total file size should be header_size + data_bytes
+
+  if (filesize - header_size != s.data_bytes) {
+      printf("Warning: Changing data_bytes to %d from %d\n", filesize - header_size, s.data_bytes);
+      s.data_bytes = filesize - header_size;
+  }
 
   close(fid);
   return 0;
