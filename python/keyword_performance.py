@@ -63,7 +63,7 @@ def get_result(metric, value, truth, filename, start, end):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--input', help='input wav file')
+    parser.add_argument('-i', '--input', required=True, help='input wav file')
     args = parser.parse_args()
 
     detections = get_sensory_detections(args.input)

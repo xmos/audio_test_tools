@@ -145,7 +145,7 @@ def run_performance(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--input-path', help="Input path")
+    parser.add_argument('-i', '--input-path', required=True, help="Input path")
     parser.add_argument('-d', '--dataset-file', default=None, help="Input file (default=dataset.json)")
     parser.add_argument('-o', '--output-path', default=None, help="Output path (default=current directory)")
     parser.add_argument('-s', '--sensory-path', default=None, help="Sensory path")
