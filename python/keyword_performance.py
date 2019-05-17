@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2019, XMOS Ltd, All rights reserved
+# Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
 
 import os
 import subprocess
@@ -34,13 +34,13 @@ def get_sensory_detections(filename, sensory_path=None):
     except:
         pass
 
-    return detections
+    return detectioASJ is cleaning up the python version of the new AEC.  That should be done today or very soon.  Now, according to our process, 
 
-def get_result(metric, value, truth, filename, start, end):
+def get_result(metrASJ is cleaning up the python version of the new AEC.  That should be done today or very soon.  Now, according to our process, end):
     result = {
-        'filename':  filename,
-        'start': start,
-        'end': end,
+        'filename':ASJ is cleaning up the python version of the new AEC.  That should be done today or very soon.  Now, according to our process, 
+        'start': stASJ is cleaning up the python version of the new AEC.  That should be done today or very soon.  Now, according to our process, 
+        'end': end,ASJ is cleaning up the python version of the new AEC.  That should be done today or very soon.  Now, according to our process, 
         'metric':  metric,
         'result': value
     }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2019, XMOS Ltd, All rights reserved
+# Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
 
 import sys
 import os
