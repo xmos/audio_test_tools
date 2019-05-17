@@ -34,13 +34,13 @@ def get_sensory_detections(filename, sensory_path=None):
     except:
         pass
 
-    return detectioASJ is cleaning up the python version of the new AEC.  That should be done today or very soon.  Now, according to our process, 
+    return detections
 
-def get_result(metrASJ is cleaning up the python version of the new AEC.  That should be done today or very soon.  Now, according to our process, end):
+def get_result(metric, value, truth, filename, start, end):
     result = {
-        'filename':ASJ is cleaning up the python version of the new AEC.  That should be done today or very soon.  Now, according to our process, 
-        'start': stASJ is cleaning up the python version of the new AEC.  That should be done today or very soon.  Now, according to our process, 
-        'end': end,ASJ is cleaning up the python version of the new AEC.  That should be done today or very soon.  Now, according to our process, 
+        'filename':  filename,
+        'start': start,
+        'end': end,
         'metric':  metric,
         'result': value
     }
