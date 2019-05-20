@@ -20,3 +20,4 @@ xscope.xmt
 *.xc.pca.xml.decouple
 *.xc.d
 **/.DS_Store
+**/*.egg-info/
