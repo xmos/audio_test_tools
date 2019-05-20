@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+flake8 = "*"
+pylint = "*"
+
+[packages]
+numpy = "*"
+scipy = "*"
+matplotlib = "*"
+pandas = "*"
+pytest = "*"
+pytest-xdist = "*"
+
+[requires]
+python_version = "3"

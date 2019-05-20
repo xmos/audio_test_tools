@@ -1,6 +1,8 @@
 # Copyright (c) 2019, XMOS Ltd, All rights reserved
 """ This module contains common util functions used by all the VTB libs """
 
+from __future__ import division
+from __future__ import print_function
 
 import os
 import configparser
