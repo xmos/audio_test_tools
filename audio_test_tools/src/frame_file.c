@@ -56,7 +56,7 @@ static void write_full_scope_indexed(
     if(index != -1)
         fprintf(ctx->file, "[%d]", index);
 
-    fprintf(ctx->file, ": ", var_name);
+    fprintf(ctx->file, ": ");
 }
 
 static void write_full_scope(
