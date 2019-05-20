@@ -21,3 +21,5 @@ xscope.xmt
 *.xc.d
 **/.DS_Store
 **/*.egg-info/
+.venv/
+Pipfile.lock
