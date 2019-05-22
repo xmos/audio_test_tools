@@ -61,6 +61,18 @@ def dict_to_json(config_dict, config_file, print_param=False):
         f.close()
 
 
+def select_process_channels(y_wav_data, channels_to_process):
 
+    if channels_to_process == None:
+        y_channel_count = len(y_wav_data)
+
+    else:
+        channels_to_process = np.asarray(channels_to_process)
+        channels_to_process = channels_to_process[(channels_to_process  >= 0) & (channels_to_process < len(y_wav_data))]
+        y_channel_count = min( len(y_wav_data), len(channels_to_process))
+
+        y_wav_data = y_wav_data[channels_to_process]
+
+    return y_wav_data, y_channel_count
 
 
