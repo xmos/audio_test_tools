@@ -1,8 +1,10 @@
-# Copyright (c) 2018, XMOS Ltd, All rights reserved
+# Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
 
 import numpy as np
 import scipy.io.wavfile
 import sys
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import subprocess as sub
 import os

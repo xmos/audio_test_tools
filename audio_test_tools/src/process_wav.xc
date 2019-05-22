@@ -36,12 +36,11 @@ void att_pw_play_until_sample_passes(chanend c_comms, long sample){
 void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_comms){
 
 #ifdef __process_wav_conf_h_exists__
-
     // Initialise input
 
     char * input_file_name = ATT_PW_INPUT_FILE_NAME;
     int32_t input_read_buffer  [ATT_PW_PROC_FRAME_LENGTH*ATT_PW_INPUT_CHANNELS];
-    int input_file = open ( input_file_name , O_RDONLY );
+    int input_file = open ( input_file_name , O_RDONLY|O_BINARY);
 
     if ((input_file==-1)) {
         printf("x_file file missing (%s)\n", input_file_name);
@@ -57,7 +56,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
     lseek(input_file, input_wavheader_size, SEEK_SET);
 
     if(input_header_struct.bit_depth != 32){
-         printf("Error: unsupported wav bit depth (%d) for %s file. Only 16 supported\n", input_header_struct.bit_depth, input_file);
+         printf("Error: unsupported wav bit depth (%d) for %s file. Only 32 supported\n", input_header_struct.bit_depth, input_file_name);
          _Exit(1);
      }
 
@@ -81,7 +80,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
     uint64_t rx_state[DSP_TO_APP_STATE];
 
     if (!isnull(c_dsp_to_app)) {
-        output_file = open( output_file_name , O_WRONLY|O_CREAT, 0644 );
+        output_file = open( output_file_name , O_WRONLY|O_CREAT|O_BINARY, 0644 );
 
         att_wav_form_header(output_header_struct,
                 input_header_struct.audio_format,
@@ -158,6 +157,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
         }
 
         vtb_md_t metadata;
+
         vtb_tx_notification_and_data(c_app_to_dsp, (frame, vtb_ch_pair_t[]),
                                ATT_PW_INPUT_CHANNEL_PAIRS*2, ATT_PW_FRAME_ADVANCE,
                                metadata);
