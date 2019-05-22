@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+1.5.0
+-----
+
+  * ADDED: Pipfile + setup.py for pipenv support
+
 1.4.0
 -----
 
