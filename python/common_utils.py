@@ -8,6 +8,8 @@ import os
 import configparser
 import ast
 
+import numpy as np
+
 def att_convert_ini_file_to_dict(config_file, section, print_param=1):
     """ Parse a section in an ini file, convert the parameters to
         the expected type using AST and return the dictionary with the parameters
