@@ -79,8 +79,8 @@ class att_df(object):
         return "<%s> " % ",".join(map(str, dim))
 
     def open(self, filename):
-        self.file = open(filename, "wb")
-        self.file.write("!VERSION: %d\n" % att_ff.VERSION)
+        self.file = open(filename, "w")
+        self.file.write("!VERSION: %d\n" % att_df.VERSION)
 
     def close(self):
         self.file.close()
