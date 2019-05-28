@@ -20,8 +20,6 @@ keras = "*"
 pytest = "*"
 pytest-xdist = "*"
 
-[dev-packages]
-
 [requires]
 python_version = "3.6"
 url = "https://pypi.org/simple"
