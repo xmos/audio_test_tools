@@ -121,7 +121,7 @@ static void write_array(
                 fprintf(f, "%0.032f", v_dbl[i]);
                 break;
             case att_ff_type_complex_fp:
-                fprintf(f, "(%0.032f, %0.032f)", v_cplx_fp[i].re, v_cplx_fp[i].im);
+                fprintf(f, "%0.032f+%0.032fj", v_cplx_fp[i].re, v_cplx_fp[i].im);
                 break;
             case att_ff_type_double_pair_ch_a:
                 fprintf(f, "%0.032f", v_cplx_fp[i].re);
