@@ -3,9 +3,12 @@ url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[dev-packages]
+flake8 = "*"
+pylint = "*"
+
 [packages]
 numpy = "*"
-pytest = "*"
 scipy = "*"
 matplotlib = "*"
 pandas = "*"
@@ -14,8 +17,13 @@ sounddevice = "*"
 tensorflow = "*"
 sklearn = "*"
 keras = "*"
+pytest = "*"
+pytest-xdist = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.6"
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"

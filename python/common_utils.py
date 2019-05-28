@@ -7,6 +7,7 @@ from __future__ import print_function
 import os
 import configparser
 import ast
+import numpy as np
 
 def att_convert_ini_file_to_dict(config_file, section, print_param=1):
     """ Parse a section in an ini file, convert the parameters to
@@ -42,3 +43,37 @@ def att_convert_ini_file_to_dict(config_file, section, print_param=1):
         if print_param:
             print("{}: {}".format(item_name, parameters_dict[item_name]))
     return parameters_dict
+
+
+import json
+
+def json_to_dict(config_file, print_param=False):
+    datastore = None
+    with open(config_file, "r") as f:
+        json_string = f.read()
+        datastore = json.loads(json_string)
+        f.close()
+    return datastore
+
+def dict_to_json(config_dict, config_file, print_param=False):
+    json_dump = json.dumps(config_dict, indent=4)
+    with open(config_file, "w") as f:
+        f.write(json_dump)
+        f.close()
+
+
+def select_process_channels(y_wav_data, channels_to_process):
+
+    if channels_to_process == None:
+        y_channel_count = len(y_wav_data)
+
+    else:
+        channels_to_process = np.asarray(channels_to_process)
+        channels_to_process = channels_to_process[(channels_to_process  >= 0) & (channels_to_process < len(y_wav_data))]
+        y_channel_count = min( len(y_wav_data), len(channels_to_process))
+
+        y_wav_data = y_wav_data[channels_to_process]
+
+    return y_wav_data, y_channel_count
+
+
