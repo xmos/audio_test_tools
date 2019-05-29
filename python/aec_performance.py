@@ -37,9 +37,10 @@ def get_erle(far_signal, error_signal):
 
     return erle
 
-def get_result(metric, value, filename, start, end):
+def get_result(metric, value, filename, channel, start, end):
     result = {
         'filename':  filename,
+        'channel':  channel,
         'start': start,
         'end': end,
         'metric':  metric,

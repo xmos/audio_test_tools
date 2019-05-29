@@ -36,9 +36,10 @@ def get_sensory_detections(filename, sensory_path=None):
 
     return detections
 
-def get_result(metric, value, truth, filename, start, end):
+def get_result(metric, value, truth, filename, channel, start, end):
     result = {
         'filename':  filename,
+        'channel':  channel,
         'start': start,
         'end': end,
         'metric':  metric,

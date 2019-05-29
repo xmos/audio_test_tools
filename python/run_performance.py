@@ -31,7 +31,12 @@ def dispatch_workunit(testset):
     print(f'dispatching {input_file}')
 
     # process input
-    cmd = f'test_wav_aec.py {input_file} {y_channel_count} {output_file}'
+    # cmd = f'test_wav_aec.py {input_file} {y_channel_count} {output_file}'
+    if y_channel_count == 2:
+        config_file = '../../lib_aec/lib_aec/config/stereo_aec_two_mic.json'
+        cmd = f'test_wav_aec.py {input_file} {output_file} {config_file}'
+    else:
+        raise Exception(f'y_channel_count = {y_channel_count}, only stereo is supported')
     subprocess.call(cmd, stdin=None, stdout=None, stderr=None, shell=True)
 
     # load output
@@ -54,7 +59,7 @@ def dispatch_workunit(testset):
                 erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
                 for ch, e in enumerate(erle):
                     results.append(aec_performance.get_result('ERLE',
-                        e, testset['filename'], annotation['start'], annotation['end'])
+                        e, testset['filename'], ch, annotation['start'], annotation['end'])
                     )
             elif metric['type'] == 'ERLE_RECOVERY':
                 start = int((annotation['start'] - 2) * rate)
@@ -66,7 +71,7 @@ def dispatch_workunit(testset):
                 erle = after_erle - before_erle
                 for ch, e in enumerate(erle):
                     results.append(aec_performance.get_result('ERLE_RECOVERY',
-                        e, testset['filename'], annotation['start'], annotation['end'])
+                        e, testset['filename'], ch, annotation['start'], annotation['end'])
                     )
             elif metric['type'] == 'ERLE_RECONVERGE':
                 start = int(annotation['end'] * rate)
@@ -74,13 +79,13 @@ def dispatch_workunit(testset):
                 erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
                 for ch, e in enumerate(erle):
                     results.append(aec_performance.get_result('ERLE_RECONVERGE',
-                        e, testset['filename'], annotation['start'], annotation['end'])
+                        e, testset['filename'], ch, annotation['start'], annotation['end'])
                     )
             elif metric['type'] == 'ERLE_INTERFERENCE':
                 erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
                 for ch, e in enumerate(erle):
                     results.append(aec_performance.get_result('ERLE_INTERFERENCE',
-                        e, testset['filename'], annotation['start'], annotation['end'])
+                        e, testset['filename'], ch, annotation['start'], annotation['end'])
                     )
             elif metric['type'] == 'KEYWORD_COUNT':
                 if not output_file_keyword:
@@ -90,7 +95,7 @@ def dispatch_workunit(testset):
 
                 detections = keyword_performance.get_sensory_detections(output_file_keyword)
                 results.append(keyword_performance.get_result('KEYWORD_COUNT',
-                    len(detections), metric['truth'], testset['filename'], annotation['start'], annotation['end'])
+                    len(detections), metric['truth'], testset['filename'], 0, annotation['start'], annotation['end'])
                 )
 
     return results
