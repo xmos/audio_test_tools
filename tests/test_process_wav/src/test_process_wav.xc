@@ -13,18 +13,20 @@ void null_dsp(chanend app_to_dsp, chanend dsp_to_app){
     vtb_rx_state_init(rx_state, ATT_PW_INPUT_CHANNEL_PAIRS*2, ATT_PW_PROC_FRAME_LENGTH, ATT_PW_FRAME_ADVANCE,
             null, APP_TO_SUP_STATE);
 
-    dsp_complex_t [[aligned(8)]] in_frame[ATT_PW_INPUT_CHANNEL_PAIRS][ATT_PW_PROC_FRAME_LENGTH];
+    vtb_ch_pair_t [[aligned(8)]] in_frame[ATT_PW_INPUT_CHANNEL_PAIRS][ATT_PW_PROC_FRAME_LENGTH];
     memset(in_frame, 0, sizeof(in_frame));
-    dsp_complex_t  [[aligned(8)]]output_frame[ATT_PW_OUTPUT_CHANNEL_PAIRS][ATT_PW_FRAME_ADVANCE];
+    vtb_ch_pair_t  [[aligned(8)]]output_frame[ATT_PW_OUTPUT_CHANNEL_PAIRS][ATT_PW_FRAME_ADVANCE];
+
+    vtb_md_t md_rx, md_tx;
 
     while(1){
 
-        vtb_rx_pairs(app_to_dsp, rx_state, (in_frame, dsp_complex_t[]));
+        vtb_rx_notification_and_data(app_to_dsp, rx_state, (in_frame, vtb_ch_pair_t[]), md_rx);
 
         //TODO copy input to output and lose
         memcpy(output_frame, in_frame, sizeof(output_frame));
 
-        vtb_tx_pairs(dsp_to_app, (output_frame, dsp_complex_t[]), ATT_PW_OUTPUT_CHANNEL_PAIRS*2, ATT_PW_FRAME_ADVANCE);
+        vtb_tx_notification_and_data(dsp_to_app, (output_frame, vtb_ch_pair_t[]), ATT_PW_OUTPUT_CHANNEL_PAIRS*2, ATT_PW_FRAME_ADVANCE, md_tx);
     }
 }
 
