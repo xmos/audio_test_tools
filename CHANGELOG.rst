@@ -1,6 +1,12 @@
 Audio test tools change log
 ===========================
 
+1.6.0
+-----
+
+  * ADDED: common_utils.py for loading/saving json/ini configs
+  * FIXED: Enabled more tests on Jenkins
+
 1.5.0
 -----
 
