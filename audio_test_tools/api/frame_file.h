@@ -1,3 +1,5 @@
+// Copyright (c) 2017-2019, XMOS Ltd, All rights reserved
+
 /*
  * frame_file.h
  *
