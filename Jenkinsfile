@@ -15,6 +15,11 @@ pipeline {
         prepareAppsSandbox("${VIEW}", "${REPO}")
       }
     }
+    stage('SW reference checks') {
+      steps {
+        xcoreSwrefChecks("${REPO}")
+      }
+    }
     stage('test_parse_wav_header') {
       steps {
         viewEnv() {
