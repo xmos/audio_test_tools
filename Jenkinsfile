@@ -16,17 +16,34 @@ pipeline {
       }
     }
     stage('SW reference checks (NOT ALL)') {
-      steps {
-        viewEnv() {
-          echo "TODO: Add full Swref checks: Requires fix for #86"
-          def checks = [:]
-
-          checks['Flake8'] = { flake("${repo}") }
-          checks['Source'] = { sourceCheck("${repo}") }
-          checks['Changelog (NOT ENABLED)'] = { echo "TODO: Add full Swref checks: Requires fix for #86" }//xcoreChangelogCheck("${repo}") }
-          checks['Clang Style'] = { clangStyleCheck() }
-
-          parallel checks
+      parallel {
+        stage ("Flake 8") {
+          steps {
+            viewEnv() {
+              flake("${REPO}")
+            }
+          }
+        }
+        stage ("Copyright") {
+          steps {
+            viewEnv() {
+              sourceCheck("${REPO}")
+            }
+          }
+        }
+        stage ("Changelog (NOT IMPLEMENTED)") {
+          steps {
+            viewEnv() {
+              echo "TODO: Add full Swref checks: Requires fix for #86"
+            }
+          }
+        }
+        stage ("Clang style") {
+          steps {
+            viewEnv() {
+              clangStyleCheck()
+            }
+          }
         }
       }
     }
