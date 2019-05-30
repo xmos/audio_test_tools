@@ -15,9 +15,19 @@ pipeline {
         prepareAppsSandbox("${VIEW}", "${REPO}")
       }
     }
-    stage('SW reference checks') {
+    stage('SW reference checks (NOT ALL)') {
       steps {
-        xcoreSwrefChecks("${REPO}")
+        viewEnv() {
+          echo "TODO: Add full Swref checks: Requires fix for #86"
+          def checks = [:]
+
+          checks['Flake8'] = { flake("${repo}") }
+          checks['Source'] = { sourceCheck("${repo}") }
+          checks['Changelog (NOT ENABLED)'] = { echo "TODO: Add full Swref checks: Requires fix for #86" }//xcoreChangelogCheck("${repo}") }
+          checks['Clang Style'] = { clangStyleCheck() }
+
+          parallel checks
+        }
       }
     }
     stage('test_parse_wav_header') {
