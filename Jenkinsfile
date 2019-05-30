@@ -39,6 +39,17 @@ pipeline {
         }
       }
     }
+    stage('Build test_process_wav') {
+      steps {
+        viewEnv() {
+          dir("${REPO}/tests/test_process_wav") {
+            withEnv(["PATH+PYDIR=/usr/local/bin"]) {
+              sh "xwaf configure build"
+            }
+          }
+        }
+      }
+    }
   }
   post {
     success {
