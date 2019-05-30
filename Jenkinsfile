@@ -28,6 +28,17 @@ pipeline {
         }
       }
     }
+    stage('att_unit_tests') {
+      steps {
+        viewEnv() {
+          dir("${REPO}/tests/att_unit_tests") {
+            withEnv(["PATH+PYDIR=/usr/local/bin"]) {
+              sh "xwaf configure build test"
+            }
+          }
+        }
+      }
+    }
   }
   post {
     success {
