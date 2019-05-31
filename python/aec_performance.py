@@ -4,6 +4,13 @@ import numpy as np
 
 EPSILON = 1e-99
 
+METRICS = set([
+    'AEC_ERLE',
+    'AEC_ERLE_INTERFERENCE',
+    'AEC_ERLE_RECOVERY',
+    'AEC_ERLE_RECONVERGE'
+])
+
 def apply_phase_compensation(y_wav_data, x_wav_data, phase_compensation=32):
     return (y_wav_data[:, phase_compensation:], x_wav_data[:, :-phase_compensation])
 
@@ -48,7 +55,7 @@ def get_result(metric, value, filename, channel, start, end):
     }
 
     grade = None
-    if metric == 'ERLE':
+    if metric == 'AEC_ERLE':
         if value >= 40.0:
             grade = 'Outstanding'
         elif value >= 30.0:
@@ -57,7 +64,7 @@ def get_result(metric, value, filename, channel, start, end):
             grade = 'Warning'
         elif value < 20.0:
             grade = 'Fail'
-    if metric == 'ERLE_INTERFERENCE':
+    if metric == 'AEC_ERLE_INTERFERENCE':
         if value <= 15.0:
             grade = 'Outstanding'
         elif value <= 20.0:
@@ -66,7 +73,7 @@ def get_result(metric, value, filename, channel, start, end):
             grade = 'Warning'
         elif value > 25.0:
             grade = 'Fail'
-    elif metric == 'ERLE_RECOVERY':
+    elif metric == 'AEC_ERLE_RECOVERY':
         if value >= -5.0:
             grade = 'Outstanding'
         elif value >= -10.0:
@@ -75,7 +82,7 @@ def get_result(metric, value, filename, channel, start, end):
             grade = 'Warning'
         elif value < -15.0:
             grade = 'Fail'
-    elif metric == 'ERLE_RECONVERGE':
+    elif metric == 'AEC_ERLE_RECONVERGE':
         if value >= 30.0:
             grade = 'Outstanding'
         elif value >= 25.0:
