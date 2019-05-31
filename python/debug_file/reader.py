@@ -1,3 +1,4 @@
+# Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
 
 
 from .v0.parser import parser as parser_v0

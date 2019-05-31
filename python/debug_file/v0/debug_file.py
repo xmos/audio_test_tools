@@ -1,3 +1,4 @@
+# Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
 
 import debug_file.utils as utils
 
