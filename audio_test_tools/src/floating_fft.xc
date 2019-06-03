@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2017-2019, XMOS Ltd, All rights reserved
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
@@ -138,6 +138,12 @@ void att_inverse_fft (
             }
         }
     }
+
+    for(unsigned i=0;i<N;i++){
+        pts[i].re /= N;
+        pts[i].im /= N;
+    }
+
 }
 
 #pragma unsafe arrays
