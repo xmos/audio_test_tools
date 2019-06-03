@@ -7,6 +7,7 @@ from __future__ import print_function
 import os
 import configparser
 import ast
+import numpy as np
 
 import numpy as np
 
