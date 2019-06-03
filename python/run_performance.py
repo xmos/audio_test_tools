@@ -30,8 +30,12 @@ def process_aec(testset):
     if not os.path.isfile(output_file):
         # process input
         if y_channel_count == 2:
-            config_file = '../../lib_aec/lib_aec/config/stereo_aec_two_mic.json'
-            cmd = f'test_wav_aec.py {input_file} {output_file} {config_file}'
+            # config_file = '../../lib_aec/lib_aec/config/stereo_aec_two_mic.json'
+            # cmd = f'test_wav_aec.py {input_file} {output_file} {config_file}'
+            config_file = '../../lib_aec/lib_aec/config/stereo_aec_config.ini'
+            cmd = f'test_wav_aec.py --x_channel_count 2 --y_channel_count 2 --config  {config_file} {input_file} {output_file}'
+            # print(cmd)
+            # exit(0)
         else:
             raise Exception(f'y_channel_count = {y_channel_count}, only stereo is supported')
         
@@ -63,13 +67,13 @@ def gather_aec(testset):
         start = int(annotation['start'] * rate)
         end = int(annotation['end'] * rate)
         for metric in annotation['metrics']:
-            if metric['type'] == 'AEC_ERLE':
+            if metric == 'AEC_ERLE':
                 erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
                 for ch, e in enumerate(erle):
                     results.append(aec_performance.get_result('AEC_ERLE',
                         e, testset['filename'], ch, annotation['start'], annotation['end'])
                     )
-            elif metric['type'] == 'AEC_ERLE_RECOVERY':
+            elif metric == 'AEC_ERLE_RECOVERY':
                 start = int((annotation['start'] - 2) * rate)
                 end = int((annotation['start'] - 0.25) * rate)
                 before_erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
@@ -81,7 +85,7 @@ def gather_aec(testset):
                     results.append(aec_performance.get_result('AEC_ERLE_RECOVERY',
                         e, testset['filename'], ch, annotation['start'], annotation['end'])
                     )
-            elif metric['type'] == 'AEC_ERLE_RECONVERGE':
+            elif metric == 'AEC_ERLE_RECONVERGE':
                 start = int(annotation['end'] * rate)
                 end = start + int(2 * rate)
                 erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
@@ -89,13 +93,13 @@ def gather_aec(testset):
                     results.append(aec_performance.get_result('AEC_ERLE_RECONVERGE',
                         e, testset['filename'], ch, annotation['start'], annotation['end'])
                     )
-            elif metric['type'] == 'AEC_ERLE_INTERFERENCE':
+            elif metric == 'AEC_ERLE_INTERFERENCE':
                 erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
                 for ch, e in enumerate(erle):
                     results.append(aec_performance.get_result('AEC_ERLE_INTERFERENCE',
                         e, testset['filename'], ch, annotation['start'], annotation['end'])
                     )
-            elif metric['type'] == 'AEC_KEYWORD_COUNT':
+            elif metric == 'AEC_KEYWORD_COUNT':
                 if not output_file_keyword:
                     output_file_keyword = testset['aec_output_file_keyword']
                     cmd = f'sox {output_file} -b 16 {output_file_keyword} remix {ASR_CHANNEL+1}'
@@ -103,7 +107,7 @@ def gather_aec(testset):
 
                 detections = keyword_performance.get_sensory_detections(output_file_keyword)
                 results.append(keyword_performance.get_result('AEC_KEYWORD_COUNT',
-                    len(detections), metric['truth'], testset['filename'], 0, annotation['start'], annotation['end'])
+                    len(detections), annotation['keywords'], testset['filename'], 0, annotation['start'], annotation['end'])
                 )
 
     return results
@@ -124,15 +128,16 @@ def process_aes(testset, use_aec):
         # process input
         if y_channel_count == 2:
             # make config files
-            sup_config_file = '../../lib_noise_suppression/lib_noise_suppression/config/stereo_two_mic.json'
-            with open(sup_config_file, 'r') as fd:
-                config = json.loads(fd.read())
-                config['ns_parameters'] = None
-                aes_config_file = os.path.join(tempfile.gettempdir(), 'aes.config')
-                with open(aes_config_file, 'w') as out:
-                    out.write(json.dumps(config))
+            # sup_config_file = '../../lib_noise_suppression/lib_noise_suppression/config/stereo_two_mic.json'
+            # with open(sup_config_file, 'r') as fd:
+            #     config = json.loads(fd.read())
+            #     config['ns_parameters'] = None
+            #     aes_config_file = os.path.join(tempfile.gettempdir(), 'aes.config')
+            #     with open(aes_config_file, 'w') as out:
+            #         out.write(json.dumps(config))
 
-            cmd = f'test_wav_suppression.py {input_file} {output_file} {aes_config_file}'
+            # cmd = f'test_wav_suppression.py {input_file} {output_file} {aes_config_file}'
+            cmd = f'test_wav_suppression.py {input_file} 2 2 {output_file} 1 0'
         else:
             raise Exception(f'y_channel_count = {y_channel_count}, only stereo is supported')
 
@@ -165,7 +170,7 @@ def gather_aes(testset):
         start = int(annotation['start'] * rate)
         end = int(annotation['end'] * rate)
         for metric in annotation['metrics']:
-            if metric['type'] == 'AES_ERLE':
+            if metric == 'AES_ERLE':
                 erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
                 for ch, e in enumerate(erle):
                     results.append(sup_performance.get_result('AES_ERLE',
@@ -201,12 +206,22 @@ def gather_aec_aes(testset):
         start = int(annotation['start'] * rate)
         end = int(annotation['end'] * rate)
         for metric in annotation['metrics']:
-            if metric['type'] == 'AEC+AES_ERLE':
+            if metric == 'AEC+AES_ERLE':
                 erle = aec_performance.get_erle(far_signal[:,start:end], error_signal[ASR_CHANNEL][start:end])
                 for ch, e in enumerate(erle):
                     results.append(sup_performance.get_result('AEC+AES_ERLE',
                         e, testset['filename'], ch, annotation['start'], annotation['end'])
                     )
+            elif metric == 'AEC+AES_KEYWORD_COUNT':
+                if not output_file_keyword:
+                    output_file_keyword = testset['aec_output_file_keyword']
+                    cmd = f'sox {output_file} -b 16 {output_file_keyword} remix {ASR_CHANNEL+1}'
+                    subprocess.call(cmd, stdin=None, stdout=None, stderr=None, shell=True)
+
+                detections = keyword_performance.get_sensory_detections(output_file_keyword)
+                results.append(keyword_performance.get_result('AEC+AES_KEYWORD_COUNT',
+                    len(detections), annotation['keywords'], testset['filename'], 0, annotation['start'], annotation['end'])
+                )
 
     return results
 
@@ -221,15 +236,15 @@ def process_ns(testset):
         # process input
         if y_channel_count == 2:
             # make config files
-            sup_config_file = '../../lib_noise_suppression/lib_noise_suppression/config/stereo_two_mic.json'
-            with open(sup_config_file, 'r') as fd:
-                config = json.loads(fd.read())
-                config['aes_parameters'] = None
-                aes_config_file = os.path.join(tempfile.gettempdir(), 'ns.config')
-                with open(aes_config_file, 'w') as out:
-                    out.write(json.dumps(config))
-
-            cmd = f'test_wav_suppression.py {input_file} {output_file} {aes_config_file}'
+            # sup_config_file = '../../lib_noise_suppression/lib_noise_suppression/config/stereo_two_mic.json'
+            # with open(sup_config_file, 'r') as fd:
+            #     config = json.loads(fd.read())
+            #     config['aes_parameters'] = None
+            #     aes_config_file = os.path.join(tempfile.gettempdir(), 'ns.config')
+            #     with open(aes_config_file, 'w') as out:
+            #         out.write(json.dumps(config))
+            # cmd = f'test_wav_suppression.py {input_file} {output_file} {aes_config_file}'
+            cmd = f'test_wav_suppression.py {input_file} 2 2 {output_file} 0 1'
         else:
             raise Exception(f'y_channel_count = {y_channel_count}, only stereo is supported')
 
@@ -247,17 +262,25 @@ def gather_ns(testset):
     # load output
     rate, wav_file = scipy.io.wavfile.read(output_file, 'r')
     wav_data, channel_count, file_length = au.parse_audio(wav_file)
-    error_data = wav_data[0:y_channel_count] # processed audio
+    proc_data = wav_data[0:y_channel_count] # processed audio
 
-    # load reference
+    # load mic data
     rate, wav_file = scipy.io.wavfile.read(input_file, 'r')
     wav_data, channel_count, file_length = au.parse_audio(wav_file)
-    x_wav_data = wav_data[y_channel_count:] # reference audio
-
-    error_signal, far_signal = aec_performance.apply_phase_compensation(error_data, x_wav_data)
+    orig_data = wav_data[0:y_channel_count] # original audio
 
     # compute metrics
-    #TODO: implement me!!!!
+    for annotation in testset['annotations']:
+        duration = annotation['end']
+        start = int(annotation['start'] * rate)
+        end = int(annotation['end'] * rate)
+        for metric in annotation['metrics']:
+            if metric == 'NS':
+                sup = sup_performance.get_suppression(orig_data[:,start:end], proc_data[ASR_CHANNEL][start:end])
+                for ch, e in enumerate(sup):
+                    results.append(sup_performance.get_result('NS',
+                        e, testset['filename'], ch, annotation['start'], annotation['end'])
+                    )
 
     return results
 
@@ -305,14 +328,13 @@ def load_dataset(input_path, output_path, dataset_file, tests):
                 components = set()
                 for annotation in f['annotations']:
                     for metric in annotation['metrics']:
-                        metric_type = metric['type']
-                        if metric_type in aec_performance.METRICS:
+                        if metric in aec_performance.METRICS:
                             components.add('aec')
-                        elif metric_type in sup_performance.AES_METRICS:
+                        elif metric in sup_performance.AES_METRICS:
                             components.add('aes')
-                        elif metric_type in sup_performance.AEC_AES_METRICS:
+                        elif metric in sup_performance.AEC_AES_METRICS:
                             components.add('aec+aes')
-                        elif metric_type in sup_performance.NS_METRICS:
+                        elif metric in sup_performance.NS_METRICS:
                             components.add('ns')
                 f['components'] = list(components)
 

@@ -49,7 +49,7 @@ def get_result(metric, value, truth, filename, channel, start, end):
     accuracy = float(value) / float(truth)
 
     grade = None
-    if metric == 'KEYWORD_COUNT':
+    if metric == 'AEC_KEYWORD_COUNT' or metric == 'AEC+AES_KEYWORD_COUNT':
         if accuracy >= .99:
             grade = 'Outstanding'
         elif accuracy >= .95:
