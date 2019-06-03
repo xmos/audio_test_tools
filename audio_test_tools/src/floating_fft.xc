@@ -138,6 +138,12 @@ void att_inverse_fft (
             }
         }
     }
+
+    for(unsigned i=0;i<N;i++){
+        pts[i].re /= N;
+        pts[i].im /= N;
+    }
+
 }
 
 #pragma unsafe arrays
