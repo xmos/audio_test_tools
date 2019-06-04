@@ -4,7 +4,8 @@ Audio test tools change log
 1.6.0
 -----
 
-  * ADDED: common_utils.py for loading/saving json/ini configs (with '//' comments)
+  * ADDED: common_utils.py for loading/saving json configs (with '//' comments)
+  * ADDED: common_utils.py for converting json files to header files
   * FIXED: Enabled more tests on Jenkins
   * REMOVED: Function to load ini files
 
