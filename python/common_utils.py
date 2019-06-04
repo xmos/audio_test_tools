@@ -12,12 +12,16 @@ def json_to_dict(config_file, print_param=False):
         input_str = f.read()
         # Remove '//' comments
         json_str = re.sub(r'//.*\n', '\n', input_str)
+        if print_param is True:
+            print(json_str)
         datastore = json.loads(json_str)
         f.close()
     return datastore
 
 def dict_to_json(config_dict, config_file, print_param=False):
     json_dump = json.dumps(config_dict, indent=4)
+    if print_param is True:
+        print(json_dump)
     with open(config_file, "w") as f:
         f.write(json_dump)
         f.close()
@@ -45,6 +49,9 @@ def json_to_header_file(config_file, header_file='', print_param=False):
     if header_file is '':
         header_file = config_file.replace('.json', '.h')
     datastore = json_to_dict(config_file)
+    if 'algo_name' not in datastore:
+        print("Error: missing algo_name in dictionary")
+        exit(1)
     json_to_header_params(datastore['algo_name'], datastore, header_file, print_param)
 
 def select_process_channels(y_wav_data, channels_to_process):
