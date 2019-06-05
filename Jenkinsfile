@@ -15,6 +15,38 @@ pipeline {
         prepareAppsSandbox("${VIEW}", "${REPO}")
       }
     }
+    stage('SW reference checks (NOT ALL)') {
+      parallel {
+        stage ("Flake 8") {
+          steps {
+            viewEnv() {
+              flake("${REPO}")
+            }
+          }
+        }
+        stage ("Copyright") {
+          steps {
+            viewEnv() {
+              sourceCheck("${REPO}")
+            }
+          }
+        }
+        stage ("Changelog (NOT IMPLEMENTED)") {
+          steps {
+            viewEnv() {
+              echo "TODO: Add full Swref checks: Requires fix for #86"
+            }
+          }
+        }
+        stage ("Clang style") {
+          steps {
+            viewEnv() {
+              clangStyleCheck()
+            }
+          }
+        }
+      }
+    }
     stage('test_parse_wav_header') {
       steps {
         viewEnv() {
@@ -23,6 +55,28 @@ pipeline {
             withEnv(["PATH+PYDIR=/usr/local/bin"]) {
               // Continue to next stage if a test fails, the test is set as failure at the end
               sh "python -m pytest test_wav.py"
+            }
+          }
+        }
+      }
+    }
+    stage('att_unit_tests') {
+      steps {
+        viewEnv() {
+          dir("${REPO}/tests/att_unit_tests") {
+            withEnv(["PATH+PYDIR=/usr/local/bin"]) {
+              sh "xwaf configure build test"
+            }
+          }
+        }
+      }
+    }
+    stage('Build test_process_wav') {
+      steps {
+        viewEnv() {
+          dir("${REPO}/tests/test_process_wav") {
+            withEnv(["PATH+PYDIR=/usr/local/bin"]) {
+              sh "xwaf configure build"
             }
           }
         }
