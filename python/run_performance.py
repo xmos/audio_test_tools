@@ -30,12 +30,8 @@ def process_aec(testset):
     if not os.path.isfile(output_file):
         # process input
         if y_channel_count == 2:
-            # config_file = '../../lib_aec/lib_aec/config/stereo_aec_two_mic.json'
-            # cmd = f'test_wav_aec.py {input_file} {output_file} {config_file}'
-            config_file = '../../lib_aec/lib_aec/config/stereo_aec_config.ini'
-            cmd = f'test_wav_aec.py --x_channel_count 2 --y_channel_count 2 --config  {config_file} {input_file} {output_file}'
-            # print(cmd)
-            # exit(0)
+            config_file = '../../lib_aec/lib_aec/config/stereo_aec_two_mic.json'
+            cmd = f'test_wav_aec.py {input_file} {output_file} {config_file}'
         else:
             raise Exception(f'y_channel_count = {y_channel_count}, only stereo is supported')
         
@@ -128,16 +124,17 @@ def process_aes(testset, use_aec):
         # process input
         if y_channel_count == 2:
             # make config files
-            # sup_config_file = '../../lib_noise_suppression/lib_noise_suppression/config/stereo_two_mic.json'
-            # with open(sup_config_file, 'r') as fd:
-            #     config = json.loads(fd.read())
-            #     config['ns_parameters'] = None
-            #     aes_config_file = os.path.join(tempfile.gettempdir(), 'aes.config')
-            #     with open(aes_config_file, 'w') as out:
-            #         out.write(json.dumps(config))
+            sup_config_file = '../../lib_noise_suppression/lib_noise_suppression/config/stereo_two_mic.json'
+            with open(sup_config_file, 'r') as fd:
+                config = json.loads(fd.read())
+                config['ns_parameters'] = None
+                aes_config_file = os.path.join(tempfile.gettempdir(), 'aes.config')
+                with open(aes_config_file, 'w') as out:
+                    out.write(json.dumps(config))
+            cmd = f'test_wav_suppression.py {input_file} {output_file} {aes_config_file}'
 
-            # cmd = f'test_wav_suppression.py {input_file} {output_file} {aes_config_file}'
-            cmd = f'test_wav_suppression.py {input_file} 2 2 {output_file} 1 0'
+            # develop branch
+            #cmd = f'test_wav_suppression.py {input_file} 2 2 {output_file}'
         else:
             raise Exception(f'y_channel_count = {y_channel_count}, only stereo is supported')
 
@@ -236,15 +233,17 @@ def process_ns(testset):
         # process input
         if y_channel_count == 2:
             # make config files
-            # sup_config_file = '../../lib_noise_suppression/lib_noise_suppression/config/stereo_two_mic.json'
-            # with open(sup_config_file, 'r') as fd:
-            #     config = json.loads(fd.read())
-            #     config['aes_parameters'] = None
-            #     aes_config_file = os.path.join(tempfile.gettempdir(), 'ns.config')
-            #     with open(aes_config_file, 'w') as out:
-            #         out.write(json.dumps(config))
-            # cmd = f'test_wav_suppression.py {input_file} {output_file} {aes_config_file}'
-            cmd = f'test_wav_suppression.py {input_file} 2 2 {output_file} 0 1'
+            sup_config_file = '../../lib_noise_suppression/lib_noise_suppression/config/stereo_two_mic.json'
+            with open(sup_config_file, 'r') as fd:
+                config = json.loads(fd.read())
+                config['aes_parameters'] = None
+                aes_config_file = os.path.join(tempfile.gettempdir(), 'ns.config')
+                with open(aes_config_file, 'w') as out:
+                    out.write(json.dumps(config))
+            cmd = f'test_wav_suppression.py {input_file} {output_file} {aes_config_file}'
+            
+            # develop
+            #cmd = f'test_wav_suppression.py {input_file} 2 2 {output_file} 0 1'
         else:
             raise Exception(f'y_channel_count = {y_channel_count}, only stereo is supported')
 
