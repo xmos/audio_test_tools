@@ -11,7 +11,7 @@ import ast
 import numpy as np
 import json
 
-def json_to_dict(config_file, print_param=False):
+def json_to_dict(config_file):
     datastore = None
     with open(config_file, "r") as f:
         input_str = f.read()
@@ -21,7 +21,7 @@ def json_to_dict(config_file, print_param=False):
         f.close()
     return datastore
 
-def dict_to_json(config_dict, config_file, print_param=False):
+def dict_to_json(config_dict, config_file):
     json_dump = json.dumps(config_dict, indent=4)
     with open(config_file, "w") as f:
         f.write(json_dump)
@@ -41,5 +41,3 @@ def select_process_channels(y_wav_data, channels_to_process):
         y_wav_data = y_wav_data[channels_to_process]
 
     return y_wav_data, y_channel_count
-
-
