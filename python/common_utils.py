@@ -88,6 +88,12 @@ class field_data:
         self.name = name
         self.datatype = datatype
         self.num = num
+    def __repr__(self):
+        return "<Name:{} DataType:{} Num:{}>".format(self.name, self.datatype, self.num)
+
+    def __str__(self):
+        return "<Name:{} DataType:{} Num:{}>".format(self.name, self.datatype, self.num)
+
 
 def collect_structs(header_file):
     with open(header_file, 'r') as f:
@@ -115,7 +121,7 @@ def collect_structs(header_file):
                     new_field = field_data(s.group(2), s.group(1), int(num_values))
                     current_struct.append(new_field)
                 continue
-    #pprint.pprint(list_of_structs)
+    pprint.pprint(list_of_structs)
     return list_of_structs
 
 def convert_value(datatype, val):
@@ -138,48 +144,71 @@ def convert_value(datatype, val):
         val = "{}, {}".format(m,e)
     return val
 
-def add_values_to_header_file(f_handle, top_struct, list_of_structs, datastore):
-    f_handle.write("{}_t {} = {{\n".format(top_struct, top_struct))
-    tabs = '\t'
+def parse_struct(f_handle, top_struct, list_of_structs, datastore, tabs):
     for top_struct_field in list_of_structs[top_struct]:
         for idx in range(top_struct_field.num):
             f_handle.write("{}{{\n".format(tabs))
-            tabs += '\t'        
-            sub_field = list_of_structs[top_struct_field.datatype.replace('_t','')]
-            for item in sub_field:
-                value_to_print = convert_value(item.datatype, datastore[top_struct_field.name][idx][item.name])
-                f_handle.write("{}// {} {}\n".format(tabs, item.datatype, item.name))
+            tabs += '    '
+
+            datatype = re.sub('_t$', '', top_struct_field.datatype)
+            # check if the data type is a struct
+            if datatype in list_of_structs.keys():
+                sub_field = list_of_structs[top_struct_field.datatype.replace('_t','')]
+                if datatype not in  datastore.keys():
+                    for item in sub_field:
+                        json_val = datastore[top_struct_field.name][idx][item.name]
+                        value_to_print = convert_value(item.datatype, json_val)
+                        f_handle.write("{}// {} {} -> {}\n".format(tabs, item.datatype, item.name, json_val))
+                        f_handle.write("{}{{ {} }},\n".format(tabs,value_to_print))
+                        del datastore[top_struct_field.name][idx][item.name]
+                    tabs = tabs[:-4]
+                    f_handle.write("{}}},\n".format(tabs))
+                else:
+                    parse_struct(f_handle, top_struct_field.name, list_of_structs, datastore[top_struct_field.name], tabs)
+                    tabs = tabs[:-4]                    
+            else:
+                item = top_struct_field
+                json_val = datastore[top_struct_field.name]
+                value_to_print = convert_value(item.datatype, json_val)
+                f_handle.write("{}// {} {} -> {}\n".format(tabs, item.datatype, item.name, json_val))
                 f_handle.write("{}{{ {} }},\n".format(tabs,value_to_print))
-                del datastore[top_struct_field.name][idx][item.name]
-            tabs = tabs[-1]
-            f_handle.write("{}}},\n".format(tabs))
-        while {} in datastore[top_struct_field.name]:
-            datastore[top_struct_field.name].remove({})
-        if not datastore[top_struct_field.name]:
-            del datastore[top_struct_field.name]
-        else:
-            print("Error: dict values not assigned:\n".format(datastore[top_struct_field.name]))
-        tabs = tabs[-1]
+                tabs = tabs[:-4]
+                f_handle.write("{}}},\n".format(tabs))
+                
+                del datastore[top_struct_field.name]
+
+        #print(datastore)
+        #while {} in datastore[top_struct_field.name]:
+        #    print("\n\n77777\n\n")
+        #    datastore[top_struct_field.name].remove({})
+        #if not datastore[top_struct_field.name]:
+        #    del datastore[top_struct_field.name]
+        #else:
+        #    print("Error: dict values not assigned:\n".format(datastore[top_struct_field.name]))
+    tabs = tabs[:-4]
 
     if datastore:
         print("Error: dict values not assigned:\n".format(datastore))
-    f_handle.write('};\n')
+    f_handle.write('{}}};\n'.format(tabs))
 
                 
 
 
-def json_to_header_file(config_file, header_file='agc_ch_state.h', print_param=False):
+def json_to_header_file(config_file, header_file='agc_state.h', print_param=False):
     output_header_file = config_file.replace('.json', '.h')
     datastore = json_to_dict(config_file)
     #if 'module_name' not in datastore:
     #    print("Error: missing module_name in dictionary")
     #    exit(1)
-    pprint.pprint(datastore)
+    top_struct = header_file[:-2]
     list_of_structs = collect_structs(header_file)
     with open(output_header_file, 'w') as f_handle:
         header_file_underscore = header_file.replace('.', '_')
         f_handle.write('#ifndef {}\n#define {}\n\n'.format(header_file_underscore, header_file_underscore))
-        add_values_to_header_file(f_handle, 'agc_state', list_of_structs, datastore)
+        f_handle.write("/* This is an autogenerated file, please don't modify it manually*/\n\n")        
+        f_handle.write("{}_t {} = {{\n".format(top_struct, top_struct))
+        tabs = '    '      
+        parse_struct(f_handle, top_struct, list_of_structs, datastore, tabs)
         f_handle.write('\n#endif // {}\n'.format(header_file_underscore))
     pprint.pprint(datastore)
 
