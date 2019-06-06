@@ -121,7 +121,6 @@ def collect_structs(header_file):
                     new_field = field_data(s.group(2), s.group(1), int(num_values))
                     current_struct.append(new_field)
                 continue
-    pprint.pprint(list_of_structs)
     return list_of_structs
 
 def convert_value(datatype, val):
@@ -174,17 +173,19 @@ def parse_struct(f_handle, top_struct, list_of_structs, datastore, tabs):
                 f_handle.write("{}{{ {} }},\n".format(tabs,value_to_print))
                 tabs = tabs[:-4]
                 f_handle.write("{}}},\n".format(tabs))
-                
                 del datastore[top_struct_field.name]
 
-        #print(datastore)
-        #while {} in datastore[top_struct_field.name]:
-        #    print("\n\n77777\n\n")
-        #    datastore[top_struct_field.name].remove({})
-        #if not datastore[top_struct_field.name]:
-        #    del datastore[top_struct_field.name]
-        #else:
-        #    print("Error: dict values not assigned:\n".format(datastore[top_struct_field.name]))
+        #if top_struct_field.name in datastore.keys() and datastore[top_struct_field.name]:
+        if top_struct_field.name in datastore.keys():
+            if type(datastore[top_struct_field.name])==list:
+                while {} in datastore[top_struct_field.name]:
+                    datastore[top_struct_field.name].remove({})
+            elif datastore[top_struct_field.name]:
+                del datastore[top_struct_field.name]
+            if not datastore[top_struct_field.name]:
+                del datastore[top_struct_field.name]
+            else:
+                print("Error: dict values not assigned:\n".format(datastore[top_struct_field.name]))
     tabs = tabs[:-4]
 
     if datastore:
@@ -210,7 +211,6 @@ def json_to_header_file(config_file, header_file='agc_state.h', print_param=Fals
         tabs = '    '      
         parse_struct(f_handle, top_struct, list_of_structs, datastore, tabs)
         f_handle.write('\n#endif // {}\n'.format(header_file_underscore))
-    pprint.pprint(datastore)
 
 
 def select_process_channels(y_wav_data, channels_to_process):
