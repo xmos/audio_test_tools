@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
 
+from __future__ import print_function
 import sys
 import os
 import hashlib
@@ -31,9 +32,9 @@ def process_aec(testset):
         # process input
         if y_channel_count == 2:
             config_file = '../../lib_aec/lib_aec/config/stereo_aec_two_mic.json'
-            cmd = f'test_wav_aec.py {input_file} {output_file} {config_file}'
+            cmd = 'test_wav_aec.py {} {} {}'.format(input_file, output_file, config_file)
         else:
-            raise Exception(f'y_channel_count = {y_channel_count}, only stereo is supported')
+            raise Exception('y_channel_count = {}, only stereo is supported'.format(y_channel_count))
         
         subprocess.call(cmd, stdin=None, stdout=None, stderr=None, shell=True)
 
@@ -98,7 +99,7 @@ def gather_aec(testset):
             elif metric == 'AEC_KEYWORD_COUNT':
                 if not output_file_keyword:
                     output_file_keyword = testset['aec_output_file_keyword']
-                    cmd = f'sox {output_file} -b 16 {output_file_keyword} remix {ASR_CHANNEL+1}'
+                    cmd = 'sox {} -b 16 {} remix {}'.format(output_file, output_file_keyword, ASR_CHANNEL+1)
                     subprocess.call(cmd, stdin=None, stdout=None, stderr=None, shell=True)
 
                 detections = keyword_performance.get_sensory_detections(output_file_keyword)
@@ -131,12 +132,12 @@ def process_aes(testset, use_aec):
                 aes_config_file = os.path.join(tempfile.gettempdir(), 'aes.config')
                 with open(aes_config_file, 'w') as out:
                     out.write(json.dumps(config))
-            cmd = f'test_wav_suppression.py {input_file} {output_file} {aes_config_file}'
+            cmd = 'test_wav_suppression.py {} {} {}'.format(input_file, output_file, aes_config_file)
 
             # develop branch
-            #cmd = f'test_wav_suppression.py {input_file} 2 2 {output_file}'
+            #cmd = 'test_wav_suppression.py {} 2 2 {}'.format(input_file, output_file)
         else:
-            raise Exception(f'y_channel_count = {y_channel_count}, only stereo is supported')
+            raise Exception('y_channel_count = {}, only stereo is supported'.format(y_channel_count))
 
         subprocess.call(cmd, stdin=None, stdout=None, stderr=None, shell=True)
 
@@ -212,7 +213,7 @@ def gather_aec_aes(testset):
             elif metric == 'AEC+AES_KEYWORD_COUNT':
                 if not output_file_keyword:
                     output_file_keyword = testset['aec_output_file_keyword']
-                    cmd = f'sox {output_file} -b 16 {output_file_keyword} remix {ASR_CHANNEL+1}'
+                    cmd = 'sox {} -b 16 {} remix {}'.format(output_file, output_file_keyword, ASR_CHANNEL+1)
                     subprocess.call(cmd, stdin=None, stdout=None, stderr=None, shell=True)
 
                 detections = keyword_performance.get_sensory_detections(output_file_keyword)
@@ -240,12 +241,12 @@ def process_ns(testset):
                 aes_config_file = os.path.join(tempfile.gettempdir(), 'ns.config')
                 with open(aes_config_file, 'w') as out:
                     out.write(json.dumps(config))
-            cmd = f'test_wav_suppression.py {input_file} {output_file} {aes_config_file}'
+            cmd = 'test_wav_suppression.py {} {} {}'.format(input_file, output_file, aes_config_file)
             
             # develop
-            #cmd = f'test_wav_suppression.py {input_file} 2 2 {output_file} 0 1'
+            #cmd = 'test_wav_suppression.py {} 2 2 {} 0 1'.format(input_file, output_file)
         else:
-            raise Exception(f'y_channel_count = {y_channel_count}, only stereo is supported')
+            raise Exception('y_channel_count = {}, only stereo is supported'.format(y_channel_count))
 
         subprocess.call(cmd, stdin=None, stdout=None, stderr=None, shell=True)
 
@@ -286,7 +287,7 @@ def gather_ns(testset):
 def dispatch_workunit(testset):
     input_file = testset['input_file']
 
-    print(f'dispatching {input_file}')
+    print('dispatching {}'.format(input_file))
 
     results = []
 
@@ -366,7 +367,7 @@ def load_dataset(input_path, output_path, dataset_file, tests):
                     if md5sum == f['md5sum']:
                         dataset.append(f)
                     else:
-                        print(f'WARNING: Skipping {basename} due to checksum failure!')
+                        print('WARNING: Skipping {} due to checksum failure!'.format(basename))
 
     return dataset
 
