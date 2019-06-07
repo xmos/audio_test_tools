@@ -155,7 +155,11 @@ def parse_struct(f_handle, top_struct, list_of_structs, datastore, tabs):
                 sub_field = list_of_structs[top_struct_field.datatype.replace('_t','')]
                 if datatype not in  datastore.keys():
                     for item in sub_field:
-                        json_val = datastore[top_struct_field.name][idx][item.name]
+                        if item.name in datastore[top_struct_field.name][idx].keys():
+                            json_val = datastore[top_struct_field.name][idx][item.name]
+                        else:
+                            print("Error: {} not present in json file".format(item.name))
+                            continue
                         value_to_print = convert_value(item.datatype, json_val)
                         f_handle.write("{}// {} {} -> {}\n".format(tabs, item.datatype, item.name, json_val))
                         f_handle.write("{}{{ {} }},\n".format(tabs,value_to_print))
@@ -184,12 +188,12 @@ def parse_struct(f_handle, top_struct, list_of_structs, datastore, tabs):
                 del datastore[top_struct_field.name]
             if not datastore[top_struct_field.name]:
                 del datastore[top_struct_field.name]
-            else:
-                print("Error: dict values not assigned:\n".format(datastore[top_struct_field.name]))
+            #else:
+            #    print("Error: dict values not assigned:{}\n".format(datastore[top_struct_field.name]))
     tabs = tabs[:-4]
 
     if datastore:
-        print("Error: dict values not assigned:\n".format(datastore))
+        print("Error: dict values not assigned:{}\n".format(datastore))
     f_handle.write('{}}};\n'.format(tabs))
 
                 
