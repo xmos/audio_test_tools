@@ -94,7 +94,6 @@ class field_data:
     def __str__(self):
         return "<Name:{} DataType:{} Num:{}>".format(self.name, self.datatype, self.num)
 
-
 def collect_structs(header_file):
     with open(header_file, 'r') as f:
         lines = f.readlines()
@@ -102,7 +101,7 @@ def collect_structs(header_file):
         list_of_structs = {}
         current_struct = []
         for line in lines:
-            re.sub(r'//.*\n', '', line)
+            line = re.sub(r'//.*\n', '\n', line)
             if re.match("typedef\s+struct\s*{", line):
                 struct_found = 1
                 continue
@@ -143,6 +142,17 @@ def convert_value(datatype, val):
         val = "{}, {}".format(m,e)
     return val
 
+def add_item(f_handle, tabs, json_dict, item):
+    if item.name not in json_dict.keys():
+        print("Error: {} not present in json file".format(item.name))
+        return
+    json_val = json_dict[item.name]
+    value_to_print = convert_value(item.datatype, json_val)
+    f_handle.write("{}// {} {} -> {}\n".format(tabs, item.datatype, item.name, json_val))
+    f_handle.write("{}{{ {} }},\n".format(tabs, value_to_print))
+    del json_dict[item.name]
+
+
 def parse_struct(f_handle, top_struct, list_of_structs, datastore, tabs):
     for top_struct_field in list_of_structs[top_struct]:
         for idx in range(top_struct_field.num):
@@ -155,39 +165,44 @@ def parse_struct(f_handle, top_struct, list_of_structs, datastore, tabs):
                 sub_field = list_of_structs[top_struct_field.datatype.replace('_t','')]
                 if datatype not in  datastore.keys():
                     for item in sub_field:
-                        if item.name in datastore[top_struct_field.name][idx].keys():
-                            json_val = datastore[top_struct_field.name][idx][item.name]
-                        else:
-                            print("Error: {} not present in json file".format(item.name))
-                            continue
-                        value_to_print = convert_value(item.datatype, json_val)
-                        f_handle.write("{}// {} {} -> {}\n".format(tabs, item.datatype, item.name, json_val))
-                        f_handle.write("{}{{ {} }},\n".format(tabs,value_to_print))
-                        del datastore[top_struct_field.name][idx][item.name]
+                        add_item(f_handle, tabs, datastore[top_struct_field.name][idx], item)
+                        #if item.name not in datastore[top_struct_field.name][idx].keys():
+                        #    print("Error: {} not present in json file".format(item.name))
+                        #    continue
+                        #json_val = datastore[top_struct_field.name][idx][item.name]
+                        #value_to_print = convert_value(item.datatype, json_val)
+                        #f_handle.write("{}// {} {} -> {}\n".format(tabs, item.datatype, item.name, json_val))
+                        #f_handle.write("{}{{ {} }},\n".format(tabs,value_to_print))
+                        #del datastore[top_struct_field.name][idx][item.name]
                     tabs = tabs[:-4]
                     f_handle.write("{}}},\n".format(tabs))
                 else:
                     parse_struct(f_handle, top_struct_field.name, list_of_structs, datastore[top_struct_field.name], tabs)
                     tabs = tabs[:-4]                    
             else:
-                item = top_struct_field
-                json_val = datastore[top_struct_field.name]
-                value_to_print = convert_value(item.datatype, json_val)
-                f_handle.write("{}// {} {} -> {}\n".format(tabs, item.datatype, item.name, json_val))
-                f_handle.write("{}{{ {} }},\n".format(tabs,value_to_print))
+                add_item(f_handle, tabs, datastore, top_struct_field)
+                #item = top_struct_field
+                #print(top_struct_field.name)
+                #pprint.pprint(datastore[top_struct_field.name])
+                #if item.name not in datastore.keys():
+                #    print("Error: field {} not present in json file".format(item.name ))
+                #    continue
+                #json_val = datastore[item.name]
+                #value_to_print = convert_value(item.datatype, json_val)
+                #f_handle.write("{}// {} {} -> {}\n".format(tabs, item.datatype, item.name, json_val))
+                # f_handle.write("{}{{ {} }},\n".format(tabs,value_to_print))
                 tabs = tabs[:-4]
                 f_handle.write("{}}},\n".format(tabs))
-                del datastore[top_struct_field.name]
+                #del datastore[top_struct_field.name]
 
-        #if top_struct_field.name in datastore.keys() and datastore[top_struct_field.name]:
         if top_struct_field.name in datastore.keys():
             if type(datastore[top_struct_field.name])==list:
                 while {} in datastore[top_struct_field.name]:
                     datastore[top_struct_field.name].remove({})
-            elif datastore[top_struct_field.name]:
-                del datastore[top_struct_field.name]
             if not datastore[top_struct_field.name]:
                 del datastore[top_struct_field.name]
+            #if not datastore[top_struct_field.name]:
+            #    del datastore[top_struct_field.name]
             #else:
             #    print("Error: dict values not assigned:{}\n".format(datastore[top_struct_field.name]))
     tabs = tabs[:-4]
