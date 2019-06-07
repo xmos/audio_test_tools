@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 import re
 import json
+import pprint
 import numpy as np
 
 def json_to_dict(config_file, print_param=False):
@@ -26,9 +27,7 @@ def dict_to_json(config_dict, config_file, print_param=False):
         f.write(json_dump)
         f.close()
 
-import pprint
-
-class field_data:
+class FieldData:
     def __init__(self, name, datatype, num):
         self.name = name
         self.datatype = datatype
@@ -39,7 +38,7 @@ class field_data:
     def __str__(self):
         return "<Name:{} DataType:{} Num:{}>".format(self.name, self.datatype, self.num)
 
-class json_handler():
+class JsonHandler():
     def __init__(self, json_file, dubug_print):
         self.c_structs = {}
         self.json_dict = {}
@@ -71,28 +70,31 @@ class json_handler():
                         num_values = 1
                         if s.group(3) is not None:
                             num_values = s.group(3).replace('[', '').replace(']', '')
-                        new_field = field_data(s.group(2), s.group(1), int(num_values))
+                        new_field = FieldData(s.group(2), s.group(1), int(num_values))
                         current_struct.append(new_field)
                     continue
+        if self.debug_print:
+            pprint.pprint(self.c_structs)
+
 
     def convert_value(self, datatype, val):
         if re.search('vtb_uq\d+_\d+_t', datatype):
             val = "{}({})".format(datatype[:-2].upper(), val)
-        s  = re.match('vtb_([su])((32)|(64))_float_t', datatype)
+        s = re.match('vtb_([su])((32)|(64))_float_t', datatype)
         if s:
             (m, e) = np.frexp(val)
             m_scale = 0
             if s.group(1) == 's' and s.group(2) == '32':
                 m_scale = np.iinfo(np.int32).max
             elif s.group(1) == 'u' and s.group(2) == '32':
-                m_scale = np.iinfo(np.uint32).max 
+                m_scale = np.iinfo(np.uint32).max
             elif s.group(1) == 's' and s.group(2) == '64':
                 m_scale = np.iinfo(np.int64).max
             elif s.group(1) == 'u' and s.group(2) == '64':
                 m_scale = np.iinfo(np.uint64).max
             m = int(m*m_scale)
             e -= 32
-            val = "{}, {}".format(m,e)
+            val = "{}, {}".format(m, e)
         return val
 
     def add_item(self, json_dict, item):
@@ -115,7 +117,7 @@ class json_handler():
                 datatype = re.sub('_t$', '', top_struct_field.datatype)
                 # check if the data type is a struct
                 if datatype in self.c_structs.keys():
-                    sub_field = self.c_structs[top_struct_field.datatype.replace('_t','')]
+                    sub_field = self.c_structs[top_struct_field.datatype.replace('_t', '')]
                     if datatype not in  datastore.keys():
                         for item in sub_field:
                             self.add_item(datastore[top_struct_field.name][idx], item)
@@ -123,14 +125,14 @@ class json_handler():
                         self.h_file_handle.write("{}}},\n".format(self.tabs))
                     else:
                         self.parse_c_structs(top_struct_field.name, datastore[top_struct_field.name])
-                        self.tabs = self.tabs[:-4]                    
+                        self.tabs = self.tabs[:-4]
                 else:
                     self.add_item(datastore, top_struct_field)
                     self.tabs = self.tabs[:-4]
                     self.h_file_handle.write("{}}},\n".format(self.tabs))
 
             if top_struct_field.name in datastore.keys():
-                if type(datastore[top_struct_field.name])==list:
+                if type(datastore[top_struct_field.name]) == list:
                     while {} in datastore[top_struct_field.name]:
                         datastore[top_struct_field.name].remove({})
                 if not datastore[top_struct_field.name]:
@@ -141,27 +143,29 @@ class json_handler():
             print("Error: dict values not assigned:{}\n".format(datastore))
         self.h_file_handle.write('{}}};\n'.format(self.tabs))
 
-    def json_to_header_file(self, header_file):
+    def create_header_file(self, header_file):
         self.header_file = header_file
         output_header_file = self.json_file.replace('.json', '.h')
         datastore = json_to_dict(self.json_file)
+        if self.debug_print:
+            pprint.pprint(datastore)
+
         #if 'module_name' not in datastore:
         #    print("Error: missing module_name in dictionary")
         #    exit(1)
         top_struct = self.header_file[:-2]
-        self.c_struct = self.collect_c_structs()
+        self.collect_c_structs()
         with open(output_header_file, 'w') as self.h_file_handle:
             header_file_underscore = self.header_file.replace('.', '_')
             self.h_file_handle.write('#ifndef {}\n#define {}\n\n'.format(header_file_underscore, header_file_underscore))
-            self.h_file_handle.write("/* This is an autogenerated file, please don't modify it manually*/\n\n")        
+            self.h_file_handle.write("/* This is an autogenerated file, please don't modify it manually*/\n\n")
             self.h_file_handle.write("{}_t {} = {{\n".format(top_struct, top_struct))
-            self.tabs = '    '      
+            self.tabs = '    '
             self.parse_c_structs(top_struct, datastore)
             self.h_file_handle.write('\n#endif // {}\n'.format(header_file_underscore))
 
-
 def select_process_channels(y_wav_data, channels_to_process):
-    if channels_to_process == None:
+    if channels_to_process is None:
         y_channel_count = len(y_wav_data)
     else:
         channels_to_process = np.asarray(channels_to_process)
@@ -170,4 +174,3 @@ def select_process_channels(y_wav_data, channels_to_process):
         y_channel_count = min(len(y_wav_data), len(channels_to_process))
         y_wav_data = y_wav_data[channels_to_process]
     return y_wav_data, y_channel_count
-
