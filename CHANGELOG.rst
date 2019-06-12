@@ -5,12 +5,12 @@ Audio test tools change log
 -----
 
   * REMOVED: moved dsp_complex_fp to lib_dsp
+  * ADDED: functions to initialize C structs with values in JSON files
 
 1.6.0
 -----
 
   * ADDED: common_utils.py for loading/saving json configs (with '//' comments)
-  * ADDED: common_utils.py for converting json files to header files
   * FIXED: Enabled more tests on Jenkins
   * REMOVED: Function to load ini files
 
