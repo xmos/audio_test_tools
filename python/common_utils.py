@@ -8,6 +8,15 @@ import pprint
 import numpy as np
 
 def json_to_dict(config_file):
+    """ Convert the content of the given JSON file into a dictionary
+
+    Args:
+        config_file: JSON file with the value to parse
+
+    Returns:
+        dictionary with JSON data
+    """
+
     datastore = None
     with open(config_file, "r") as f:
         input_str = f.read()
@@ -18,12 +27,24 @@ def json_to_dict(config_file):
     return datastore
 
 def dict_to_json(config_dict, config_file):
+    """ Convert the content of the given dictionary into a JSON file
+
+    Args:
+        config_dict: dictionary with the value to parse
+        config_file: JSON file to store the values
+
+    Returns:
+        None
+    """
+
     json_dump = json.dumps(config_dict, indent=4)
     with open(config_file, "w") as f:
         f.write(json_dump)
         f.close()
 
-class FieldData:
+class StructFieldData:
+    """ Data type used to store the info about the element of a C struct """
+
     def __init__(self, name, datatype, num):
         self.name = name
         self.datatype = datatype
@@ -45,12 +66,13 @@ class JsonHandler():
         self.debug_print = dubug_print
 
     def collect_c_structs(self):
-        """ Parse the file
+        """ Parse the header file and save all the structs in self._c_structs
+
         Args:
-            duration_ms: length in milliseconds of the RT60
+            None
 
         Returns:
-            Impulse response of RT60
+            None
         """
         with open(self.header_file, 'r') as f:
             lines = f.readlines()
@@ -73,7 +95,7 @@ class JsonHandler():
                         num_values = 1
                         if s.group(3) is not None:
                             num_values = s.group(3).replace('[', '').replace(']', '')
-                        new_field = FieldData(s.group(2), s.group(1), int(num_values))
+                        new_field = StructFieldData(s.group(2), s.group(1), int(num_values))
                         current_struct.append(new_field)
                     continue
         if self.debug_print:
@@ -81,6 +103,15 @@ class JsonHandler():
 
 
     def convert_value(self, datatype, val):
+        """ Convert value from JSON to C value
+        Args:
+            datatype: type of the data in the C struct
+            val: value in the JSON file
+
+        Returns:
+            converted value
+        """
+
         if re.search('vtb_uq\d+_\d+_t', datatype):
             val = "{}({})".format(datatype[:-2].upper(), val)
         s = re.match('vtb_([su])((32)|(64))_float_t', datatype)
@@ -100,55 +131,88 @@ class JsonHandler():
             val = "{}, {}".format(m, e)
         return val
 
-    def add_item(self, json_dict, item):
+    def add_item_to_file(self, json_dict, item):
+        """ Add an item to the self.header_file
+
+        Args:
+            json_dict: JSON dictionary with the item
+            item: item to add
+
+        Returns:
+            None
+        """
+
         if item.name not in json_dict.keys():
             print("Error: {} not present in json file".format(item.name))
             return
         json_val = json_dict[item.name]
         value_to_print = self.convert_value(item.datatype, json_val)
-        self._h_file_handle.write("{}// {} {} -> {}\n".format(self._tabs, item.datatype, item.name, json_val))
+        self._h_file_handle.write("{}// {} {} -> {}\n".format(self._tabs, item.datatype,
+                                                              item.name, json_val))
         self._h_file_handle.write("{}{{ {} }},\n".format(self._tabs, value_to_print))
         del json_dict[item.name]
 
 
-    def parse_c_structs(self, top_struct, datastore):
-        for top_struct_field in self._c_structs[top_struct]:
-            for idx in range(top_struct_field.num):
+    def parse_c_struct(self, struct, datastore):
+        """ Parse the given C struct and update the self.header_file with the JSON values
+
+        Args:
+            struct: C struct to parse
+            datastore: dictionary with the JSON values to look up
+
+        Returns:
+            None
+        """
+
+        for struct_field in self._c_structs[struct]:
+            for idx in range(struct_field.num):
                 self._h_file_handle.write("{}{{\n".format(self._tabs))
                 self._tabs += '    '
 
-                datatype = re.sub('_t$', '', top_struct_field.datatype)
+                datatype = re.sub('_t$', '', struct_field.datatype)
                 # check if the data type is a struct
                 if datatype in self._c_structs.keys():
-                    sub_field = self._c_structs[top_struct_field.datatype.replace('_t', '')]
+                    sub_field = self._c_structs[struct_field.datatype.replace('_t', '')]
                     if datatype not in  datastore.keys():
                         for item in sub_field:
-                            self.add_item(datastore[top_struct_field.name][idx], item)
+                            self.add_item_to_file(datastore[struct_field.name][idx], item)
                         self._tabs = self._tabs[:-4]
                         self._h_file_handle.write("{}}},\n".format(self._tabs))
                     else:
-                        self.parse_c_structs(top_struct_field.name, datastore[top_struct_field.name])
+                        self.parse_c_struct(struct_field.name, datastore[struct_field.name])
                         self._tabs = self._tabs[:-4]
                 else:
-                    self.add_item(datastore, top_struct_field)
+                    self.add_item_to_file(datastore, struct_field)
                     self._tabs = self._tabs[:-4]
                     self._h_file_handle.write("{}}},\n".format(self._tabs))
 
-            if top_struct_field.name in datastore.keys():
-                if type(datastore[top_struct_field.name]) == list:
-                    while {} in datastore[top_struct_field.name]:
-                        datastore[top_struct_field.name].remove({})
-                if not datastore[top_struct_field.name]:
-                    del datastore[top_struct_field.name]
+            if struct_field.name in datastore.keys():
+                if type(datastore[struct_field.name]) == list:
+                    while {} in datastore[struct_field.name]:
+                        datastore[struct_field.name].remove({})
+                if not datastore[struct_field.name]:
+                    del datastore[struct_field.name]
         self._tabs = self._tabs[:-4]
 
         if datastore:
             print("Error: dict values not assigned:{}\n".format(datastore))
         self._h_file_handle.write('{}}};\n'.format(self._tabs))
 
-    def create_header_file(self, header_file):
-        self.header_file = header_file
-        output_header_file = self.json_file.replace('.json', '.h')
+    def create_header_file(self, input_header_file, output_header_file=""):
+        """ Function to create a header file the initialized structs from the JSON file
+            set in self.json_file and the header file given as input
+
+        Args:
+            header_file: name of the header file with the structs to parse
+            output_header_file: name of the header file with the initialized structs
+
+        Returns:
+            None
+        """
+
+        self.header_file = input_header_file
+        if output_header_file == '':
+            output_header_file = self.json_file.replace('.json', '.h')
         datastore = json_to_dict(self.json_file)
         if self.debug_print:
             pprint.pprint(datastore)
@@ -160,11 +224,12 @@ class JsonHandler():
         self.collect_c_structs()
         with open(output_header_file, 'w') as self._h_file_handle:
             header_file_underscore = self.header_file.replace('.', '_')
-            self._h_file_handle.write('#ifndef {}\n#define {}\n\n'.format(header_file_underscore, header_file_underscore))
+            self._h_file_handle.write('#ifndef {}\n#define {}\n\n'.format(header_file_underscore,
+                                                                          header_file_underscore))
             self._h_file_handle.write("/* This is an autogenerated file, please don't modify it manually*/\n\n")
             self._h_file_handle.write("{}_t {} = {{\n".format(top_struct, top_struct))
             self._tabs = '    '
-            self.parse_c_structs(top_struct, datastore)
+            self.parse_c_struct(top_struct, datastore)
             self._h_file_handle.write('\n#endif // {}\n'.format(header_file_underscore))
 
 def select_process_channels(y_wav_data, channels_to_process):
