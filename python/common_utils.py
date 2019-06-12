@@ -7,7 +7,7 @@ import json
 import pprint
 import numpy as np
 
-def json_to_dict(config_file, print_param=False):
+def json_to_dict(config_file):
     datastore = None
     with open(config_file, "r") as f:
         input_str = f.read()
@@ -19,7 +19,7 @@ def json_to_dict(config_file, print_param=False):
         f.close()
     return datastore
 
-def dict_to_json(config_dict, config_file, print_param=False):
+def dict_to_json(config_dict, config_file):
     json_dump = json.dumps(config_dict, indent=4)
     if print_param is True:
         print(json_dump)

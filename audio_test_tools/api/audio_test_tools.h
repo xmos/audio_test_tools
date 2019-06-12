@@ -7,11 +7,6 @@
 #include <stdlib.h>
 #include "dsp.h"
 
-typedef struct  {
-    double re;
-    double im;
-} dsp_complex_fp;
-
 #define CRC_POLY (0xEB31D82E)
 #define ATT_WAV_HEADER_BYTES 44
 
