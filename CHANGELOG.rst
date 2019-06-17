@@ -7,6 +7,18 @@ Audio test tools change log
   * REMOVED: moved dsp_complex_fp to lib_dsp
   * ADDED: test for the fft
 
+1.6.0
+-----
+
+  * ADDED: common_utils.py for loading/saving json/ini configs (with '//' comments)
+  * FIXED: Enabled more tests on Jenkins
+  * REMOVED: Function to load ini files
+
+1.5.0
+-----
+
+  * ADDED: Pipfile + setup.py for pipenv support
+
 1.4.0
 -----
 
