@@ -139,6 +139,7 @@ unsigned att_bfp_vector_complex_short(dsp_complex_short_t * B, int B_exp, dsp_co
 unsigned att_bfp_vector_uint16(uint16_t * B, int B_exp, double * f, size_t start, size_t count);
 unsigned att_bfp_vector_int16(int16_t * B, int B_exp, double * f, size_t start, size_t count);
 unsigned att_bfp_vector_complex(dsp_complex_t * B, int B_exp, dsp_complex_fp * f, size_t start, size_t count);
+{unsigned, unsigned} att_bfp_vector_pair(dsp_complex_t * B, int ch_a_exp, int ch_b_exp, dsp_complex_fp * f, size_t start, size_t count);
 unsigned att_bfp_vector_uint32(uint32_t * B, int B_exp, double * f, size_t start, size_t count);
 unsigned att_bfp_vector_int32(int32_t * B, int B_exp, double * f, size_t start, size_t count);
 unsigned long long att_bfp_vector_uint64(uint64_t * B, int B_exp, double * f, size_t start, size_t count);
@@ -164,6 +165,7 @@ void att_print_python_int16(int16_t * d, size_t length, int d_exp);
 void att_print_python_uint16(uint16_t * d, size_t length, int d_exp);
 void att_print_python_int32(int32_t * d, size_t length, int d_exp);
 void att_print_python_uint32(uint32_t * d, size_t length, int d_exp);
+void att_print_python_double(double * d, size_t length);
 void att_print_python_int64(int64_t * d, size_t length, int d_exp);
 void att_print_python_uint64(uint64_t * d, size_t length, int d_exp);
 void att_print_python_fd_fp(dsp_complex_fp * d, size_t length);

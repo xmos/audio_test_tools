@@ -138,10 +138,10 @@ void att_inverse_fft (
             }
         }
     }
-
+    unsigned log2_N = 31-clz(N);
     for(unsigned i=0;i<N;i++){
-        pts[i].re /= N;
-        pts[i].im /= N;
+        pts[i].re = ldexp(pts[i].re, -log2_N);
+        pts[i].im = ldexp(pts[i].im, -log2_N);
     }
 
 }
@@ -150,10 +150,10 @@ void att_inverse_fft (
 void att_split_spectrum( dsp_complex_fp pts[], const uint32_t N ){
 
     for(uint32_t i=1;i<N/2;i++){
-        double a_re = (pts[i].re + pts[N-i].re)/2;
-        double a_im = (pts[i].im - pts[N-i].im)/2;
-        double b_re = (pts[i].im + pts[N-i].im)/2;
-        double b_im = (-pts[i].re + pts[N-i].re)/2;
+        double a_re = ldexp((pts[i].re + pts[N-i].re), -1);
+        double a_im = ldexp((pts[i].im - pts[N-i].im), -1);
+        double b_re = ldexp((pts[i].im + pts[N-i].im), -1);
+        double b_im = ldexp((-pts[i].re + pts[N-i].re), -1);
 
         pts[i].re = a_re;
         pts[i].im = a_im;
@@ -203,5 +203,3 @@ void att_merge_spectra( dsp_complex_fp pts[], const uint32_t N ){
         pts[N-i].im = b_re-a_im;
     }
 }
-
-

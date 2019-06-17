@@ -5,6 +5,7 @@ Audio test tools change log
 -----
 
   * REMOVED: moved dsp_complex_fp to lib_dsp
+  * ADDED: test for the fft
 
 1.4.0
 -----

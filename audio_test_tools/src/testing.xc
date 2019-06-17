@@ -209,6 +209,26 @@ unsigned att_bfp_vector_complex(dsp_complex_t * B, int B_exp, dsp_complex_fp * f
     return att_bfp_vector_int32(b_int, B_exp, f_double, start*2, count*2);
 }
 
+{unsigned, unsigned} att_bfp_vector_pair(dsp_complex_t * B, int ch_a_exp, int ch_b_exp, dsp_complex_fp * f, size_t start, size_t count){
+    unsigned max_diff_re = 0;
+    unsigned max_diff_im = 0;
+    for(size_t i=start;i<start + count;i++){
+
+        int32_t ch_a = att_double_to_int32(f[i].re, ch_a_exp);
+        int32_t ch_b = att_double_to_int32(f[i].im, ch_b_exp);
+        int diff = ch_a-B[i].re;
+        if (diff < 0 ) diff = -diff;
+        if( (unsigned)diff > max_diff_re)
+            max_diff_re = (unsigned)diff;
+        diff = ch_b-B[i].im;
+        if (diff < 0 ) diff = -diff;
+        if( (unsigned)diff > max_diff_im)
+            max_diff_im = (unsigned)diff;
+
+    }
+    return {max_diff_re, max_diff_im};
+}
+
 unsigned att_bfp_vector_uint32(uint32_t * B, int B_exp, double * f, size_t start, size_t count){
     unsigned max_diff = 0;
     for(size_t i=start;i<start + count;i++){
@@ -357,20 +377,20 @@ void att_print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_
 }
 
 void att_print_python_fd_fp(dsp_complex_fp * d, size_t length){
-    printf("np.asarray([%.12f, ", d[0].re);
+    printf("np.asarray([%.22f, ", d[0].re);
     for(size_t i=1;i<length;i++){
-        printf("%.12f + %.12fj, ", d[i].re,d[i].im);
+        printf("%.22f + %.22fj, ", d[i].re, d[i].im);
     }
-    printf("%.12f])\n", d[0].im);
+    printf("%.22f])\n", d[0].im);
 }
 void att_print_python_td_fp(dsp_complex_fp * d, size_t length, int print_imag){
     printf("np.asarray([");
     if(print_imag){
         for(size_t i=0;i<length;i++)
-            printf("%.12f, ", d[i].im);
+            printf("%.22f, ", d[i].im);
     } else {
         for(size_t i=0;i<length;i++)
-            printf("%.12f, ", d[i].re);
+            printf("%.22f, ", d[i].re);
     }
     printf("])\n");
 }
@@ -400,6 +420,13 @@ void att_print_python_uint32(uint32_t * d, size_t length, int d_exp){
     printf("np.asarray([");
     for(size_t i=0;i<length;i++)
         printf("%.22f, ", att_uint32_to_double( d[i], d_exp));
+    printf("])\n");
+}
+
+void att_print_python_double(double * d, size_t length){
+    printf("np.asarray([");
+    for(size_t i=0;i<length;i++)
+        printf("%.22f, ", d[i]);
     printf("])\n");
 }
 
