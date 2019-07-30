@@ -87,9 +87,6 @@ pipeline {
     success {
       updateViewfiles()
     }
-    failure {
-      slackSend(color: '#FF0000', channel: '#hydra', message: "Fail: ${currentBuild.fullDisplayName} (${env.RUN_DISPLAY_URL})")
-    }
     cleanup {
       cleanWs()
     }
