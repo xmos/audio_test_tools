@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+3.0.0
+-----
+
+  * CHANGED: Build files updated to support new "xcommon" behaviour in xwaf.
+
 2.0.0
 -----
 
