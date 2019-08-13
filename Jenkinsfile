@@ -1,10 +1,10 @@
 @Library('xmos_jenkins_shared_library@develop') _
 pipeline {
   agent {
-    label 'x86 && macOS && brew'        
+    label 'x86_64 && macOS && brew'
   }
   environment {
-    VIEW = 'audio_test_tools_develop'
+    VIEW = "${env.JOB_NAME.contains('PR-') ? 'audio_test_tools_'+env.CHANGE_TARGET : 'audio_test_tools_'+env.BRANCH_NAME}"
     REPO = 'audio_test_tools'
   }
   options {
