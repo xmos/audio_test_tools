@@ -10,6 +10,27 @@ pipeline {
   options {
     skipDefaultCheckout()
   }
+  triggers {
+    /* Trigger this Pipeline on changes to the repos dependencies
+     *
+     * If this Pipeline is running in a pull request, the triggers are set
+     * on the base branch the PR is set to merge in to.
+     *
+     * Otherwise the triggers are set on the branch of a matching name to the
+     * one this Pipeline is on.
+     */
+    upstream(
+      upstreamProjects:
+        (env.JOB_NAME.contains('PR-') ?
+          "../lib_dsp/${env.CHANGE_TARGET}," +
+          "../lib_voice_toolbox/${env.CHANGE_TARGET}"
+        :
+          "../lib_dsp/${env.BRANCH_NAME}," +
+          "../lib_voice_toolbox/${env.BRANCH_NAME}"),
+      threshold: hudson.model.Result.SUCCESS
+    )
+  }
+
   stages {
     stage('Get view') {
       steps {
