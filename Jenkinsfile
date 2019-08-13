@@ -1,7 +1,7 @@
 @Library('xmos_jenkins_shared_library@develop') _
 pipeline {
   agent {
-    label 'x86 && macOS && && brew'        
+    label 'x86 && macOS && brew'        
   }
   environment {
     VIEW = 'audio_test_tools_develop'
