@@ -4,7 +4,7 @@ pipeline {
     label 'x86 && macOS && && brew'        
   }
   environment {
-    VIEW = 'audio_test_tools_master'
+    VIEW = 'audio_test_tools_develop'
     REPO = 'audio_test_tools'
   }
   options {
