@@ -5,6 +5,7 @@ Audio test tools change log
 -----
 
   * REMOVED: moved dsp_complex_fp to lib_dsp
+  * FIXED: Fixed scaling of floating point fft
 
 1.6.0
 -----
