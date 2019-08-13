@@ -1,6 +1,7 @@
+@Library('xmos_jenkins_shared_library@develop') _
 pipeline {
   agent {
-    label 'x86&&macOS&&Apps'
+    label 'x86 && macOS && && brew'        
   }
   environment {
     VIEW = 'audio_test_tools_develop'
@@ -12,7 +13,7 @@ pipeline {
   stages {
     stage('Get view') {
       steps {
-        prepareAppsSandbox("${VIEW}", "${REPO}")
+        xcorePrepareSandbox("${VIEW}", "${REPO}")        
       }
     }
     stage('SW reference checks (NOT ALL)') {
@@ -51,11 +52,8 @@ pipeline {
       steps {
         viewEnv() {
           dir("${REPO}/tests/test_parse_wav_header") {
-            sh "xwaf configure build"
-            withEnv(["PATH+PYDIR=/usr/local/bin"]) {
-              // Continue to next stage if a test fails, the test is set as failure at the end
-              sh "python -m pytest test_wav.py"
-            }
+            runXwaf('.')
+            runPytest('1')
           }
         }
       }
@@ -64,9 +62,8 @@ pipeline {
       steps {
         viewEnv() {
           dir("${REPO}/tests/att_unit_tests") {
-            withEnv(["PATH+PYDIR=/usr/local/bin"]) {
-              sh "xwaf configure build test"
-            }
+              runXwaf('.')
+              runPytest()
           }
         }
       }
@@ -75,9 +72,7 @@ pipeline {
       steps {
         viewEnv() {
           dir("${REPO}/tests/test_process_wav") {
-            withEnv(["PATH+PYDIR=/usr/local/bin"]) {
-              sh "xwaf configure build"
-            }
+              runXwaf('.')
           }
         }
       }
@@ -86,9 +81,6 @@ pipeline {
   post {
     success {
       updateViewfiles()
-    }
-    failure {
-      slackSend(color: '#FF0000', channel: '#hydra', message: "Fail: ${currentBuild.fullDisplayName} (${env.RUN_DISPLAY_URL})")
     }
     cleanup {
       cleanWs()
