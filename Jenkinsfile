@@ -1,18 +1,40 @@
+@Library('xmos_jenkins_shared_library@develop') _
 pipeline {
   agent {
-    label 'x86&&macOS&&Apps'
+    label 'x86_64 && macOS && brew'
   }
   environment {
-    VIEW = 'audio_test_tools_master'
+    VIEW = "${env.JOB_NAME.contains('PR-') ? 'audio_test_tools_'+env.CHANGE_TARGET : 'audio_test_tools_'+env.BRANCH_NAME}"
     REPO = 'audio_test_tools'
   }
   options {
     skipDefaultCheckout()
   }
+  triggers {
+    /* Trigger this Pipeline on changes to the repos dependencies
+     *
+     * If this Pipeline is running in a pull request, the triggers are set
+     * on the base branch the PR is set to merge in to.
+     *
+     * Otherwise the triggers are set on the branch of a matching name to the
+     * one this Pipeline is on.
+     */
+    upstream(
+      upstreamProjects:
+        (env.JOB_NAME.contains('PR-') ?
+          "../lib_dsp/${env.CHANGE_TARGET}," +
+          "../lib_voice_toolbox/${env.CHANGE_TARGET}"
+        :
+          "../lib_dsp/${env.BRANCH_NAME}," +
+          "../lib_voice_toolbox/${env.BRANCH_NAME}"),
+      threshold: hudson.model.Result.SUCCESS
+    )
+  }
+
   stages {
     stage('Get view') {
       steps {
-        prepareAppsSandbox("${VIEW}", "${REPO}")
+        xcorePrepareSandbox("${VIEW}", "${REPO}")        
       }
     }
     stage('SW reference checks (NOT ALL)') {
@@ -51,11 +73,8 @@ pipeline {
       steps {
         viewEnv() {
           dir("${REPO}/tests/test_parse_wav_header") {
-            sh "xwaf configure build"
-            withEnv(["PATH+PYDIR=/usr/local/bin"]) {
-              // Continue to next stage if a test fails, the test is set as failure at the end
-              sh "python -m pytest test_wav.py"
-            }
+            runXwaf('.')
+            runPytest('1')
           }
         }
       }
@@ -64,9 +83,8 @@ pipeline {
       steps {
         viewEnv() {
           dir("${REPO}/tests/att_unit_tests") {
-            withEnv(["PATH+PYDIR=/usr/local/bin"]) {
-              sh "xwaf configure build test"
-            }
+              runXwaf('.')
+              runPytest()
           }
         }
       }
@@ -75,9 +93,7 @@ pipeline {
       steps {
         viewEnv() {
           dir("${REPO}/tests/test_process_wav") {
-            withEnv(["PATH+PYDIR=/usr/local/bin"]) {
-              sh "xwaf configure build"
-            }
+              runXwaf('.')
           }
         }
       }
@@ -86,9 +102,6 @@ pipeline {
   post {
     success {
       updateViewfiles()
-    }
-    failure {
-      slackSend(color: '#FF0000', channel: '#hydra', message: "Fail: ${currentBuild.fullDisplayName} (${env.RUN_DISPLAY_URL})")
     }
     cleanup {
       cleanWs()
