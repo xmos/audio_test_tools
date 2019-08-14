@@ -3,7 +3,6 @@ import glob
 import os.path
 import subprocess
 import sys
-import pytest
 from waflib import Options, Errors
 from waflib.Build import BuildContext, CleanContext
 
@@ -183,12 +182,3 @@ def build(bld):
                          '{}{}.{}'.format(bld.variant, UNITY_RUNNER_SUFFIX,
                                           'c'))]
         bld.program(include=include, source=source, depends_on=depends_on)
-
-
-def test(bld):
-    # Call pytest to run Unity tests inside axe or xsim
-    ret = pytest.main(['--junitxml=pytest_result.xml', '-n=auto'])
-    if ret != 0:
-        raise Errors.WafError("Pytest exited with non-zero return code!");
-
-# TODO: ensure clean deletes the runners dir/
