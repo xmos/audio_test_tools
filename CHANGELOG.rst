@@ -5,6 +5,7 @@ Audio test tools change log
 -----
 
   * ADDED: Use pipenv to set up python environment
+  * CHANGED: Have a separate file contain wav file processing related python functions.
 
 2.0.0
 -----
