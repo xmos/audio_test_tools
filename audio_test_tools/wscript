@@ -9,5 +9,5 @@ def use_module(bld):
         source=sources,
         includes=['api'],
         depends_on=['lib_dsp', 'lib_voice_toolbox'],
-        version='1.4.0',
+        version='3.0.0',
         optional_headers=['process_wav_conf.h'])
