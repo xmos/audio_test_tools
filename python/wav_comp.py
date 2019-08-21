@@ -9,6 +9,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import audio_utils as au
+import audio_wav_utils
 import argparse
 
 def parse_arguments():
@@ -32,8 +33,8 @@ if __name__ == "__main__":
     if a_rate != b_rate:
         print("Error files are different rates")
 
-    a_wav_data, a_channel_count, a_file_length = au.parse_audio(a_wav_file)
-    b_wav_data, b_channel_count, b_file_length = au.parse_audio(b_wav_file)
+    a_wav_data, a_channel_count, a_file_length = audio_wav_utils.parse_audio(a_wav_file)
+    b_wav_data, b_channel_count, b_file_length = audio_wav_utils.parse_audio(b_wav_file)
     
     if a_channel_count != b_channel_count:
         print("Error files are different channel counts")
