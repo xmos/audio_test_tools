@@ -4,6 +4,7 @@ import scipy.io.wavfile
 import audio_utils as au
 import argparse
 import matplotlib.pyplot as plt
+import audio_wav_utils
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
@@ -50,7 +51,7 @@ def test_data(input_wav_data, input_rate, file_length, input_channel_count, verb
 def test_file(input_file, output_file, input_channel_count, verbose = False, process_until_frame = -1):
 
     input_rate, input_wav_file = scipy.io.wavfile.read(input_file, 'r')
-    input_wav_data, total_channel_count, file_length = au.parse_audio(input_wav_file)
+    input_wav_data, total_channel_count, file_length = audio_wav_utils.parse_audio(input_wav_file)
 
     elre = test_data(input_wav_data, input_rate, file_length, input_channel_count, verbose, process_until_frame)
 

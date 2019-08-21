@@ -5,11 +5,19 @@ Audio test tools change log
 -----
 
   * CHANGED: Build files updated to support new "xcommon" behaviour in xwaf.
+  * CHANGED: Have a separate file contain wav file processing related python functions.
+
+
+2.1.0
+-----
+
+  * ADDED: Use pipenv to set up python environment
 
 2.0.0
 -----
 
   * REMOVED: moved dsp_complex_fp to lib_dsp
+  * FIXED: Fixed scaling of floating point fft
 
 1.6.0
 -----
