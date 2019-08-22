@@ -1,11 +1,11 @@
 @Library('xmos_jenkins_shared_library@develop') _
 pipeline {
   agent {
-    label 'x86_64 && macOS && brew'
+    label 'x86_64 && brew'
   }
   environment {
-    VIEW = "${env.JOB_NAME.contains('PR-') ? 'audio_test_tools_'+env.CHANGE_TARGET : 'audio_test_tools_'+env.BRANCH_NAME}"
     REPO = 'audio_test_tools'
+    VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
   }
   options {
     skipDefaultCheckout()
@@ -23,10 +23,16 @@ pipeline {
       upstreamProjects:
         (env.JOB_NAME.contains('PR-') ?
           "../lib_dsp/${env.CHANGE_TARGET}," +
-          "../lib_voice_toolbox/${env.CHANGE_TARGET}"
+          "../lib_voice_toolbox/${env.CHANGE_TARGET}," +
+          "../tools_released/${env.CHANGE_TARGET}," +
+          "../tools_xmostest/${env.CHANGE_TARGET}," +
+          "../xdoc_released/${env.CHANGE_TARGET}"
         :
           "../lib_dsp/${env.BRANCH_NAME}," +
-          "../lib_voice_toolbox/${env.BRANCH_NAME}"),
+          "../lib_voice_toolbox/${env.BRANCH_NAME}," +
+          "../tools_released/${env.BRANCH_NAME}," +
+          "../tools_xmostest/${env.BRANCH_NAME}," +
+          "../xdoc_released/${env.BRANCH_NAME}"),
       threshold: hudson.model.Result.SUCCESS
     )
   }
@@ -34,7 +40,7 @@ pipeline {
   stages {
     stage('Get view') {
       steps {
-        xcorePrepareSandbox("${VIEW}", "${REPO}")        
+        xcorePrepareSandbox("${VIEW}", "${REPO}")
       }
     }
     stage('SW reference checks (NOT ALL)') {
@@ -104,7 +110,7 @@ pipeline {
       updateViewfiles()
     }
     cleanup {
-      cleanWs()
+      xcoreCleanSandbox()
     }
   }
 }

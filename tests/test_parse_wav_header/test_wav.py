@@ -3,9 +3,6 @@
 import numpy as np
 import scipy.io.wavfile
 import sys
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
 import subprocess as sub
 import os
 
@@ -13,8 +10,6 @@ package_dir = os.path.dirname(os.path.abspath(__file__))
 path1 = os.path.join(package_dir,'../../python/')
 
 sys.path.append(path1)
-
-import audio_utils as au
 
 test_wav_exe = os.path.join(package_dir, 'bin/test_wav.xe')
 input_file1 = os.path.join(package_dir, 'test_audio_16b.wav')
