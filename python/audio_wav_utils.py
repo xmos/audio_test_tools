@@ -7,6 +7,7 @@ from builtins import str
 from builtins import range
 import numpy as np
 import scipy.io.wavfile
+import pandas
 
 def get_channel_count(wav_file):
     s = np.shape(wav_file)
