@@ -8,7 +8,8 @@ pipeline {
   }
   environment {
     REPO = 'audio_test_tools'
-    VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
+    VIEW = 'audio_test_tools_xwaf_xcommon'
+    //VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
   }
   options {
     skipDefaultCheckout()
@@ -44,6 +45,15 @@ pipeline {
     stage('Get view') {
       steps {
         xcorePrepareSandbox("${VIEW}", "${REPO}")
+      }
+    }
+    stage('Patch tools') {
+      steps {
+        dir('tools_released/xwaf_patch') {
+          viewEnv() {
+            sh './xpatch'
+          }
+        }
       }
     }
     stage('SW reference checks (NOT ALL)') {
