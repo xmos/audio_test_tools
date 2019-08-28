@@ -1,16 +1,20 @@
-def options(ctx):
-        ctx.add_option('--target', action='store', default='test_process_wav.xe')
+def options(opt):
+    opt.load('xwaf.xcommon')
+
 
 def configure(conf):
-	conf.load('xwaf.compiler_xcc')
-	conf.env.PROJECT_ROOT = '../../..'
+    conf.load('xwaf.compiler_xcc')
+    conf.env.PROJECT_ROOT = '../../..'
+    conf.load('xwaf.xcommon')
+
 
 def build(bld):
-        target_path = 'bin/' + bld.options.target
-	bld.env.TARGET_ARCH = 'XCORE-200-EXPLORER'
-	bld.env.XSCOPE = bld.path.find_resource('config.xscope')
+    bld.do_xcommon()
 
-	depends_on = ['audio_test_tools', 'lib_dsp', 'lib_voice_toolbox']
-	bld.env.XCC_FLAGS = ['-O2', '-g', '-Wall', '-report']
-	source = bld.path.ant_glob('src/**/*.xc')
-	bld.program(source=source, depends_on=depends_on,target=target_path)
+
+def dist(dst):
+    dst.load('xwaf.xcommon')
+
+
+def distcheck(dst):
+    dst.load('xwaf.xcommon')
