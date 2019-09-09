@@ -47,15 +47,6 @@ pipeline {
         xcorePrepareSandbox("${VIEW}", "${REPO}")
       }
     }
-    stage('Patch tools') {
-      steps {
-        dir('tools_released/xwaf_patch') {
-          viewEnv() {
-            sh './xpatch'
-          }
-        }
-      }
-    }
     stage('SW reference checks (NOT ALL)') {
       parallel {
         stage ("Flake 8") {
