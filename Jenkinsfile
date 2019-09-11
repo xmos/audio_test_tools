@@ -83,7 +83,7 @@ pipeline {
       steps {
         viewEnv() {
           dir("${REPO}/tests/test_parse_wav_header") {
-            runXwaf('.')
+            runWaf('.')
             runPytest('1')
           }
         }
@@ -93,7 +93,7 @@ pipeline {
       steps {
         viewEnv() {
           dir("${REPO}/tests/att_unit_tests") {
-              runXwaf('.')
+              runWaf('.')
               runPytest()
           }
         }
@@ -103,7 +103,7 @@ pipeline {
       steps {
         viewEnv() {
           dir("${REPO}/tests/test_process_wav") {
-              runXwaf('.')
+              runWaf('.')
           }
         }
       }
