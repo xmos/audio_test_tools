@@ -8,8 +8,7 @@ pipeline {
   }
   environment {
     REPO = 'audio_test_tools'
-    VIEW = 'audio_test_tools_xwaf_xcommon'
-    //VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
+    VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
   }
   options {
     skipDefaultCheckout()
