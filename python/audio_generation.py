@@ -8,6 +8,7 @@ import os.path
 import scipy.signal
 import scipy.io.wavfile
 import numpy as np
+import hashlib
 
 DEFAULT_SAMPLE_RATE = 16000
 SYSTEM_DELAY_SAMPLES = 40
@@ -105,7 +106,10 @@ def get_noise(duration=None, samples=None, db=0,
         samples = duration*sample_rate
     if seed is None:
         # Seed using inputs
-        seed = (hash(str(samples)) + hash(str(db)) + hash(str(sample_rate))) % 2**32
+        #seed = (hash(str(samples)) + hash(str(db)) + hash(str(sample_rate))) % 2**32
+        unique_hash = '0x' + hashlib.md5(str(samples + db + sample_rate).encode('utf-8')).hexdigest()[-16:]
+        seed = int(unique_hash, 16) % 2**32
+
     np.random.seed(seed)
     x = np.random.normal(size=(samples,))
     factor = np.power(10, db / 20.0)

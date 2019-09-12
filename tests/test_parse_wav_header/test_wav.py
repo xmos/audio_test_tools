@@ -11,7 +11,7 @@ path1 = os.path.join(package_dir,'../../python/')
 
 sys.path.append(path1)
 
-test_wav_exe = os.path.join(package_dir, 'bin/test_wav.xe')
+test_wav_exe = os.path.join(package_dir, 'bin/test_parse_wav_header.xe')
 input_file1 = os.path.join(package_dir, 'test_audio_16b.wav')
 input_file2 = os.path.join(package_dir, 'test_audio_32b.wav')
 output_file1 = os.path.join(package_dir, 'out1.wav')
