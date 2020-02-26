@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+4.1.0
+-----
+
+  * FIXED: audio_generation.py get_noise for non-integer durations
+
 4.0.0
 -----
 
