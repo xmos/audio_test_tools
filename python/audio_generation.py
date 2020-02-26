@@ -103,7 +103,7 @@ def get_noise(duration=None, samples=None, db=0,
     noise.
     Either specify a duration in seconds, or number of samples."""
     if duration:
-        samples = duration*sample_rate
+        samples = int(duration*sample_rate)
     if seed is None:
         # Seed using inputs
         #seed = (hash(str(samples)) + hash(str(db)) + hash(str(sample_rate))) % 2**32
