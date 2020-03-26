@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@develop') _
+@Library('xmos_jenkins_shared_library@v0.11.0') _
 
 getApproval()
 
@@ -56,7 +56,7 @@ pipeline {
         viewEnv() {
           dir("${REPO}/tests/test_parse_wav_header") {
             runWaf('.')
-            runPytest('1')
+            runPytest('--numprocesses=1')
           }
         }
       }
