@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@develop') _
+@Library('xmos_jenkins_shared_library@0.12.1') _
 
 getApproval()
 
@@ -8,7 +8,7 @@ pipeline {
   }
   environment {
     REPO = 'audio_test_tools'
-    VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
+    VIEW = getViewName(REPO)
   }
   options {
     skipDefaultCheckout()
@@ -56,7 +56,7 @@ pipeline {
         viewEnv() {
           dir("${REPO}/tests/test_parse_wav_header") {
             runWaf('.')
-            runPytest('1')
+            runPytest('--numprocesses=1')
           }
         }
       }
