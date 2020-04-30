@@ -1,6 +1,12 @@
 Audio test tools change log
 ===========================
 
+4.1.1
+-----
+
+  * CHANGED: minimum version of lib_dsp required moved to 6.0.0
+  * CHANGED: use v0.12.1 of Jenkins shared library
+
 4.1.0
 -----
 
