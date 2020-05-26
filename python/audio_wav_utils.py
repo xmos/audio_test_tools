@@ -1,10 +1,11 @@
-# Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
+# Copyright (c) 2018-2020, XMOS Ltd, All rights reserved
 # -*- coding: utf-8 -*-
 
 from __future__ import division
 from __future__ import print_function
 from builtins import str
 from builtins import range
+from pathlib import Path
 import numpy as np
 import scipy.io.wavfile
 import pandas
@@ -110,3 +111,27 @@ def get_erle(in_filename, out_filename, step_size, ch_number):
         erle.append(next_erle)
 
     return erle
+
+
+def iter_frames(input_wav, frame_advance):
+    """ Generator that iterates through a wav in `frame_advance` chunks
+
+    input_wav
+        A Path-like, output from scipy.io.wavfile.read, or output from soundfile.read
+    """
+    try:
+        is_file = Path(input_wav).exists()
+    except TypeError:
+        is_file = False
+
+    if is_file:
+        # Load the wav
+        _, input_wav_data = scipy.io.wavfile.read(input_wav, 'r')
+    else:
+        input_wav_data = input_wav
+
+    input_data, input_channel_count, file_length = parse_audio(input_wav_data)
+
+    for frame_start in range(0, file_length-frame_advance, frame_advance):
+        new_frame = get_frame(input_data, frame_start, frame_advance)
+        yield frame_start, new_frame
