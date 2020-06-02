@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+4.2.0
+-----
+
+  * ADDED: new function for parsing wav data: audio_wav_utils.iter_frames
+
 4.1.1
 -----
 
