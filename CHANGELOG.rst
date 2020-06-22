@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+4.2.1
+-----
+
+  * ADDED: DELETE-ME - Version bump placeholder for develop branch
+
 4.2.0
 -----
 
