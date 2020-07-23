@@ -1,6 +1,7 @@
 #include <platform.h>
 #include <print.h>
 #include <string.h>
+#include <stdlib.h>
 #include <xcore/assert.h>
 #include <xcore/channel.h>
 #include <xcore/chanend.h>
@@ -46,7 +47,6 @@ void xscope_read_file(chanend_t c_xscope, chanend_t c_app_in)
             read_host_data:
                 {
                     xscope_data_from_host(c_xscope, chunk_buffer, &bytes_read);
-                    printf("bytes_read: %u\n", bytes_read);
                     memcpy(&block_buffer[chunk_bytes_so_far], chunk_buffer, bytes_read);
                     chunk_bytes_so_far += bytes_read;
                     total_bytes_read += bytes_read;
@@ -68,7 +68,7 @@ void xscope_read_file(chanend_t c_xscope, chanend_t c_app_in)
         if(chunk_bytes_so_far){
             //request more data 
             xscope_int(2, 0);
-            printf("Received: %u bytes\n", chunk_bytes_so_far);
+            // printf("Received: %u bytes\n", chunk_bytes_so_far);
 
             transacting_chanend_t tc = chan_init_transaction_master(c_app_in);
             t_chan_out_word(&tc, chunk_bytes_so_far);
@@ -138,7 +138,7 @@ void xscope_write_file(chanend_t c_app_out)
                 sent_so_far = size;
             }
             hwtimer_t tmr = hwtimer_alloc();
-            hwtimer_delay(tmr, 10000);
+            hwtimer_delay(tmr, 10000); /// Magic number found to make xscope stable on MAC, else you get WRITE ERROR ON UPLOAD ....
             hwtimer_free(tmr);
         }
         while (sent_so_far < size);
@@ -169,5 +169,9 @@ void main_tile0(chanend_t xscope_end, chanend_t memshare_end)
     printf("tile0 done.\n");
     //exit
     xscope_int(1, 0);
+    hwtimer_t tmr = hwtimer_alloc();
+    hwtimer_delay(tmr, 10000000); //100ms
+    hwtimer_free(tmr);
+    exit(0);
 }
 

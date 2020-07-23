@@ -17,6 +17,9 @@ static volatile unsigned int running = 1;
 static volatile unsigned total_bytes_written = 0;
 pthread_mutex_t lock;
 static volatile int flow_counter = 0;
+static unsigned file_progress = 0;
+const unsigned file_progress_interval = 1024 * 1024; //1MB
+static unsigned send_file_size = 0;
 
 void init_out_file(const char *file_name){
     fpw = fopen(file_name, "wb");
@@ -75,7 +78,13 @@ void xscope_record(
     else if(id == 0){
         fwrite(databytes, 1, length, fpw);
         total_bytes_written += length;
-        printf("Host: written %u bytes to file (%u)\n", length, total_bytes_written);
+        // printf("Host: written %u bytes to file (%u)\n", length, total_bytes_written);
+        if(total_bytes_written - file_progress > file_progress_interval){
+            file_progress += file_progress_interval;
+            printf("Host: written %u bytes to file (total: %uMB of %uMB)\n", file_progress_interval,
+                                                                             file_progress/file_progress_interval,
+                                                                             send_file_size/file_progress_interval);
+        }
     }
     else{
         float mstimestamp = timestamp / 1000000000.0f;
@@ -90,6 +99,10 @@ void send_file(const char *name)
     FILE *fp = fopen(name, "rb");
     assert(fp);
 
+    fseek(fp, 0L, SEEK_END); 
+    send_file_size = ftell(fp);
+    rewind(fp);
+
     unsigned n_bytes_read = 0;
     do
     {
@@ -98,11 +111,13 @@ void send_file(const char *name)
         n_bytes_read = fread(buf, 1, sizeof(buf), fp);
         assert(n_bytes_read <= BLOCK_SIZE_BYTES);
         for(unsigned idx = 0; idx < n_bytes_read / MAX_XSCOPE_SIZE_BYTES; idx++){
-            xscope_ep_request_upload(MAX_XSCOPE_SIZE_BYTES, &buf[idx * MAX_XSCOPE_SIZE_BYTES]);
+            int ret = xscope_ep_request_upload(MAX_XSCOPE_SIZE_BYTES, &buf[idx * MAX_XSCOPE_SIZE_BYTES]);
+            if(ret) printf("Error, ret: %d\n", ret);
         }
         unsigned left_over = n_bytes_read % MAX_XSCOPE_SIZE_BYTES;
         if(left_over){
-            xscope_ep_request_upload(left_over, &buf[n_bytes_read / MAX_XSCOPE_SIZE_BYTES]);
+            int ret = xscope_ep_request_upload(left_over, &buf[n_bytes_read / MAX_XSCOPE_SIZE_BYTES]);
+            if(ret) printf("Error, ret: %d\n", ret);
         }
         total_bytes_read += n_bytes_read;
         
@@ -110,7 +125,7 @@ void send_file(const char *name)
         flow_counter--;
         pthread_mutex_unlock(&lock);
 
-        printf("Host: sent block %u (total: %u) (flow_counter: %d)\n", n_bytes_read, total_bytes_read, flow_counter);
+        // printf("Host: sent block %u (total: %u) (flow_counter: %d)\n", n_bytes_read, total_bytes_read, flow_counter);
     } 
     while (n_bytes_read);
     const char end_sting[] = END_MARKER_STRING;
@@ -144,7 +159,7 @@ int main(int argc, char *argv[])
     close_out_file();
     free(out_file);
     pthread_mutex_destroy(&lock);
-    printf("Host: Exit received, %u bytes written\n", total_bytes_written);
+    printf("Host: Exit received, total %u bytes written\n", total_bytes_written);
     return 0;
 }
 
