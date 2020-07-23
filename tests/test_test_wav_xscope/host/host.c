@@ -124,8 +124,8 @@ int main(int argc, char *argv[])
 {
     pthread_mutex_init(&lock, NULL);
 
-    assert(argc == 2);
-    char *out_file = malloc(strlen(argv[0]) + 10);
+    assert(argc == 3);
+    char *out_file = malloc(strlen(argv[1]) + 10);
     strcpy(out_file, argv[1]);
     strcat(out_file, "2");
 
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
     xscope_ep_set_print_cb(xscope_print);
     xscope_ep_set_register_cb(xscope_register);
     xscope_ep_set_record_cb(xscope_record);
-    xscope_ep_connect("localhost", "10234");
+    xscope_ep_connect("localhost", argv[2]);
 
     init_out_file(out_file);
     send_file(argv[1]);
