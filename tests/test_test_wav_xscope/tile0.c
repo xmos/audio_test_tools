@@ -46,6 +46,7 @@ void xscope_read_file(chanend_t c_xscope, chanend_t c_app_in)
             read_host_data:
                 {
                     xscope_data_from_host(c_xscope, chunk_buffer, &bytes_read);
+                    printf("bytes_read: %u\n", bytes_read);
                     memcpy(&block_buffer[chunk_bytes_so_far], chunk_buffer, bytes_read);
                     chunk_bytes_so_far += bytes_read;
                     total_bytes_read += bytes_read;
@@ -64,24 +65,25 @@ void xscope_read_file(chanend_t c_xscope, chanend_t c_app_in)
             }
         } while(!chunk_complete);
 
-        xscope_int(2, 0);
+        if(chunk_bytes_so_far){
+            //request more data 
+            xscope_int(2, 0);
+            printf("Received: %u bytes\n", chunk_bytes_so_far);
 
-
-        printf("Received: %u bytes\n", chunk_bytes_so_far);
-
-        transacting_chanend_t tc = chan_init_transaction_master(c_app_in);
-        t_chan_out_word(&tc, chunk_bytes_so_far);
-        t_chan_out_buf_byte(&tc, (const uint8_t*)block_buffer, chunk_bytes_so_far);
-        chan_complete_transaction(tc);
+            transacting_chanend_t tc = chan_init_transaction_master(c_app_in);
+            t_chan_out_word(&tc, chunk_bytes_so_far);
+            t_chan_out_buf_byte(&tc, (const uint8_t*)block_buffer, chunk_bytes_so_far);
+            chan_complete_transaction(tc);
+        }
 
 
     } while(!end_marker_found);
 
-    printf("Finished reading from host; bytes read: %u\n", total_bytes_read);
-
     transacting_chanend_t tc = chan_init_transaction_master(c_app_in);
     t_chan_out_word(&tc, 0);
     chan_complete_transaction(tc);
+
+    printf("Finished reading from host; bytes read: %u\n", total_bytes_read);
 }
 
 DECLARE_JOB(app, (chanend_t, chanend_t));
