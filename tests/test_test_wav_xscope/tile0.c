@@ -7,6 +7,7 @@
 #include <xcore/channel_transaction.h>
 #include <xcore/parallel.h>
 #include <xcore/select.h>
+#include <xcore/hwtimer.h>
 #include <xscope.h>
 #include <stdio.h>
 
@@ -29,7 +30,7 @@ void xscope_read_file(chanend_t c_xscope, chanend_t c_app_in)
     // Queue up a few requests for file data so that the H->D buffer is always full
     // We will request more after each block is processed. We do this because
     // xscope seems unstable if we hammer it too hard with data sand rely on the chunk_buffer
-    for (int i=0; i<10;i++) xscope_int(2, 0);
+    for (int i=0; i<4;i++) xscope_int(2, 0);
 
     do
     {
@@ -93,7 +94,7 @@ void app(chanend_t c_app_in, chanend_t c_app_out){
 
         transacting_chanend_t tc = chan_init_transaction_slave(c_app_in);
         unsigned size = t_chan_in_word(&tc);
-        if(!size) running = 0;
+        if(size == 0) running = 0;
         t_chan_in_buf_byte(&tc, buffer, size);
         chan_complete_transaction(tc); 
 
@@ -106,6 +107,7 @@ void app(chanend_t c_app_in, chanend_t c_app_out){
         chan_complete_transaction(tc);
     }
     while(running);
+    printf("App received zero size - quitting\n");
 }
 
 DECLARE_JOB(xscope_write_file, (chanend_t));
@@ -115,17 +117,32 @@ void xscope_write_file(chanend_t c_app_out)
 
     unsigned char buffer[BLOCK_SIZE_BYTES];
     unsigned running = 1;
-    do
-    {
+    do{
         transacting_chanend_t tc = chan_init_transaction_slave(c_app_out);
         unsigned size = t_chan_in_word(&tc);
         if(!size) running = 0;
         t_chan_in_buf_byte(&tc, buffer, size);
         chan_complete_transaction(tc); 
 
-        xscope_bytes(0, size, buffer);
+        //Chunk it up
+        unsigned sent_so_far = 0;
+        do{
+            if(size - sent_so_far >=  MAX_XSCOPE_SIZE_BYTES){
+                xscope_bytes(0, MAX_XSCOPE_SIZE_BYTES, &buffer[sent_so_far]);
+                sent_so_far += MAX_XSCOPE_SIZE_BYTES;
+            }
+            else{
+                xscope_bytes(0, size - sent_so_far, &buffer[sent_so_far]);
+                sent_so_far = size;
+            }
+            hwtimer_t tmr = hwtimer_alloc();
+            hwtimer_delay(tmr, 10000);
+            hwtimer_free(tmr);
+        }
+        while (sent_so_far < size);
     }
     while(running);
+    printf("xscope_write_file received zero size - quitting\n");
 }
 
 
