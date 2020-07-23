@@ -101,7 +101,9 @@ void app(chanend_t c_app_in, chanend_t c_app_out){
         chan_complete_transaction(tc); 
 
         //Simulate some DSP
-        // delay_milliseconds(15);
+        hwtimer_t tmr = hwtimer_alloc();
+        // hwtimer_delay(tmr, 1500000); //15ms
+        hwtimer_free(tmr);
 
         tc = chan_init_transaction_master(c_app_out);
         t_chan_out_word(&tc, size);
