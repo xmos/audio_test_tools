@@ -132,32 +132,32 @@ void send_file(const char *name)
     xscope_ep_request_upload(END_MARKER_LEN, (const unsigned char *)end_sting); //End
     assert(feof(fp) && !ferror(fp));
     printf("Host: sent %u bytes\n", total_bytes_read);
-fclose(fp);
+    fclose(fp);
 }
 
 int main(int argc, char *argv[])
 {
+    if (argc != 4){
+        fprintf(stderr, "%s <infile.raw> <outfile.raw> <port>\n", argv[0]);
+        exit(-1);
+    }
+
     pthread_mutex_init(&lock, NULL);
-
-    assert(argc == 3);
-    char *out_file = malloc(strlen(argv[1]) + 10);
-    strcpy(out_file, argv[1]);
-    strcat(out_file, "2");
-
 
     xscope_ep_set_print_cb(xscope_print);
     xscope_ep_set_register_cb(xscope_register);
     xscope_ep_set_record_cb(xscope_record);
-    xscope_ep_connect("localhost", argv[2]);
+    if(xscope_ep_connect("localhost", argv[3])){
+        printf("ERROR: connecting to xscope server on port: %s\n", argv[3]);
+    }
 
-    init_out_file(out_file);
+    init_out_file(argv[2]);
     send_file(argv[1]);
 
     while(running){
         usleep(10000); //Back off for 10ms to reduce processor usage
     }
     close_out_file();
-    free(out_file);
     pthread_mutex_destroy(&lock);
     printf("Host: Exit received, total %u bytes written\n", total_bytes_written);
     return 0;

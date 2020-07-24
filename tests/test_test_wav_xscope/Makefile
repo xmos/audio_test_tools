@@ -9,8 +9,10 @@ GCC ?= gcc
 objects := tile0.o tile1.o main.o
 depfiles = $(objects:%.o=%.d)
 include $(wildcard $(depfiles))
+output = bin/test_test_wav_xscope.xe
 
-main.xe : $(objects) config.xscope
+$(output) : $(objects) config.xscope
+	$(shell mkdir -p bin)
 	$(XCC) $(TARGET_FLAG) -o $@ $^
 
 %.o : %.c
@@ -23,7 +25,7 @@ host/xscope_host_endpoint : host/host.c
 	$(GCC) -o $@ $< -I ${XMOS_TOOL_PATH}/include ${XMOS_TOOL_PATH}/lib/xscope_endpoint.so -std=c99
 
 .PHONY: all
-all: main.xe host/xscope_host_endpoint
+all: $(output) host/xscope_host_endpoint
 
 .PHONY: clean
 clean:
