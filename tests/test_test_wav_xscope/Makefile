@@ -1,33 +1,16 @@
-.PHONY: default_
-default_: all
+TARGET = XCORE-200-EXPLORER
 
-TARGET_FLAG ?= -target=XCORE-200-EXPLORER
-# TARGET_FLAG ?= -target=XCORE-AI-EXPLORER
-XCC ?= xcc
-GCC ?= gcc
+APP_NAME = test_test_wav_xscope.xe
 
-objects := tile0.o tile1.o main.o
-depfiles = $(objects:%.o=%.d)
-include $(wildcard $(depfiles))
-output = bin/test_test_wav_xscope.xe
+SOURCE_DIRS = src
 
-$(output) : $(objects) config.xscope
-	$(shell mkdir -p bin)
-	$(XCC) $(TARGET_FLAG) -o $@ $^
+XCC_FLAGS = -O2 -g -Wall -report
 
-%.o : %.c
-	$(XCC) -c -march=xs2a -o $@ $< -Wc,-mcmodel=small -O3 -MD -MF $*.d
+USED_MODULES = lib_voice_toolbox audio_test_tools
 
-%.o : %.xc
-	$(XCC) -c $(TARGET_FLAG) -o $@ $< -MD -MF $*.d
+#=============================================================================
+# The following part of the Makefile includes the common build infrastructure
+# for compiling XMOS applications. You should not need to edit below here.
 
-host/xscope_host_endpoint : host/host.c
-	$(GCC) -o $@ $< -I ${XMOS_TOOL_PATH}/include ${XMOS_TOOL_PATH}/lib/xscope_endpoint.so -std=c99
-
-.PHONY: all
-all: $(output) host/xscope_host_endpoint
-
-.PHONY: clean
-clean:
-	rm -f $(wildcard $(objects) $(depfiles) host/xscope_host_endpoint)
-
+XMOS_MAKE_PATH ?= ../../..
+include $(XMOS_MAKE_PATH)/xcommon/module_xcommon/build/Makefile.common

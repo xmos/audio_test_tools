@@ -1,0 +1,7 @@
+<preCompilationAnalysis file="__root__/Users/ed/sandboxes/sw_xvf3510_develop/lib_voice_toolbox/lib_voice_toolbox/src/bfp/asm/vtb_reduce_magnitude.S.1.o">
+  <fCall global="true" name="vtb_reduce_magnitude_asm"/>
+  <fCall global="true" name="vtb_reduce_magnitude_asm.nstackwords"/>
+  <fCall global="true" name="vtb_reduce_magnitude_asm.maxcores"/>
+  <fCall global="true" name="vtb_reduce_magnitude_asm.maxtimers"/>
+  <fCall global="true" name="vtb_reduce_magnitude_asm.maxchanends"/>
+</preCompilationAnalysis>

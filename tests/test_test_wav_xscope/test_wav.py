@@ -108,21 +108,16 @@ def run_on_target(xtag_id, infile, outfile):
 
 
 
-
-
 def run_test_wav_xscope():
     #Find target
     id = find_free_target_id("O[0]")
     assert id != None, "No free targets available"
 
     #Prepare file
-
     test_infile = "input.raw"
     run(f"sox {input_file} -b 32 -e signed-integer {test_infile}")
     test_outfile = "output.raw"
     
-    #Build host app
-
     run_on_target(id, test_infile, test_outfile)
     run(f"sox -b 32 -e signed-integer -c 4 -r 16000 {test_outfile} {output_file}")
     os.remove(test_infile)
@@ -132,8 +127,12 @@ def run_test_wav_xscope():
 
 def test_test_wav_xscope(jenkins=True):
     global input_file, output_file
+
+    if not jenkins:
+        run("make")
+
+
     #create test noise file
-    print(input_file)
     run(f"sox -n -c 4 -b 32 -r 16000 -e signed-integer {input_file} synth {TEST_LEN_SECONDS} whitenoise vol 1.0")
 
     run_test_wav_xscope()
