@@ -2,7 +2,7 @@ TARGET = XCORE-200-EXPLORER
 
 APP_NAME = test_test_wav_xscope.xe
 
-SOURCE_DIRS = src
+SOURCE_DIRS = src .
 
 XCC_FLAGS = -O2 -g -Wall -report
 

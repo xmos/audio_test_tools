@@ -2,6 +2,7 @@
 #include <platform.h>
 #include <xscope.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "voice_toolbox.h"
 #include "audio_test_tools.h"
@@ -12,41 +13,47 @@ void app_control(chanend c_control_to_wav, chanend c_control_to_dsp){
     att_pw_play(c_control_to_wav);
 }
 
-#define IC_TOTAL_INPUT_CHANNEL_PAIRS    2
-#define IC_TOTAL_OUTPUT_CHANNEL_PAIRS   2
-#define IC_PROC_FRAME_LENGTH            512
-#define IC_FRAME_ADVANCE                240
-#define DELAY                           180
 
 void pass_through_test_task(chanend app_to_dsp, chanend dsp_to_app, chanend ?c_control){
 
-#define DSP_STATE VTB_RX_STATE_UINT64_SIZE(IC_TOTAL_INPUT_CHANNEL_PAIRS*2, IC_PROC_FRAME_LENGTH, IC_FRAME_ADVANCE, DELAY*((IC_TOTAL_INPUT_CHANNEL_PAIRS*2) - 1))
-    uint64_t rx_state[DSP_STATE];
-    uint32_t delays[IC_TOTAL_INPUT_CHANNEL_PAIRS*2] ={0};
+    vtb_ch_pair_t [[aligned(8)]] in_frame[ATT_PW_INPUT_CHANNEL_PAIRS][ATT_PW_FRAME_ADVANCE];
+    vtb_ch_pair_t [[aligned(8)]] unprocessed_frame[ATT_PW_INPUT_CHANNEL_PAIRS][ATT_PW_PROC_FRAME_LENGTH];
+    vtb_ch_pair_t [[aligned(8)]] in_prev_frame[ATT_PW_INPUT_CHANNEL_PAIRS][ATT_PW_PROC_FRAME_LENGTH - ATT_PW_FRAME_ADVANCE];
 
-
-    vtb_rx_state_init(rx_state, IC_TOTAL_INPUT_CHANNEL_PAIRS*2, IC_PROC_FRAME_LENGTH, IC_FRAME_ADVANCE,
-            delays, DSP_STATE);
-
-    vtb_ch_pair_t [[aligned(8)]] in_frame[IC_TOTAL_INPUT_CHANNEL_PAIRS][IC_PROC_FRAME_LENGTH];
     memset(in_frame, 0, sizeof(in_frame));
+    memset(unprocessed_frame, 0, sizeof(unprocessed_frame));
+    memset(in_prev_frame, 0, sizeof(in_prev_frame));
 
+    vtb_md_t rx_md;
+    vtb_md_init(rx_md);
+    
+    vtb_rx_state_t rx_state = vtb_form_rx_state(
+                                 (vtb_ch_pair_t *) in_frame,
+                                 (vtb_ch_pair_t *) in_prev_frame,
+                                 null, /*delay buffer*/
+                                 ATT_PW_FRAME_ADVANCE,
+                                 ATT_PW_PROC_FRAME_LENGTH,
+                                 ATT_PW_INPUT_CHANNELS,
+                                 null /*delays*/);
+
+
+
+    vtb_ch_pair_t [[aligned(8)]] processed_frame[ATT_PW_OUTPUT_CHANNEL_PAIRS][ATT_PW_FRAME_ADVANCE];
+    memset(processed_frame, 0, sizeof(processed_frame));
+
+    vtb_tx_state_t tx_state = vtb_form_tx_state(ATT_PW_FRAME_ADVANCE, ATT_PW_OUTPUT_CHANNELS);
+
+    vtb_md_t tx_md;
+    vtb_md_init(tx_md);
 
     while(1){
 
-        vtb_md_t metadata;
-        vtb_rx_notification_and_data(app_to_dsp, rx_state, (in_frame, vtb_ch_pair_t[]), metadata);
+        vtb_rx(app_to_dsp, rx_state, (unprocessed_frame, vtb_ch_pair_t[]), rx_md);
 
-        int channel_hr[IC_TOTAL_INPUT_CHANNEL_PAIRS*2] = {0};
-        for(unsigned ch_pair=0;ch_pair<IC_TOTAL_INPUT_CHANNEL_PAIRS;ch_pair++){
-            channel_hr[ch_pair*2 + 0] = vtb_get_channel_hr(in_frame[ch_pair], IC_PROC_FRAME_LENGTH, 0);
-            channel_hr[ch_pair*2 + 1] = vtb_get_channel_hr(in_frame[ch_pair], IC_PROC_FRAME_LENGTH, 1);
-        }
+        memcpy(processed_frame, in_frame, sizeof(in_frame));
+        memcpy(&tx_md, &rx_md, sizeof(rx_md));
 
-
-        vtb_tx_notification_and_data(dsp_to_app, (in_frame, vtb_ch_pair_t[]),
-                               IC_TOTAL_OUTPUT_CHANNEL_PAIRS*2,
-                               IC_FRAME_ADVANCE, metadata);
+        vtb_tx(dsp_to_app, tx_state, (processed_frame, vtb_ch_pair_t[]), tx_md);
     }
 }
 

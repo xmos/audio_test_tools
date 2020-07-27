@@ -68,6 +68,7 @@ void xscope_record(
         pthread_mutex_lock(&lock);
         flow_counter++;
         pthread_mutex_unlock(&lock);
+        // printf("Host: more!\n");
         return;
     }
     if(id == 1)
@@ -125,7 +126,7 @@ void send_file(const char *name)
         flow_counter--;
         pthread_mutex_unlock(&lock);
 
-        // printf("Host: sent block %u (total: %u) (flow_counter: %d)\n", n_bytes_read, total_bytes_read, flow_counter);
+        printf("Host: sent block %u (total: %u) (flow_counter: %d)\n", n_bytes_read, total_bytes_read, flow_counter);
     } 
     while (n_bytes_read);
     const char end_sting[] = END_MARKER_STRING;
@@ -149,6 +150,7 @@ int main(int argc, char *argv[])
     xscope_ep_set_record_cb(xscope_record);
     if(xscope_ep_connect("localhost", argv[3])){
         printf("ERROR: connecting to xscope server on port: %s\n", argv[3]);
+        return -1;
     }
 
     init_out_file(argv[2]);

@@ -1,9 +1,9 @@
-// Copyright (c) 2018-2020, XMOS Ltd, All rights reserved
+// Copyright (c) 2020, XMOS Ltd, All rights reserved
 #ifndef _PROCESS_WAV_CONF_H
 #define _PROCESS_WAV_CONF_H
 
-#define ATT_PW_INPUT_CHANNELS          (2)
-#define ATT_PW_OUTPUT_CHANNELS         (2)
+#define ATT_PW_INPUT_CHANNELS          (4)
+#define ATT_PW_OUTPUT_CHANNELS         (4)
 #define ATT_PW_PROC_FRAME_LENGTH       (512)
 #define ATT_PW_FRAME_ADVANCE           (240)
 #define ATT_PW_INPUT_FILE_NAME         "input.wav"
