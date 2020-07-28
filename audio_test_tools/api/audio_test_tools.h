@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "dsp.h"
+#include "xscope_settings.h"
 
 #define CRC_POLY (0xEB31D82E)
 #define ATT_WAV_HEADER_BYTES 44
@@ -22,15 +23,6 @@ int att_is_double_word_aligned(int * f);
 #define ATT_PW_INPUT_CHANNEL_PAIRS ((ATT_PW_INPUT_CHANNELS+1)/2)
 #define ATT_PW_OUTPUT_CHANNEL_PAIRS ((ATT_PW_OUTPUT_CHANNELS+1)/2)
 #endif
-
-/* For xscope mode */
-#define MAX_XSCOPE_SIZE_BYTES   256
-#define END_MARKER_STRING       "finally_the_end!"
-#define END_MARKER_LEN          (sizeof(END_MARKER_STRING) - 1)
-union input_block_buffer_t {
-    int32_t sample[ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE];
-    char bytes[ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE * 4];
-};
 
 void att_pw_play(chanend c_comms);
 void att_pw_pause(chanend c_comms);

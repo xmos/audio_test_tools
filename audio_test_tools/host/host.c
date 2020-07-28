@@ -6,11 +6,10 @@
 #include <pthread.h>
 #include "xscope_endpoint.h"
 #include "unistd.h"
+#include "xscope_settings.h"
 
-#define BLOCK_SIZE_BYTES        (240 * 4 * 4)
-#define MAX_XSCOPE_SIZE_BYTES   256
-#define END_MARKER_STRING   "finally_the_end!"
-#define END_MARKER_LEN      (sizeof(END_MARKER_STRING) - 1)
+// This is arbitraty size above 256B. We just set to typical 4ch setting. It defines how much we read from ip/file each block
+#define INPUT_BLOCK_SIZE_BYTES  (240 * 4 * 4)
 
 FILE *fpw = NULL;
 static volatile unsigned int running = 1;
@@ -95,7 +94,7 @@ void xscope_record(
 
 void send_file(const char *name)
 {
-    unsigned char buf[BLOCK_SIZE_BYTES];
+    unsigned char buf[INPUT_BLOCK_SIZE_BYTES];
     unsigned total_bytes_read = 0;
     FILE *fp = fopen(name, "rb");
     assert(fp);
@@ -110,7 +109,7 @@ void send_file(const char *name)
         while(flow_counter <= 0);
 
         n_bytes_read = fread(buf, 1, sizeof(buf), fp);
-        assert(n_bytes_read <= BLOCK_SIZE_BYTES);
+        assert(n_bytes_read <= INPUT_BLOCK_SIZE_BYTES);
         for(unsigned idx = 0; idx < n_bytes_read / MAX_XSCOPE_SIZE_BYTES; idx++){
             int ret = xscope_ep_request_upload(MAX_XSCOPE_SIZE_BYTES, &buf[idx * MAX_XSCOPE_SIZE_BYTES]);
             if(ret) printf("Error, ret: %d\n", ret);

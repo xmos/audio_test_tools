@@ -7,7 +7,6 @@
 #include <xscope.h>
 #include <xs1.h>
 
-//#ifdef _VOICE_TOOLBOX_H_
 #include "voice_toolbox.h"
 #include "audio_test_tools.h"
 
@@ -96,7 +95,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
         vtb_rx_state_init(rx_state, ATT_PW_OUTPUT_CHANNEL_PAIRS*2, ATT_PW_PROC_FRAME_LENGTH, ATT_PW_FRAME_ADVANCE, null, DSP_TO_APP_STATE);
     }
 
-    int playing = 1;
+    int busy_playing = 1;
 
     unsigned waiting_for_time;
     if(isnull(c_comms)){
@@ -109,22 +108,22 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
         unsigned start_sample_of_frame = b*ATT_PW_FRAME_ADVANCE;
 
         if(start_sample_of_frame >= waiting_for_time){
-            playing = 0;
+            busy_playing = 0;
         }
 
-        while (!playing){
+        while (!busy_playing){
             select {
                 case c_comms:> int cmd:{
                     switch(cmd){
                     case ATT_PW_PLAY:
-                        playing = 1;
+                        busy_playing = 1;
                         waiting_for_time = UINT_MAX;
                         break;
                     case ATT_PW_PAUSE:
-                        playing = 0;
+                        busy_playing = 0;
                         break;
                     case ATT_PW_PLAY_UNTIL_SAMPLE_PASSES:
-                        playing = 1;
+                        busy_playing = 1;
                         c_comms :> waiting_for_time;
                         break;
                     case ATT_PW_STOP:
@@ -194,6 +193,16 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
 //#endif
 
 
+union input_block_buffer_t {
+    int32_t sample[ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE];
+    char bytes[ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE * 4];
+};
+
+union output_block_buffer_t {
+    int32_t sample[ATT_PW_OUTPUT_CHANNELS * ATT_PW_FRAME_ADVANCE];
+    char bytes[ATT_PW_OUTPUT_CHANNELS * ATT_PW_FRAME_ADVANCE * 4];
+};
+
 void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanend c_dsp_to_app, chanend ?c_comms){
 
 #ifdef __process_wav_conf_h_exists__
@@ -222,12 +231,15 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
     vtb_md_init(tx_md);
 
 
-    int running = 1;
+    unsigned xscope_looping = 1;
     unsigned end_marker_found = 0;
     unsigned input_frame_counter = 0;
     unsigned output_frame_counter = 0;
     unsigned block_bytes_so_far = 0;
     unsigned total_bytes_read = 0;
+
+    // Vars taken from non-xscope version to support control at a time
+    int busy_playing = 1;
 
     unsigned waiting_for_time;
     if(isnull(c_comms)){
@@ -239,8 +251,6 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
     xscope_mode_lossless();
     xscope_connect_data_from_host(xscope_data_in);
 
-    printf("att_process_wav_xscope\n");
-
     // Queue up a few requests for file data so that the H->D buffer in xscope is always full
     // We will request more after each block is processed. We do this because
     // xscope seems unstable if we hammer it too hard with data sand rely on the chunk_buffer
@@ -249,14 +259,44 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
     block_bytes_so_far = 0;
     union input_block_buffer_t input_block_buffer;
 
-    while(running){
+    while(xscope_looping){
         int bytes_read = 0;
         char chunk_buffer[MAX_XSCOPE_SIZE_BYTES];
 
 
         select{
             case xscope_data_from_host(xscope_data_in, chunk_buffer, bytes_read):
-                // printf("xscope_data_from_host %d\n", bytes_read);
+                // Old att_process_wav logic for blocking control channel until certain sample time
+                unsigned start_sample_of_frame = input_frame_counter*ATT_PW_FRAME_ADVANCE;
+                if(start_sample_of_frame >= waiting_for_time){
+                    busy_playing = 0;
+                }
+                while (!busy_playing){
+                    select {
+                        case c_comms:> int cmd:{
+                            switch(cmd){
+                            case ATT_PW_PLAY:
+                                busy_playing = 1;
+                                waiting_for_time = UINT_MAX;
+                                break;
+                            case ATT_PW_PAUSE:
+                                busy_playing = 0;
+                                break;
+                            case ATT_PW_PLAY_UNTIL_SAMPLE_PASSES:
+                                busy_playing = 1;
+                                c_comms :> waiting_for_time;
+                                break;
+                            case ATT_PW_STOP:
+                                if (!isnull(c_dsp_to_app)) {
+                                    xscope_looping = 0;
+                                }
+                                break;
+                            }
+                            break;
+                        }
+                    }
+                }
+                // End old logic
 
                 memcpy(&input_block_buffer.bytes[block_bytes_so_far], chunk_buffer, bytes_read);
                 end_marker_found = ((bytes_read == END_MARKER_LEN) && !memcmp(chunk_buffer, END_MARKER_STRING, END_MARKER_LEN)) ? 1 : 0;
@@ -264,7 +304,7 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
                     printf("end_marker_found\n");
                     //If the processing section is short, then rx will have already been processed so quit if so
                     if (output_frame_counter == input_frame_counter){
-                        running = 0;
+                        xscope_looping = 0;
                         break;
                     }
                 }
@@ -275,6 +315,7 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
                 }
 
                 if(block_bytes_so_far == (ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE * 4)){
+
                     //Input wav 4ch frame is ch0[0], ch1[0], ch2[0], ch3[0], ch0[1], ch1[1], ch2[1], ch3[1]..
                     //VTB 4ch frame is ch0[0], ch1[0], ch0[1], ch1[1]...ch0[239], ch1[239], ch2[0], ch1[3]...ch2[239], ch3[239]
 
@@ -307,7 +348,7 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
                 vtb_rx_without_notification(c_dsp_to_app, rx_state, (processed_frame, vtb_ch_pair_t[]), rx_md);
                 // printf("vtb_rx_without_notification\n");
 
-                union input_block_buffer_t output_write_buffer;
+                union output_block_buffer_t output_write_buffer;
 
                 unsigned size = sizeof(output_write_buffer.sample);
                 printf("output_write_buffer size: %d\n", size);
@@ -337,43 +378,12 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
                 if(end_marker_found){
                     printf("output_frame_counter: %d,  input_frame_counter: %d\n", output_frame_counter, input_frame_counter);
                     if (output_frame_counter == input_frame_counter){
-                        running = 0;
+                        xscope_looping = 0;
                     }
                 }
             break;
 
-            case c_comms:> int cmd:
-                printf("c_comms\n");
-                switch(cmd){
-                // case ATT_PW_PLAY:
-                //     playing = 1;
-                //     waiting_for_time = UINT_MAX;
-                //     break;
-                // case ATT_PW_PAUSE:
-                //     playing = 0;
-                //     break;
-                // case ATT_PW_PLAY_UNTIL_SAMPLE_PASSES:
-                //     playing = 1;
-                //     c_comms :> waiting_for_time;
-                //     break;
-                case ATT_PW_STOP:
-                    _exit(0);
-                    break;
-                }
-            break;
         }
-
-
-
-        // if(start_sample_of_frame >= waiting_for_time){
-        //     playing = 0;
-        // }
-
-
-        // WHAT IS THIS  FOR!??
-        // for(unsigned i=0;i<(ATT_PW_PROC_FRAME_LENGTH-ATT_PW_FRAME_ADVANCE)*ATT_PW_INPUT_CHANNELS;i++){
-        //     input_read_buffer[i] = input_read_buffer[i + ATT_PW_FRAME_ADVANCE*ATT_PW_INPUT_CHANNELS];
-        // }
     }
 
     // Quit
