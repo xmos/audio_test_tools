@@ -22,7 +22,10 @@ static unsigned send_file_size = 0;
 
 void init_out_file(const char *file_name){
     fpw = fopen(file_name, "wb");
-    assert(fpw);
+    if(!fpw){
+        printf("Cannot open %s\n", file_name);
+        assert(0);
+    }
 }
 
 void close_out_file(void){
@@ -97,7 +100,10 @@ unsigned send_file(const char *name)
     unsigned char buf[INPUT_BLOCK_SIZE_BYTES];
     unsigned total_bytes_read = 0;
     FILE *fp = fopen(name, "rb");
-    assert(fp);
+    if(!fp){
+        printf("Cannot open %s\n", name);
+        assert(0);
+    }
 
     fseek(fp, 0L, SEEK_END); 
     send_file_size = ftell(fp);

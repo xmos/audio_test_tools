@@ -9,29 +9,16 @@ import socket
 import time
 
 
-TEST_LEN_SECONDS=1
+TEST_LEN_SECONDS=0.05
 INFILE="noise_4ch.wav"
 OUTFILE="noise_4ch_processed.wav"
-USE_XSIM=False
-# USE_XSIM=True
+USE_XSIM=True #For testing locally without HW only. VERY slow
 package_dir = os.path.dirname(os.path.abspath(__file__))
 test_wav_exe = os.path.join(package_dir, 'bin/test_test_wav_xscope.xe')
-host_exe = os.path.join(package_dir, 'host/xscope_host_endpoint')
+host_exe = os.path.join(package_dir, '../../audio_test_tools/host/xscope_host_endpoint')
 
 input_file = os.path.join(package_dir, INFILE)
 output_file = os.path.join(package_dir, OUTFILE)
-
-
-
-
-# xkill
-# # killall xscope_host_endpoint
-# make
-# xrun --xscope-port localhost:"$PORT" main.xe & 
-# # xsim --xscope "-realtime localhost:$PORT" main.xe &
-# sleep 2
-# time ./host/xscope_host_endpoint $INFILE $PORT
-
 
 def run(cmd, stdin=b""):
     process = subprocess.Popen(cmd.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -68,16 +55,15 @@ def get_open_port():
 def run_on_target(xtag_id, infile, outfile):
     port = get_open_port()
     xrun_cmd = f"xrun --xscope-port localhost:{port} --id {xtag_id} {test_wav_exe}"
-    xsim_cmd = ['xsim', '--xscope', f'"-realtime localhost:{port}"', test_wav_exe]
+    xsim_cmd = ['xsim', '--xscope', f'-realtime localhost:{port}', test_wav_exe]
 
+    #Run in background
     if USE_XSIM:
-        print(xsim_cmd)
         xrun_proc = subprocess.Popen(xsim_cmd)
     else:
-        print(xrun_cmd)
         xrun_proc = subprocess.Popen(xrun_cmd.split())
 
-    #Time for process to start
+    #Time for xscope host process to start
     time.sleep(1)
 
     def get_child_xgdb_proc(port):
@@ -102,6 +88,7 @@ def run_on_target(xtag_id, infile, outfile):
     host_cmd = f"{host_exe} {infile} {outfile} {port}"
     run(host_cmd)
 
+    # Was needed during dev but shouldn't be now as app quits nicely
     # xrun_proc.kill()
     # run(f"kill {get_child_xgdb_proc(port)}")
 
@@ -110,8 +97,11 @@ def run_on_target(xtag_id, infile, outfile):
 
 def run_test_wav_xscope():
     #Find target
-    id = find_free_target_id("O[0]")
-    assert id != None, "No free targets available"
+    if USE_XSIM:
+        id = None
+    else:
+        id = find_free_target_id("O[0]")
+        assert id != None, "No free XTAG targets available"
 
     #Prepare file
     test_infile = "input.raw"
@@ -129,11 +119,19 @@ def test_test_wav_xscope(jenkins=True):
     global input_file, output_file
 
     if not jenkins:
+        #Build fw
+        run("waf configure build")
+        #Build host app
+        os.chdir(os.path.join(package_dir,"../../audio_test_tools/host/"))
         run("make")
+        os.chdir(package_dir)
+        #Build firmware
 
 
     #create test noise file
-    run(f"sox -n -c 4 -b 32 -r 16000 -e signed-integer {input_file} synth {TEST_LEN_SECONDS} whitenoise vol 1.0")
+    length_rounded_to_frame = round((float(TEST_LEN_SECONDS) * 16000.0 / 240.0)) * 240 / 16000
+    print(f"Generating a {length_rounded_to_frame}s test file")
+    run(f"sox -n -c 4 -b 32 -r 16000 -e signed-integer {input_file} synth {length_rounded_to_frame} whitenoise vol 1.0")
 
     run_test_wav_xscope()
 
@@ -146,6 +144,7 @@ def test_test_wav_xscope(jenkins=True):
     print("TEST PASS")
     
 if __name__ == "__main__":
+    # subprocess.run(['xsim', '--xscope', '-realtime localhost:12334', test_wav_exe])
     test_test_wav_xscope(jenkins=False)
 
 
