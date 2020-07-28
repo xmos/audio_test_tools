@@ -92,7 +92,7 @@ void xscope_record(
     }
 }
 
-void send_file(const char *name)
+unsigned send_file(const char *name)
 {
     unsigned char buf[INPUT_BLOCK_SIZE_BYTES];
     unsigned total_bytes_read = 0;
@@ -131,8 +131,9 @@ void send_file(const char *name)
     const char end_sting[] = END_MARKER_STRING;
     xscope_ep_request_upload(END_MARKER_LEN, (const unsigned char *)end_sting); //End
     assert(feof(fp) && !ferror(fp));
-    printf("Host: sent %u bytes\n", total_bytes_read);
+    // printf("Host: sent %u bytes\n", total_bytes_read);
     fclose(fp);
+    return total_bytes_read;
 }
 
 int main(int argc, char *argv[])
@@ -153,14 +154,15 @@ int main(int argc, char *argv[])
     }
 
     init_out_file(argv[2]);
-    send_file(argv[1]);
+    unsigned total_bytes_read = send_file(argv[1]);
 
     while(running){
         usleep(10000); //Back off for 10ms to reduce processor usage
     }
     close_out_file();
     pthread_mutex_destroy(&lock);
-    printf("Host: Exit received, total %u bytes written\n", total_bytes_written);
+    printf("Host: Exit received, %u bytes sent, %u bytes written (%u truncated)\n",
+                       total_bytes_read, total_bytes_written, total_bytes_read-total_bytes_written);
     return 0;
 }
 

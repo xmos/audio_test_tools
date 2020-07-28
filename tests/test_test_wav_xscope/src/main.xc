@@ -7,14 +7,13 @@
 #include "voice_toolbox.h"
 #include "audio_test_tools.h"
 
-void app_control(chanend c_control_to_wav, chanend c_control_to_dsp){
-
-    //Play the file
+void app_control(chanend c_control_to_wav, chanend ?c_control_to_dsp){
+    //Play the rest of the file
     att_pw_play(c_control_to_wav);
 }
 
 
-void pass_through_test_task(chanend app_to_dsp, chanend dsp_to_app, chanend ?c_control){
+void pass_through_test_task(chanend app_to_dsp, chanend dsp_to_app, chanend ?c_control_to_dsp){
 
     vtb_ch_pair_t [[aligned(8)]] in_frame[ATT_PW_INPUT_CHANNEL_PAIRS][ATT_PW_FRAME_ADVANCE];
     vtb_ch_pair_t [[aligned(8)]] unprocessed_frame[ATT_PW_INPUT_CHANNEL_PAIRS][ATT_PW_PROC_FRAME_LENGTH];
