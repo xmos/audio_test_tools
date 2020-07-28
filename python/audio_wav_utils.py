@@ -9,6 +9,13 @@ from pathlib import Path
 import numpy as np
 import scipy.io.wavfile
 import pandas
+import subprocess
+import re
+import socket
+import time
+import os
+
+
 
 def get_channel_count(wav_file):
     s = np.shape(wav_file)
@@ -135,3 +142,121 @@ def iter_frames(input_wav, frame_advance):
     for frame_start in range(0, file_length-frame_advance, frame_advance):
         new_frame = get_frame(input_data, frame_start, frame_advance)
         yield frame_start, new_frame
+
+
+def run(cmd, stdin=b""):
+    process = subprocess.Popen(cmd.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output, err = process.communicate(stdin)
+    rc = process.returncode
+    assert rc == 0, f"Error running cmd: {cmd}\n output: {err}"
+    return output.decode("utf-8") 
+
+
+def find_free_target_id(target):
+    xrun_output = run("xrun -l")
+    escaped_target = ""
+    for char in target:
+        if "[" in char or "]" in char:
+            escaped_target += "\\"
+        escaped_target += char
+
+    free_target_id = None
+    for line in xrun_output.splitlines():
+        # xrun will return [in use] if not available so not a match
+        # we will find all matches and so this returns the last available target ID in the list
+        match = re.match("\s+(\d+)\s+XMOS XTAG-\d\s+\w+\s+"+escaped_target, line)
+        if match:
+            free_target_id = int(match.group(1))
+    if free_target_id is None:
+        print(f"Cannot find target: {target}")
+    return free_target_id
+
+
+def get_open_port():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(("",0))
+    s.listen(1)
+    port = s.getsockname()[1]
+    s.close()
+    return port
+
+def test_port_is_open(port):
+    port_open = True
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.bind(("", port))
+    except OSError:
+        port_open = False
+    s.close()
+    return port_open
+
+
+def run_on_target(xtag_id, infile, outfile, test_wav_exe, host_exe, use_xsim=False):
+    port = get_open_port()
+    xrun_cmd = f"xrun --xscope-port localhost:{port} --id {xtag_id} {test_wav_exe}"
+    xsim_cmd = ['xsim', '--xscope', f'-realtime localhost:{port}', test_wav_exe]
+
+    #Start and run in background
+    if use_xsim:
+        # print(xsim_cmd)
+        xrun_proc = subprocess.Popen(xsim_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    else:
+        # print(xrun_cmd)
+        xrun_proc = subprocess.Popen(xrun_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+    print("Waiting for xrun", end ="")
+    while test_port_is_open(port):
+        print(".",  end ="", flush=True)
+        time.sleep(0.1)
+    print()
+
+    print("Starting host app", end ="")
+    host_cmd = f"{host_exe} {infile} {outfile} {port}"
+    host_proc = subprocess.Popen(host_cmd.split(), stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
+
+    for line in host_proc.stdout:
+        # print(line.decode("utf-8"), end ="")
+        print(".",  end ="", flush=True)
+    print("\nRunning on target finished")
+
+    # Was needed during dev but shouldn't be now as app quits nicely
+    # xrun_proc.kill()
+    def get_child_xgdb_proc(port):
+        ps_out = run("ps")
+        report = ""
+        for line in ps_out.splitlines():
+            xgdb_match = re.match("\s+(\d+).+-x\s+(\S+)\s+.*", line)
+            if(xgdb_match):
+                pid = xgdb_match.group(1)
+                with open(xgdb_match.group(2), 'r') as file:
+                    xgdb_session = file.read().replace('\n', '')
+                    port_match = re.match(".+localhost:(\d+).+", xgdb_session)
+                    if port_match:
+                        xgdb_port = int(port_match.group(1))
+                        report += f"Found xgdb instance with PID: {pid} on port: {xgdb_port}"
+                        if xgdb_port == port:
+                            return pid
+        print(report)
+        print(f"ERROR: Did not find xgdb running on port: {port}")
+        return None
+    # run(f"kill {get_child_xgdb_proc(port)}")
+
+
+
+def run_test_wav_xscope(input_file, output_file, test_wav_exe, host_exe, use_xsim=False, target="P[0]"):
+    #Find target
+    if use_xsim:
+        id = None
+    else:
+        id = find_free_target_id(target)
+        assert id != None, "No free XTAG targets available"
+
+    #Prepare file
+    test_infile = "input.raw"
+    run(f"sox {input_file} -b 32 -e signed-integer {test_infile}")
+    test_outfile = "output.raw"
+    
+    run_on_target(id, test_infile, test_outfile, test_wav_exe, host_exe, use_xsim)
+    run(f"sox -b 32 -e signed-integer -c 4 -r 16000 {test_outfile} {output_file}")
+    os.remove(test_infile)
+    os.remove(test_outfile)

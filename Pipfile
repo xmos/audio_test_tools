@@ -14,6 +14,7 @@ matplotlib = "*"
 pandas = "*"
 pytest = "*"
 pytest-xdist = "*"
+audio-test-tools = {path = "python",editable = true}
 
 [requires]
 python_version = "3.7"
