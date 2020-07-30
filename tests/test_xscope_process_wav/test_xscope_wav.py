@@ -5,11 +5,11 @@ import sys
 import os
 import audio_wav_utils
 
-TEST_LEN_SECONDS=60
+TEST_LEN_SECONDS=10
 INFILE="noise_4ch.wav"
 OUTFILE="noise_4ch_processed.wav"
 package_dir = os.path.dirname(os.path.abspath(__file__))
-test_wav_exe = os.path.join(package_dir, 'bin/test_test_wav_xscope.xe')
+test_wav_exe = os.path.join(package_dir, 'bin/test_xscope_process_wav.xe')
 host_exe = os.path.join(package_dir, '../../audio_test_tools/host/xscope_host_endpoint')
 
 input_file = os.path.join(package_dir, INFILE)

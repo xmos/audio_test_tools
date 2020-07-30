@@ -1,6 +1,6 @@
 TARGET = XCORE-200-EXPLORER
 
-APP_NAME = test_test_wav_xscope.xe
+APP_NAME = 
 
 SOURCE_DIRS = src .
 
