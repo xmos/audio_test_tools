@@ -237,6 +237,7 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
     unsigned output_frame_counter = 0;
     unsigned block_bytes_so_far = 0;
     unsigned total_bytes_read = 0;
+    unsigned tx_from_dut_empty = 1;
 
     // Vars taken from non-xscope version to support control at a time
     int busy_playing = 1;
@@ -263,51 +264,11 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
         int bytes_read = 0;
         char chunk_buffer[MAX_XSCOPE_SIZE_BYTES];
 
-        #pragma ordered //Itr's really important we drain from the dut first to avoid lockup
         select{
-            case vtb_rx_notification(c_dsp_to_app, rx_state):
-                // printf("vtb_rx_notification\n");
-                vtb_rx_without_notification(c_dsp_to_app, rx_state, (processed_frame, vtb_ch_pair_t[]), rx_md);
-                // printf("vtb_rx_without_notification\n");
-
-                union output_block_buffer_t output_write_buffer;
-
-                unsigned size = sizeof(output_write_buffer.sample);
-
-                for (unsigned ch=0;ch<ATT_PW_OUTPUT_CHANNELS;ch++){
-                    for(unsigned i=0;i<ATT_PW_FRAME_ADVANCE;i++){
-                        output_write_buffer.sample[(i)*ATT_PW_OUTPUT_CHANNELS + ch] = (processed_frame[ch/2][i + (ATT_PW_PROC_FRAME_LENGTH-ATT_PW_FRAME_ADVANCE)], int32_t[2])[ch&1];
-                    }
-                }
-                //Chunk it up
-                unsigned sent_so_far = 0;
-                do{
-                    // printf("sent_so_far: %d\n", sent_so_far);
-                    if(size - sent_so_far >=  MAX_XSCOPE_SIZE_BYTES){
-                        xscope_bytes(0, MAX_XSCOPE_SIZE_BYTES, (char*)&output_write_buffer.bytes[sent_so_far]);
-                        sent_so_far += MAX_XSCOPE_SIZE_BYTES;
-                    }
-                    else{
-                        xscope_bytes(0, size - sent_so_far, (char*)&output_write_buffer.bytes[sent_so_far]);
-                        sent_so_far = size;
-                    }
-                    delay_ticks(10000); /// Magic number found to make xscope stable on MAC, else you get WRITE ERROR ON UPLOAD ....
-                }
-                while (sent_so_far < size);
-                printf("tx chunk complete: %d\n", size);
-
-
-                output_frame_counter++;
-                if(end_marker_found){
-                    printf("output_frame_counter: %d,  input_frame_counter: %d\n", output_frame_counter, input_frame_counter);
-                    if (output_frame_counter == input_frame_counter){
-                        xscope_looping = 0;
-                    }
-                }
-            break;
-
-            case xscope_data_from_host(xscope_data_in, chunk_buffer, bytes_read):
+            case tx_from_dut_empty => xscope_data_from_host(xscope_data_in, chunk_buffer, bytes_read):
+                // printf("xscope_data_from_host\n");
                 // Old att_process_wav logic for blocking control channel until certain sample time
+                // This doesn't seem to actually work - supposed to block other side until time expires I think
                 unsigned start_sample_of_frame = input_frame_counter*ATT_PW_FRAME_ADVANCE;
                 if(start_sample_of_frame >= waiting_for_time){
                     busy_playing = 0;
@@ -378,10 +339,53 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
                     block_bytes_so_far = 0;
                     //request more data 
                     xscope_int(2, 0);
+                    tx_from_dut_empty = 0;
                 }
                 else if(block_bytes_so_far > ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE * 4){
                     printf("Something has gone wrong, chunk bytes: %u\n", block_bytes_so_far);
                 }
+            break;
+
+            case vtb_rx_notification(c_dsp_to_app, rx_state):
+                // printf("vtb_rx_notification\n");
+                vtb_rx_without_notification(c_dsp_to_app, rx_state, (processed_frame, vtb_ch_pair_t[]), rx_md);
+                // printf("vtb_rx_without_notification\n");
+
+                union output_block_buffer_t output_write_buffer;
+
+                unsigned size = sizeof(output_write_buffer.sample);
+
+                for (unsigned ch=0;ch<ATT_PW_OUTPUT_CHANNELS;ch++){
+                    for(unsigned i=0;i<ATT_PW_FRAME_ADVANCE;i++){
+                        output_write_buffer.sample[(i)*ATT_PW_OUTPUT_CHANNELS + ch] = (processed_frame[ch/2][i + (ATT_PW_PROC_FRAME_LENGTH-ATT_PW_FRAME_ADVANCE)], int32_t[2])[ch&1];
+                    }
+                }
+                //Chunk it up
+                unsigned sent_so_far = 0;
+                do{
+                    // printf("sent_so_far: %d\n", sent_so_far);
+                    if(size - sent_so_far >=  MAX_XSCOPE_SIZE_BYTES){
+                        xscope_bytes(0, MAX_XSCOPE_SIZE_BYTES, (char*)&output_write_buffer.bytes[sent_so_far]);
+                        sent_so_far += MAX_XSCOPE_SIZE_BYTES;
+                    }
+                    else{
+                        xscope_bytes(0, size - sent_so_far, (char*)&output_write_buffer.bytes[sent_so_far]);
+                        sent_so_far = size;
+                    }
+                    delay_ticks(10000); /// Magic number found to make xscope stable on MAC, else you get WRITE ERROR ON UPLOAD ....
+                }
+                while (sent_so_far < size);
+                printf("tx chunk complete: %d\n", size);
+
+
+                output_frame_counter++;
+                if(end_marker_found){
+                    printf("output_frame_counter: %d,  input_frame_counter: %d\n", output_frame_counter, input_frame_counter);
+                    if (output_frame_counter == input_frame_counter){
+                        xscope_looping = 0;
+                    }
+                }
+                tx_from_dut_empty = 1;
             break;
         }
     }
