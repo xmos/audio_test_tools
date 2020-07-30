@@ -1,3 +1,4 @@
+// Copyright (c) 2020, XMOS Ltd, All rights reserved
 #include <stdint.h>
 
 /* For xscope mode */
