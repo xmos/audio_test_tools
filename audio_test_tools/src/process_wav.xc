@@ -10,6 +10,10 @@
 #include "voice_toolbox.h"
 #include "audio_test_tools.h"
 
+#define FILE_OUT            0
+#define HOST_QUIT           1
+#define READY_TO_RECEIVE    2
+
 typedef enum {
     ATT_PW_PLAY,
     ATT_PW_PAUSE,
@@ -255,7 +259,7 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
     // Queue up a few requests for file data so that the H->D buffer in xscope is always full
     // We will request more after each block is processed. We do this because
     // xscope seems unstable if we hammer it too hard with data sand rely on the chunk_buffer
-    for (int i=0; i<4;i++) xscope_int(2, 0);
+    for (int i=0; i<4;i++) xscope_int(READY_TO_RECEIVE, 0);
 
     block_bytes_so_far = 0;
     union input_block_buffer_t input_block_buffer;
@@ -321,7 +325,7 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
                     //Input wav 4ch frame is ch0[0], ch1[0], ch2[0], ch3[0], ch0[1], ch1[1], ch2[1], ch3[1]..
                     //VTB 4ch frame is ch0[0], ch1[0], ch0[1], ch1[1]...ch0[239], ch1[239], ch2[0], ch1[3]...ch2[239], ch3[239]
 
-                    printf("rx chunk_complete: %d\n", block_bytes_so_far);
+                    // printf("rx chunk_complete: %d\n", block_bytes_so_far);
                     vtb_ch_pair_t [[aligned(8)]] frame[ATT_PW_INPUT_CHANNELS][ATT_PW_FRAME_ADVANCE];
 
                     for(unsigned f=0; f<ATT_PW_FRAME_ADVANCE; f++){
@@ -337,8 +341,8 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
                     // printf("vtb_tx\n");
                     input_frame_counter++;
                     block_bytes_so_far = 0;
-                    //request more data 
-                    xscope_int(2, 0);
+                    //request more data from host
+                    xscope_int(READY_TO_RECEIVE, 0);
                     tx_from_dut_empty = 0;
                 }
                 else if(block_bytes_so_far > ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE * 4){
@@ -365,18 +369,17 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
                 do{
                     // printf("sent_so_far: %d\n", sent_so_far);
                     if(size - sent_so_far >=  MAX_XSCOPE_SIZE_BYTES){
-                        xscope_bytes(0, MAX_XSCOPE_SIZE_BYTES, (char*)&output_write_buffer.bytes[sent_so_far]);
+                        xscope_bytes(FILE_OUT, MAX_XSCOPE_SIZE_BYTES, (char*)&output_write_buffer.bytes[sent_so_far]);
                         sent_so_far += MAX_XSCOPE_SIZE_BYTES;
                     }
                     else{
-                        xscope_bytes(0, size - sent_so_far, (char*)&output_write_buffer.bytes[sent_so_far]);
+                        xscope_bytes(FILE_OUT, size - sent_so_far, (char*)&output_write_buffer.bytes[sent_so_far]);
                         sent_so_far = size;
                     }
                     delay_ticks(10000); /// Magic number found to make xscope stable on MAC, else you get WRITE ERROR ON UPLOAD ....
                 }
                 while (sent_so_far < size);
-                printf("tx chunk complete: %d\n", size);
-
+                // printf("tx chunk complete: %d\n", size);
 
                 output_frame_counter++;
                 if(end_marker_found){
@@ -391,7 +394,7 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
     }
 
     // Quit
-    xscope_int(1, 0);
+    xscope_int(HOST_QUIT, 0);
     printf("Exit process wav\n");
 
 #else
