@@ -49,6 +49,7 @@ void pass_through_test_task(chanend app_to_dsp, chanend dsp_to_app, chanend ?c_c
 
         vtb_rx(app_to_dsp, rx_state, (unprocessed_frame, vtb_ch_pair_t[]), rx_md);
 
+        delay_milliseconds(15);
         memcpy(processed_frame, in_frame, sizeof(in_frame));
         memcpy(&tx_md, &rx_md, sizeof(rx_md));
 

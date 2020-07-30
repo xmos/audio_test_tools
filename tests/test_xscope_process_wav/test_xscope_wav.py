@@ -5,7 +5,7 @@ import sys
 import os
 import audio_wav_utils
 
-TEST_LEN_SECONDS=10
+TEST_LEN_SECONDS=15
 INFILE="noise_4ch.wav"
 OUTFILE="noise_4ch_processed.wav"
 package_dir = os.path.dirname(os.path.abspath(__file__))
