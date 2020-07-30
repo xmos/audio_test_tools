@@ -1,10 +1,10 @@
 Audio test tools change log
 ===========================
 
-4.2.1
+4.3.0
 -----
 
-  * ADDED: DELETE-ME - Version bump placeholder for develop branch
+  * ADDED: test_wav_xscope test feature
 
 4.2.0
 -----
