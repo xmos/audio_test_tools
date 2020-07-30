@@ -210,13 +210,13 @@ def run_on_target(xtag_id, infile, outfile, test_wav_exe, host_exe, use_xsim=Fal
         time.sleep(0.1)
     print()
 
-    print("Starting host app", end ="")
+    print("Starting host app", end ="\n")
     host_cmd = f"{host_exe} {infile} {outfile} {port}"
     host_proc = subprocess.Popen(host_cmd.split(), stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
 
     for line in host_proc.stdout:
-        # print(line.decode("utf-8"), end ="")
-        print(".",  end ="", flush=True)
+        print(line.decode("utf-8"), end ="", flush=True) #Prints output from host and device 
+        # print(".",  end ="", flush=True) #Prints ....
     print("\nRunning on target finished")
 
     # Was needed during dev but shouldn't be now as app quits nicely

@@ -13,12 +13,19 @@
 
 FILE *fpw = NULL;
 static volatile unsigned int running = 1;
-static volatile unsigned total_bytes_written = 0;
 pthread_mutex_t lock;
 static volatile int flow_counter = 0;
-static unsigned file_progress = 0;
-const unsigned file_progress_interval = 1024 * 1024; //1MB
-static unsigned send_file_size = 0;
+
+static volatile unsigned total_bytes_written = 0;
+
+const unsigned megabyte = 1024 * 1024; //1MB
+static volatile unsigned file_progress = 0;
+
+    
+static volatile unsigned total_bytes_read = 0;
+static volatile unsigned read_file_size = 0;
+
+
 
 void init_out_file(const char *file_name){
     fpw = fopen(file_name, "wb");
@@ -82,11 +89,12 @@ void xscope_record(
         fwrite(databytes, 1, length, fpw);
         total_bytes_written += length;
         // printf("Host: written %u bytes to file (%u)\n", length, total_bytes_written);
-        if(total_bytes_written - file_progress > file_progress_interval){
-            file_progress += file_progress_interval;
-            printf("Host: written %u bytes to file (total: %uMB of %uMB)\n", file_progress_interval,
-                                                                             file_progress/file_progress_interval,
-                                                                             send_file_size/file_progress_interval);
+
+        if(total_bytes_written - file_progress > megabyte){
+            file_progress += megabyte;
+            printf("Host read total: %uMB of %uMB, written %uMB\n", file_progress/megabyte,
+                                                                   read_file_size/megabyte,
+                                                                   total_bytes_written/megabyte);
         }
     }
     else{
@@ -98,7 +106,6 @@ void xscope_record(
 unsigned send_file(const char *name)
 {
     unsigned char buf[INPUT_BLOCK_SIZE_BYTES];
-    unsigned total_bytes_read = 0;
     FILE *fp = fopen(name, "rb");
     if(!fp){
         printf("Cannot open %s\n", name);
@@ -106,7 +113,7 @@ unsigned send_file(const char *name)
     }
 
     fseek(fp, 0L, SEEK_END); 
-    send_file_size = ftell(fp);
+    read_file_size = ftell(fp);
     rewind(fp);
 
     unsigned n_bytes_read = 0;
@@ -131,7 +138,7 @@ unsigned send_file(const char *name)
         flow_counter--;
         pthread_mutex_unlock(&lock);
 
-        printf("Host: sent block %u (total: %u) (flow_counter: %d)\n", n_bytes_read, total_bytes_read, flow_counter);
+        // printf("Host: sent block %u (total: %u) (flow_counter: %d)\n", n_bytes_read, total_bytes_read, flow_counter);
     } 
     while (n_bytes_read);
     const char end_sting[] = END_MARKER_STRING;
@@ -167,7 +174,7 @@ int main(int argc, char *argv[])
     }
     close_out_file();
     pthread_mutex_destroy(&lock);
-    printf("Host: Exit received, %u bytes sent, %u bytes written (%u truncated)\n",
+    printf("Host: Exit received, %u bytes sent, %u bytes written (%u truncated due to framing)\n",
                        total_bytes_read, total_bytes_written, total_bytes_read-total_bytes_written);
     return 0;
 }
