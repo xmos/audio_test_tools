@@ -197,6 +197,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
 //#endif
 
 
+#ifdef __process_wav_conf_h_exists__
 union input_block_buffer_t {
     int32_t sample[ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE];
     char bytes[ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE * 4];
@@ -206,6 +207,7 @@ union output_block_buffer_t {
     int32_t sample[ATT_PW_OUTPUT_CHANNELS * ATT_PW_FRAME_ADVANCE];
     char bytes[ATT_PW_OUTPUT_CHANNELS * ATT_PW_FRAME_ADVANCE * 4];
 };
+#endif
 
 void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanend c_dsp_to_app, chanend ?c_comms){
 
