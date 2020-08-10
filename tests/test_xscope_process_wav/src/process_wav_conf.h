@@ -1,4 +1,5 @@
-// Copyright (c) 2020, XMOS Ltd, All rights reserved
+// Copyright (c) 2018-2020, XMOS Ltd, All rights reserved
+
 #ifndef _PROCESS_WAV_CONF_H
 #define _PROCESS_WAV_CONF_H
 
