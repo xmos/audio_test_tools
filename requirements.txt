@@ -1,4 +1,8 @@
-# python_version 3.7
+# python_version 3.7.7
+#
+# The parse_version_from_requirements() function in the installPipfile.groovy
+# file of the Jenkins Shared Library uses the python_version comment to set
+# the version of python used.
 
 # dependencies
 flake8==3.8.3

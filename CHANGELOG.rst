@@ -5,7 +5,7 @@ Audio test tools change log
 -----
 
   * CHANGED: use v0.14.1 of Jenkins shared library
-  * CHANGED: pin python module versions
+  * CHANGED: pin python and python module versions
 
 4.2.0
 -----
