@@ -4,7 +4,8 @@ Audio test tools change log
 4.2.1
 -----
 
-  * ADDED: DELETE-ME - Version bump placeholder for develop branch
+  * CHANGED: use v0.14.1 of Jenkins shared library
+  * CHANGED: pin python and python module versions
 
 4.2.0
 -----
