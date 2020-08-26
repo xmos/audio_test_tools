@@ -6,6 +6,7 @@ Audio test tools change log
 
   * CHANGED: use v0.14.1 of Jenkins shared library
   * CHANGED: pin python and python module versions
+  * ADDED: missing modules in install_requires[] of setup.py
 
 4.2.0
 -----
