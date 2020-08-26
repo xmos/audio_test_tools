@@ -5,9 +5,13 @@ setuptools.setup(
     name='audio_test_tools',
     packages=setuptools.find_packages(),
     install_requires=[
-        'numpy',
-        'scipy',
+        'flake8',
         'matplotlib',
+        'numpy',
         'pandas',
+        'pylint',
+        'pytest',
+        'pytest-xdist',
+        'scipy',
     ]
 )
