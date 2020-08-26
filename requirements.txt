@@ -4,7 +4,22 @@
 # file of the Jenkins Shared Library uses the python_version comment to set
 # the version of python used.
 
-# dependencies
+# Distributed (released) dependencies
+#
+# The python modules listed below specify a known working combination required
+# by the python code in this repository.  The procedure used to set up a
+# suitable python environment for this repository installs the version of each
+# module in the list.  Using a specific version ensures a controlled
+# infrastructure for development, testing and release.
+#
+# Another repository might depend on python code defined in this one.  When
+# that happens, the procedure used to set up a suitable python environment for
+# that repository most likely involves reading the install_requires list from
+# this repository's setup.py file.  Since the other repository may require a
+# different version of a python module than what is specified below, the
+# install_requires list does not append a version specifier to each module it
+# includes.  However, the same modules should appear in the install_requires
+# list as given below.
 flake8==3.8.3
 matplotlib==3.3.1
 numpy==1.19.1
@@ -13,3 +28,15 @@ pylint==2.5.3
 pytest==6.0.0
 pytest-xdist==1.34.0
 scipy==1.5.2
+
+# Development dependencies
+#
+# Eack link listed below specifies the location of a setup.py file in a
+# repository.  Each entry must begin with '-e ' (without the quotes).
+#
+# If python code in this repository depends on python code under development
+# in another repository, then an entry for that other respository should
+# appear in this list instead of the released dependencies list.
+#
+# If this repository uses the setup functionality of its own setup.py file,
+# then this list must include a '-e .' entry (without the quotes).
