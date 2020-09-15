@@ -82,7 +82,7 @@ void xscope_record(
         // printf("Host: more!\n");
         return;
     }
-    if(id == 1)
+    else if(id == 1)
     {
         running = 0;
         return;
