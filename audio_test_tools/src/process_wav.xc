@@ -260,7 +260,7 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
 
     // Queue up a few requests for file data so that the H->D buffer in xscope is always full
     // We will request more after each block is processed. We do this because
-    // xscope seems unstable if we hammer it too hard with data sand rely on the chunk_buffer
+    // xscope seems unstable if we hammer it too hard with data hence throttle the transfers 
     for (int i=0; i<4;i++) xscope_int(READY_TO_RECEIVE, 0);
 
     block_bytes_so_far = 0;
