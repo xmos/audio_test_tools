@@ -309,7 +309,6 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
                 memcpy(&input_block_buffer.bytes[block_bytes_so_far], chunk_buffer, bytes_read);
                 end_marker_found = ((bytes_read == END_MARKER_LEN) && !memcmp(chunk_buffer, END_MARKER_STRING, END_MARKER_LEN)) ? 1 : 0;
                 if(end_marker_found){
-                    printf("end_marker_found\n");
                     //If the processing section is short, then rx will have already been processed so quit if so
                     if (output_frame_counter == input_frame_counter){
                         xscope_looping = 0;
@@ -319,7 +318,6 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
                 else{
                     block_bytes_so_far += bytes_read;
                     total_bytes_read += bytes_read;
-                    // printf("block_bytes_so_far: %u\n", block_bytes_so_far);
                 }
 
                 if(block_bytes_so_far == (ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE * 4)){
@@ -327,7 +325,6 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
                     //Input wav 4ch frame is ch0[0], ch1[0], ch2[0], ch3[0], ch0[1], ch1[1], ch2[1], ch3[1]..
                     //VTB 4ch frame is ch0[0], ch1[0], ch0[1], ch1[1]...ch0[239], ch1[239], ch2[0], ch1[3]...ch2[239], ch3[239]
 
-                    // printf("rx chunk_complete: %d\n", block_bytes_so_far);
                     vtb_ch_pair_t [[aligned(8)]] frame[ATT_PW_INPUT_CHANNELS][ATT_PW_FRAME_ADVANCE];
 
                     for(unsigned f=0; f<ATT_PW_FRAME_ADVANCE; f++){
@@ -340,7 +337,6 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
 
                     vtb_tx(c_app_to_dsp, tx_state, (frame, vtb_ch_pair_t[]), tx_md);
 
-                    // printf("vtb_tx\n");
                     input_frame_counter++;
                     block_bytes_so_far = 0;
                     //request more data from host
@@ -353,9 +349,7 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
             break;
 
             case vtb_rx_notification(c_dsp_to_app, rx_state):
-                // printf("vtb_rx_notification\n");
                 vtb_rx_without_notification(c_dsp_to_app, rx_state, (processed_frame, vtb_ch_pair_t[]), rx_md);
-                // printf("vtb_rx_without_notification\n");
 
                 union output_block_buffer_t output_write_buffer;
 
@@ -369,7 +363,6 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
                 //Chunk it up
                 unsigned sent_so_far = 0;
                 do{
-                    // printf("sent_so_far: %d\n", sent_so_far);
                     if(size - sent_so_far >=  MAX_XSCOPE_SIZE_BYTES){
                         xscope_bytes(FILE_OUT, MAX_XSCOPE_SIZE_BYTES, (char*)&output_write_buffer.bytes[sent_so_far]);
                         sent_so_far += MAX_XSCOPE_SIZE_BYTES;
@@ -379,13 +372,13 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
                         sent_so_far = size;
                     }
                     delay_ticks(10000); /// Magic number found to make xscope stable on MAC, else you get WRITE ERROR ON UPLOAD ....
+                                        // Note this is now fixed in tools 15.0.1 but keeping delay for compatibility with earlier tools
+                                        // It has a minimal effect on performance
                 }
                 while (sent_so_far < size);
-                // printf("tx chunk complete: %d\n", size);
 
                 output_frame_counter++;
                 if(end_marker_found){
-                    printf("output_frame_counter: %d,  input_frame_counter: %d\n", output_frame_counter, input_frame_counter);
                     if (output_frame_counter == input_frame_counter){
                         xscope_looping = 0;
                     }
