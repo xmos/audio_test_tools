@@ -131,7 +131,7 @@ unsigned send_file(const char *name)
         }
         unsigned left_over = n_bytes_read % MAX_XSCOPE_SIZE_BYTES;
         if(left_over){
-            int ret = xscope_ep_request_upload(left_over, &buf[n_bytes_read / MAX_XSCOPE_SIZE_BYTES]);
+            int ret = xscope_ep_request_upload(left_over, &buf[(n_bytes_read / MAX_XSCOPE_SIZE_BYTES) * MAX_XSCOPE_SIZE_BYTES]]);
             if(ret) printf("Error, ret: %d\n", ret);
         }
         total_bytes_read += n_bytes_read;
