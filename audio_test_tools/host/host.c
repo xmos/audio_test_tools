@@ -22,7 +22,8 @@ static volatile unsigned total_bytes_written = 0;
 const unsigned megabyte = 1024 * 1024; //1MB
 static volatile unsigned file_progress = 0;
 
-    
+//Note ftell can only handle 2^31 - 1 = 2GB files and so this cannot handle more than
+//2^31 / (16000 * 4 * 4) = 8338s or 139 minutes
 static volatile unsigned total_bytes_read = 0;
 static volatile unsigned read_file_size = 0;
 
