@@ -49,9 +49,15 @@ void pass_through_test_task(chanend app_to_dsp, chanend dsp_to_app, chanend ?c_c
 
         vtb_rx(app_to_dsp, rx_state, (unprocessed_frame, vtb_ch_pair_t[]), rx_md);
 
-        delay_milliseconds(15);
-        memcpy(processed_frame, in_frame, sizeof(in_frame));
-        memcpy(&tx_md, &rx_md, sizeof(rx_md));
+        delay_milliseconds(15); //Simulate doing DSP cycles
+        //Extract the last ATT_PW_FRAME_ADVANCE mic and ref pairs from the unprocessed frame
+        //to form a 'processed' frame to tx back to the host for bit perfect round trip checking
+        for(unsigned pair = 0; pair < ATT_PW_INPUT_CHANNEL_PAIRS; pair++){
+            memcpy(&processed_frame[pair][0],
+                    &unprocessed_frame[pair][ATT_PW_PROC_FRAME_LENGTH - ATT_PW_FRAME_ADVANCE],
+                    sizeof(processed_frame) / ATT_PW_OUTPUT_CHANNEL_PAIRS);
+        }
+        memcpy(&tx_md, &rx_md, sizeof(rx_md)); //Copy metadata across too, but we don't check it
 
         vtb_tx(dsp_to_app, tx_state, (processed_frame, vtb_ch_pair_t[]), tx_md);
     }
