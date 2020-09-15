@@ -27,7 +27,7 @@ static volatile unsigned file_progress = 0;
 static volatile unsigned total_bytes_read = 0;
 static volatile unsigned read_file_size = 0;
 
-
+#define VERBOSE 0
 
 void init_out_file(const char *file_name){
     fpw = fopen(file_name, "wb");
@@ -131,7 +131,7 @@ unsigned send_file(const char *name)
         }
         unsigned left_over = n_bytes_read % MAX_XSCOPE_SIZE_BYTES;
         if(left_over){
-            int ret = xscope_ep_request_upload(left_over, &buf[(n_bytes_read / MAX_XSCOPE_SIZE_BYTES) * MAX_XSCOPE_SIZE_BYTES]]);
+            int ret = xscope_ep_request_upload(left_over, &buf[(n_bytes_read / MAX_XSCOPE_SIZE_BYTES) * MAX_XSCOPE_SIZE_BYTES]);
             if(ret) printf("Error, ret: %d\n", ret);
         }
         total_bytes_read += n_bytes_read;
@@ -140,8 +140,11 @@ unsigned send_file(const char *name)
         flow_counter--;
         pthread_mutex_unlock(&lock);
 
-        // printf("Host: sent block %u (total: %u) (flow_counter: %d)\n", n_bytes_read, total_bytes_read, flow_counter);
-    } 
+        if(VERBOSE){
+            printf("Host: sent block %u (total: %u) (flow_counter: %d)\n", n_bytes_read, total_bytes_read, flow_counter);
+        }
+    }
+
     while (n_bytes_read);
     const char end_sting[] = END_MARKER_STRING;
     xscope_ep_request_upload(END_MARKER_LEN, (const unsigned char *)end_sting); //End
