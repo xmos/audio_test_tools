@@ -14,8 +14,7 @@ import re
 import socket
 import time
 import os
-
-
+import sh
 
 def get_channel_count(wav_file):
     s = np.shape(wav_file)
@@ -143,17 +142,8 @@ def iter_frames(input_wav, frame_advance):
         new_frame = get_frame(input_data, frame_start, frame_advance)
         yield frame_start, new_frame
 
-
-def run(cmd, stdin=b""):
-    process = subprocess.Popen(cmd.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output, err = process.communicate(stdin)
-    rc = process.returncode
-    assert rc == 0, f"Error running cmd: {cmd}\n output: {err}"
-    return output.decode("utf-8") 
-
-
 def find_free_target_id(target):
-    xrun_output = run("xrun -l")
+    xrun_output = sh.xrun("-l")
     escaped_target = ""
     for char in target:
         if "[" in char or "]" in char:
@@ -193,16 +183,19 @@ def test_port_is_open(port):
 
 def run_on_target(xtag_id, infile, outfile, test_wav_exe, host_exe, use_xsim=False):
     port = get_open_port()
-    xrun_cmd = f"xrun --xscope-port localhost:{port} --id {xtag_id} {test_wav_exe}"
-    xsim_cmd = ['xsim', '--xscope', f'-realtime localhost:{port}', test_wav_exe]
+    xrun_cmd = f"--xscope-port localhost:{port} --id {xtag_id} {test_wav_exe}"
+    xsim_cmd = ['--xscope', f'-realtime localhost:{port}', test_wav_exe]
+
+    def process_output(line):
+           print(line)
 
     #Start and run in background
     if use_xsim:
-        # print(xsim_cmd)
-        xrun_proc = subprocess.Popen(xsim_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        print(xsim_cmd)
+        xrun_proc = sh.xsim(xsim_cmd, _bg=True)
     else:
-        # print(xrun_cmd)
-        xrun_proc = subprocess.Popen(xrun_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        print(xrun_cmd)
+        xrun_proc = sh.xrun(xrun_cmd.split(), _bg=True)
 
     print("Waiting for xrun", end ="")
     while test_port_is_open(port):
@@ -212,11 +205,12 @@ def run_on_target(xtag_id, infile, outfile, test_wav_exe, host_exe, use_xsim=Fal
 
     print("Starting host app", end ="\n")
     host_cmd = f"{host_exe} {infile} {outfile} {port}"
-    host_proc = subprocess.Popen(host_cmd.split(), stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
-
-    for line in host_proc.stdout:
-        print(line.decode("utf-8"), end ="", flush=True) #Prints output from host and device 
-        # print(".",  end ="", flush=True) #Prints ....
+    host_args = f"{infile} {outfile} {port}"
+    host_proc = sh.Command(host_exe)(host_args.split(), _bg=True)
+    print(host_proc)
+    # for line in host_proc.stdout.decode():
+    #     print("****" + line, end ="", flush=True) #Prints output from host and device 
+    #     # print(".",  end ="", flush=True) #Prints ....
     print("\nRunning on target finished")
 
     # Was needed during dev but shouldn't be now as app quits nicely
@@ -253,10 +247,10 @@ def run_test_wav_xscope(input_file, output_file, test_wav_exe, host_exe, use_xsi
 
     #Prepare file
     test_infile = "input.raw"
-    run(f"sox {input_file} -b 32 -e signed-integer {test_infile}")
+    sh.sox(f"{input_file} -b 32 -e signed-integer {test_infile}".split())
     test_outfile = "output.raw"
     
     run_on_target(id, test_infile, test_outfile, test_wav_exe, host_exe, use_xsim)
-    run(f"sox -b 32 -e signed-integer -c 4 -r 16000 {test_outfile} {output_file}")
+    sh.sox(f"-b 32 -e signed-integer -c 4 -r 16000 {test_outfile} {output_file}".split())
     os.remove(test_infile)
     os.remove(test_outfile)

@@ -9,6 +9,7 @@ pylint = "*"
 
 [packages]
 numpy = "*"
+sh = "*"
 scipy = "*"
 matplotlib = "*"
 pandas = "*"
