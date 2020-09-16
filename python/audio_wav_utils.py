@@ -211,7 +211,7 @@ def run_on_target(xtag_id, infile, outfile, test_wav_exe, host_exe, use_xsim=Fal
     # for line in host_proc.stdout.decode():
     #     print("****" + line, end ="", flush=True) #Prints output from host and device 
     #     # print(".",  end ="", flush=True) #Prints ....
-    print("\nRunning on target finished")
+    print("Running on target finished")
 
     # Was needed during dev but shouldn't be now as app quits nicely
     # xrun_proc.kill()
@@ -254,3 +254,13 @@ def run_test_wav_xscope(input_file, output_file, test_wav_exe, host_exe, use_xsi
     sh.sox(f"-b 32 -e signed-integer -c 4 -r 16000 {test_outfile} {output_file}".split())
     os.remove(test_infile)
     os.remove(test_outfile)
+
+def create_white_noise_wav(out_filename, seconds, channels, volume=1.0):
+    filenames = []
+    for ch in range(4):
+        filename = f"noise_ch{ch}_tmp.wav"
+        filenames.append(filename)
+        sh.sox(f"-n -c 1 -b 32 -r 16000 -e signed-integer {filename} synth {seconds} whitenoise vol {volume}".split())
+    sh.sox(f"-M {' '.join(filenames)} {out_filename} remix 1 2 3 4".split())
+    for filename in filenames:
+        os.remove(filename)
