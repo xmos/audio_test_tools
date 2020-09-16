@@ -1,1 +1,0 @@
-Cannot determine software title for ../../../audio_test_tools/audio_test_tools/host
