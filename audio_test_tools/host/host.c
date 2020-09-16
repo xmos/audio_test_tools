@@ -121,10 +121,15 @@ unsigned send_file(const char *name)
     unsigned n_bytes_read = 0;
     do
     {
+        //Spin until device is ready for more
         while(flow_counter <= 0);
 
         n_bytes_read = fread(buf, 1, sizeof(buf), fp);
-        assert(n_bytes_read <= INPUT_BLOCK_SIZE_BYTES);
+        if(n_bytes_read < INPUT_BLOCK_SIZE_BYTES && n_bytes_read){
+            printf("Host: incomplete final block read - wanted %u but got %u. Truncating input stream by %u bytes.\n"
+                , INPUT_BLOCK_SIZE_BYTES, n_bytes_read, INPUT_BLOCK_SIZE_BYTES - n_bytes_read);
+            break;
+        }
         for(unsigned idx = 0; idx < n_bytes_read / MAX_XSCOPE_SIZE_BYTES; idx++){
             int ret = xscope_ep_request_upload(MAX_XSCOPE_SIZE_BYTES, &buf[idx * MAX_XSCOPE_SIZE_BYTES]);
             if(ret) printf("Error, ret: %d\n", ret);
@@ -144,8 +149,8 @@ unsigned send_file(const char *name)
             printf("Host: sent block %u (total: %u) (flow_counter: %d)\n", n_bytes_read, total_bytes_read, flow_counter);
         }
     }
-
     while (n_bytes_read);
+
     const char end_sting[] = END_MARKER_STRING;
     xscope_ep_request_upload(END_MARKER_LEN, (const unsigned char *)end_sting); //End
     assert(feof(fp) && !ferror(fp));
@@ -179,7 +184,7 @@ int main(int argc, char *argv[])
     }
     close_out_file();
     pthread_mutex_destroy(&lock);
-    printf("Host: Exit received, %u bytes sent, %u bytes written (%u truncated due to framing)\n",
+    printf("Host: Exit received, %u bytes sent, %u bytes written (%u truncated due to DUT)\n",
                        total_bytes_read, total_bytes_written, total_bytes_read-total_bytes_written);
     return 0;
 }
