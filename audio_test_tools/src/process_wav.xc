@@ -1,13 +1,18 @@
-// Copyright (c) 2017-2019, XMOS Ltd, All rights reserved
+// Copyright (c) 2017-2020, XMOS Ltd, All rights reserved
 
 #include <fcntl.h>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <xscope.h>
+#include <xs1.h>
 
-//#ifdef _VOICE_TOOLBOX_H_
 #include "voice_toolbox.h"
 #include "audio_test_tools.h"
+
+#define FILE_OUT            0
+#define HOST_QUIT           1
+#define READY_TO_RECEIVE    2
 
 typedef enum {
     ATT_PW_PLAY,
@@ -94,7 +99,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
         vtb_rx_state_init(rx_state, ATT_PW_OUTPUT_CHANNEL_PAIRS*2, ATT_PW_PROC_FRAME_LENGTH, ATT_PW_FRAME_ADVANCE, null, DSP_TO_APP_STATE);
     }
 
-    int playing = 1;
+    int busy_playing = 1;
 
     unsigned waiting_for_time;
     if(isnull(c_comms)){
@@ -107,22 +112,22 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
         unsigned start_sample_of_frame = b*ATT_PW_FRAME_ADVANCE;
 
         if(start_sample_of_frame >= waiting_for_time){
-            playing = 0;
+            busy_playing = 0;
         }
 
-        while (!playing){
+        while (!busy_playing){
             select {
                 case c_comms:> int cmd:{
                     switch(cmd){
                     case ATT_PW_PLAY:
-                        playing = 1;
+                        busy_playing = 1;
                         waiting_for_time = UINT_MAX;
                         break;
                     case ATT_PW_PAUSE:
-                        playing = 0;
+                        busy_playing = 0;
                         break;
                     case ATT_PW_PLAY_UNTIL_SAMPLE_PASSES:
-                        playing = 1;
+                        busy_playing = 1;
                         c_comms :> waiting_for_time;
                         break;
                     case ATT_PW_STOP:
@@ -186,6 +191,209 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
     }
 #else
     printf("att_process_wav requires a process_wav_conf.h (and it is missing)\n");
+    _Exit(1);
+#endif
+}
+//#endif
+
+
+#ifdef __process_wav_conf_h_exists__
+union input_block_buffer_t {
+    int32_t sample[ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE];
+    char bytes[ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE * 4];
+};
+
+union output_block_buffer_t {
+    int32_t sample[ATT_PW_OUTPUT_CHANNELS * ATT_PW_FRAME_ADVANCE];
+    char bytes[ATT_PW_OUTPUT_CHANNELS * ATT_PW_FRAME_ADVANCE * 4];
+};
+#endif
+
+void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanend c_dsp_to_app, chanend ?c_comms){
+
+#ifdef __process_wav_conf_h_exists__
+    vtb_ch_pair_t [[aligned(8)]] out_frame[ATT_PW_INPUT_CHANNEL_PAIRS][ATT_PW_FRAME_ADVANCE];
+    vtb_ch_pair_t [[aligned(8)]] processed_frame[ATT_PW_INPUT_CHANNEL_PAIRS][ATT_PW_PROC_FRAME_LENGTH];
+    vtb_ch_pair_t [[aligned(8)]] out_prev_frame[ATT_PW_INPUT_CHANNEL_PAIRS][ATT_PW_PROC_FRAME_LENGTH - ATT_PW_FRAME_ADVANCE];
+
+    memset(out_frame, 0, sizeof(out_frame));
+    memset(processed_frame, 0, sizeof(processed_frame));
+    memset(out_prev_frame, 0, sizeof(out_prev_frame));
+
+   
+    vtb_rx_state_t rx_state = vtb_form_rx_state(
+                                 (vtb_ch_pair_t *) out_frame,
+                                 (vtb_ch_pair_t *) out_prev_frame,
+                                 null, /*delay buffer*/
+                                 ATT_PW_FRAME_ADVANCE,
+                                 ATT_PW_PROC_FRAME_LENGTH,
+                                 ATT_PW_OUTPUT_CHANNELS,
+                                 null /*delays*/);
+    vtb_md_t rx_md;
+    vtb_md_init(rx_md);
+
+    vtb_tx_state_t tx_state = vtb_form_tx_state(ATT_PW_FRAME_ADVANCE, ATT_PW_INPUT_CHANNELS);
+    vtb_md_t tx_md;
+    vtb_md_init(tx_md);
+
+
+    unsigned xscope_looping = 1;
+    unsigned end_marker_found = 0;
+    unsigned input_frame_counter = 0;
+    unsigned output_frame_counter = 0;
+    unsigned block_bytes_so_far = 0;
+    unsigned total_bytes_read = 0;
+    unsigned tx_from_dut_empty = 1;
+
+    // Vars taken from non-xscope version to support control at a time
+    int busy_playing = 1;
+
+    unsigned waiting_for_time;
+    if(isnull(c_comms)){
+        waiting_for_time = UINT_MAX;
+    } else {
+        waiting_for_time = 0;
+    }
+
+    xscope_mode_lossless();
+    xscope_connect_data_from_host(xscope_data_in);
+
+    // Queue up a few requests for file data so that the H->D buffer in xscope is always full
+    // We will request more after each block is processed. We do this because
+    // xscope seems unstable if we hammer it too hard with data hence throttle the transfers 
+    for (int i=0; i<4;i++) xscope_int(READY_TO_RECEIVE, 0);
+
+    block_bytes_so_far = 0;
+    union input_block_buffer_t input_block_buffer;
+
+    while(xscope_looping){
+        int bytes_read = 0;
+        char chunk_buffer[MAX_XSCOPE_SIZE_BYTES];
+
+        select{
+            case tx_from_dut_empty => xscope_data_from_host(xscope_data_in, chunk_buffer, bytes_read):
+                // printf("xscope_data_from_host\n");
+                // Old att_process_wav logic for blocking control channel until certain sample time
+                // This doesn't seem to actually work - supposed to block other side until time expires I think
+                unsigned start_sample_of_frame = input_frame_counter*ATT_PW_FRAME_ADVANCE;
+                if(start_sample_of_frame >= waiting_for_time){
+                    busy_playing = 0;
+                }
+                while (!busy_playing){
+                    select {
+                        case c_comms:> int cmd:{
+                            switch(cmd){
+                            case ATT_PW_PLAY:
+                                busy_playing = 1;
+                                waiting_for_time = UINT_MAX;
+                                break;
+                            case ATT_PW_PAUSE:
+                                busy_playing = 0;
+                                break;
+                            case ATT_PW_PLAY_UNTIL_SAMPLE_PASSES:
+                                busy_playing = 1;
+                                c_comms :> waiting_for_time;
+                                break;
+                            case ATT_PW_STOP:
+                                if (!isnull(c_dsp_to_app)) {
+                                    xscope_looping = 0;
+                                }
+                                break;
+                            }
+                            break;
+                        }
+                    }
+                }
+                // End old logic
+
+                memcpy(&input_block_buffer.bytes[block_bytes_so_far], chunk_buffer, bytes_read);
+                end_marker_found = ((bytes_read == END_MARKER_LEN) && !memcmp(chunk_buffer, END_MARKER_STRING, END_MARKER_LEN)) ? 1 : 0;
+                if(end_marker_found){
+                    //If the processing section is short, then rx will have already been processed so quit if so
+                    if (output_frame_counter == input_frame_counter){
+                        xscope_looping = 0;
+                        break;
+                    }
+                }
+                else{
+                    block_bytes_so_far += bytes_read;
+                    total_bytes_read += bytes_read;
+                }
+
+                if(block_bytes_so_far == (ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE * 4)){
+
+                    //Input wav 4ch frame is ch0[0], ch1[0], ch2[0], ch3[0], ch0[1], ch1[1], ch2[1], ch3[1]..
+                    //VTB 4ch frame is ch0[0], ch1[0], ch0[1], ch1[1]...ch0[239], ch1[239], ch2[0], ch1[3]...ch2[239], ch3[239]
+
+                    vtb_ch_pair_t [[aligned(8)]] frame[ATT_PW_INPUT_CHANNELS][ATT_PW_FRAME_ADVANCE];
+
+                    for(unsigned f=0; f<ATT_PW_FRAME_ADVANCE; f++){
+                        for(unsigned ch=0;ch<ATT_PW_INPUT_CHANNELS;ch++){
+                            unsigned ch_pair = ch/2;
+                            unsigned i=(f * ATT_PW_INPUT_CHANNELS) + ch;
+                            (frame[ch_pair][f], int32_t[2])[ch&1] = input_block_buffer.sample[i];
+                        }
+                    }
+
+                    vtb_tx(c_app_to_dsp, tx_state, (frame, vtb_ch_pair_t[]), tx_md);
+
+                    input_frame_counter++;
+                    block_bytes_so_far = 0;
+                    //request more data from host
+                    xscope_int(READY_TO_RECEIVE, 0);
+                    tx_from_dut_empty = 0;
+                }
+                else if(block_bytes_so_far > ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE * 4){
+                    printf("Something has gone wrong, chunk bytes: %u\n", block_bytes_so_far);
+                }
+            break;
+
+            case vtb_rx_notification(c_dsp_to_app, rx_state):
+                vtb_rx_without_notification(c_dsp_to_app, rx_state, (processed_frame, vtb_ch_pair_t[]), rx_md);
+
+                union output_block_buffer_t output_write_buffer;
+
+                unsigned size = sizeof(output_write_buffer.sample);
+
+                for (unsigned ch=0;ch<ATT_PW_OUTPUT_CHANNELS;ch++){
+                    for(unsigned i=0;i<ATT_PW_FRAME_ADVANCE;i++){
+                        output_write_buffer.sample[(i)*ATT_PW_OUTPUT_CHANNELS + ch] = (processed_frame[ch/2][i + (ATT_PW_PROC_FRAME_LENGTH-ATT_PW_FRAME_ADVANCE)], int32_t[2])[ch&1];
+                    }
+                }
+                //Chunk it up
+                unsigned sent_so_far = 0;
+                do{
+                    if(size - sent_so_far >=  MAX_XSCOPE_SIZE_BYTES){
+                        xscope_bytes(FILE_OUT, MAX_XSCOPE_SIZE_BYTES, (char*)&output_write_buffer.bytes[sent_so_far]);
+                        sent_so_far += MAX_XSCOPE_SIZE_BYTES;
+                    }
+                    else{
+                        xscope_bytes(FILE_OUT, size - sent_so_far, (char*)&output_write_buffer.bytes[sent_so_far]);
+                        sent_so_far = size;
+                    }
+                    delay_ticks(10000); /// Magic number found to make xscope stable on MAC, else you get WRITE ERROR ON UPLOAD ....
+                                        // Note this is now fixed in tools 15.0.1 but keeping delay for compatibility with earlier tools
+                                        // It has a minimal effect on performance
+                }
+                while (sent_so_far < size);
+
+                output_frame_counter++;
+                if(end_marker_found){
+                    if (output_frame_counter == input_frame_counter){
+                        xscope_looping = 0;
+                    }
+                }
+                tx_from_dut_empty = 1;
+            break;
+        }
+    }
+
+    // Quit
+    xscope_int(HOST_QUIT, 0);
+    printf("Exit process wav\n");
+
+#else
+    printf("att_process_wav_xscope requires a process_wav_conf.h (and it is missing)\n");
     _Exit(1);
 #endif
 }
