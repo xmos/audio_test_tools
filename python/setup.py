@@ -20,6 +20,7 @@ setuptools.setup(
         'pytest~=6.0',
         'pytest-xdist~=1.34',
         'scipy~=1.4',
+        'sh~=1.13',
     ],
     dependency_links=[
     ],
