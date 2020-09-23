@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@feature/warnings_plugin_deprecation') _
+@Library('xmos_jenkins_shared_library@test/infr_venvs_plus_warnings') _
 
 getApproval()
 
