@@ -206,11 +206,10 @@ def run_on_target(xtag_id, infile, outfile, test_wav_exe, host_exe, use_xsim=Fal
     print("Starting host app", end ="\n")
     host_cmd = f"{host_exe} {infile} {outfile} {port}"
     host_args = f"{infile} {outfile} {port}"
-    host_proc = sh.Command(host_exe)(host_args.split(), _bg=True)
-    print(host_proc)
-    # for line in host_proc.stdout.decode():
-    #     print("****" + line, end ="", flush=True) #Prints output from host and device 
-    #     # print(".",  end ="", flush=True) #Prints ....
+    sh_print = lambda x: print_output(x, True)
+    host_proc = sh.Command(host_exe)(host_args.split(), _bg=True, _out=sh_print)
+    host_proc.wait()
+
     print("Running on target finished")
 
     # Was needed during dev but shouldn't be now as app quits nicely
