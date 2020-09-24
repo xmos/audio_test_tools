@@ -44,4 +44,4 @@ sh==1.13.1
 # of its own setup.py file, then this list must include an entry for that
 # setup.py file, e.g., '-e .' or '-e ./python' (without the quotes).
 
--e ../audio_test_tools/python
+-e ./python
