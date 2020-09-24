@@ -6,6 +6,7 @@ from __future__ import print_function
 from builtins import str
 from builtins import range
 from pathlib import Path
+import contextlib
 import numpy as np
 import scipy.io.wavfile
 import pandas
@@ -141,6 +142,33 @@ def iter_frames(input_wav, frame_advance):
     for frame_start in range(0, file_length-frame_advance, frame_advance):
         new_frame = get_frame(input_data, frame_start, frame_advance)
         yield frame_start, new_frame
+
+
+@contextlib.contextmanager
+def pushd(new_dir):
+    previous_dir = os.getcwd()
+    os.chdir(new_dir)
+    try:
+        yield
+    finally:
+        os.chdir(previous_dir)
+
+def print_output(x, verbose):
+    if verbose:
+        print(x, end="")
+    else:
+        print(".", end="", flush=True)
+
+def make_src(path, verbose=False):
+    path = Path(path)
+    sh_print = lambda x: print_output(x, verbose)
+    print("Building src...")
+    with pushd(path):
+        args = f""
+        sh.make(args.split(), _out=sh_print)
+        print()
+    return path / "bin/src_test.xe"
+
 
 def find_free_target_id(target):
     xrun_output = sh.xrun("-l")
