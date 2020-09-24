@@ -4,15 +4,17 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <xscope.h>
 #include <xs1.h>
 
 #include "voice_toolbox.h"
 #include "audio_test_tools.h"
 
+#ifdef TEST_WAV_XSCOPE
 #define FILE_OUT            0
 #define HOST_QUIT           1
 #define READY_TO_RECEIVE    2
+#include <xscope.h>
+#endif
 
 typedef enum {
     ATT_PW_PLAY,
@@ -196,6 +198,9 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
 }
 //#endif
 
+// This needs guarding because otherwise non-xscope test_wav_xx apps will fail to link due to no -fxscope
+// which is implicitly added when config.xscope is built as part of the project
+#ifdef TEST_WAV_XSCOPE
 
 #ifdef __process_wav_conf_h_exists__
 union input_block_buffer_t {
@@ -397,4 +402,4 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
     _Exit(1);
 #endif
 }
-//#endif
+#endif // TEST_WAV_XSCOPE

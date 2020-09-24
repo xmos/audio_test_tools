@@ -6,6 +6,7 @@ from __future__ import print_function
 from builtins import str
 from builtins import range
 from pathlib import Path
+import contextlib
 import numpy as np
 import scipy.io.wavfile
 import pandas
@@ -142,6 +143,33 @@ def iter_frames(input_wav, frame_advance):
         new_frame = get_frame(input_data, frame_start, frame_advance)
         yield frame_start, new_frame
 
+
+@contextlib.contextmanager
+def pushd(new_dir):
+    previous_dir = os.getcwd()
+    os.chdir(new_dir)
+    try:
+        yield
+    finally:
+        os.chdir(previous_dir)
+
+def print_output(x, verbose):
+    if verbose:
+        print(x, end="")
+    else:
+        print(".", end="", flush=True)
+
+def make_src(path, verbose=False):
+    path = Path(path)
+    sh_print = lambda x: print_output(x, verbose)
+    print("Building src...")
+    with pushd(path):
+        args = f""
+        sh.make(args.split(), _out=sh_print)
+        print()
+    return path / "bin/src_test.xe"
+
+
 def find_free_target_id(target):
     xrun_output = sh.xrun("-l")
     escaped_target = ""
@@ -206,11 +234,10 @@ def run_on_target(xtag_id, infile, outfile, test_wav_exe, host_exe, use_xsim=Fal
     print("Starting host app", end ="\n")
     host_cmd = f"{host_exe} {infile} {outfile} {port}"
     host_args = f"{infile} {outfile} {port}"
-    host_proc = sh.Command(host_exe)(host_args.split(), _bg=True)
-    print(host_proc)
-    # for line in host_proc.stdout.decode():
-    #     print("****" + line, end ="", flush=True) #Prints output from host and device 
-    #     # print(".",  end ="", flush=True) #Prints ....
+    sh_print = lambda x: print_output(x, True)
+    host_proc = sh.Command(host_exe)(host_args.split(), _bg=True, _out=sh_print)
+    host_proc.wait()
+
     print("Running on target finished")
 
     # Was needed during dev but shouldn't be now as app quits nicely
