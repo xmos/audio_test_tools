@@ -7,8 +7,8 @@ void test_limit_bits(){
 
     unsigned r = 1;
 
-    dsp_complex_t [[aligned(8)]]a[PROC_FRAME_LENGTH];
-    dsp_complex_t [[aligned(8)]]a_copy[PROC_FRAME_LENGTH];
+    att_complex_t [[aligned(8)]]a[PROC_FRAME_LENGTH];
+    att_complex_t [[aligned(8)]]a_copy[PROC_FRAME_LENGTH];
 
     for(unsigned l=0;l<1<<16;l++){
 

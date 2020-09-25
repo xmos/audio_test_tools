@@ -21,7 +21,7 @@ void att_make_sine_table(double * sine_lut, unsigned proc_frame_length){
 }
 
 #pragma unsafe arrays
-void att_bit_reverse( dsp_complex_fp pts[], const uint32_t N )
+void att_bit_reverse( att_complex_fp pts[], const uint32_t N )
 {
     uint32_t shift = clz(N);
     for(uint32_t i = 1; i < N-1; i++) {
@@ -42,7 +42,7 @@ void att_bit_reverse( dsp_complex_fp pts[], const uint32_t N )
 
 #pragma unsafe arrays
 void att_forward_fft (
-    dsp_complex_fp pts[],
+    att_complex_fp pts[],
     const uint32_t  N,
     const double   sine[] )
 {
@@ -92,7 +92,7 @@ void att_forward_fft (
 
 #pragma unsafe arrays
 void att_inverse_fft (
-    dsp_complex_fp pts[],
+    att_complex_fp pts[],
     const uint32_t  N,
     const double   sine[] )
 {
@@ -147,7 +147,7 @@ void att_inverse_fft (
 }
 
 #pragma unsafe arrays
-void att_split_spectrum( dsp_complex_fp pts[], const uint32_t N ){
+void att_split_spectrum( att_complex_fp pts[], const uint32_t N ){
 
     for(uint32_t i=1;i<N/2;i++){
         double a_re = (pts[i].re + pts[N-i].re)/2;
@@ -170,18 +170,18 @@ void att_split_spectrum( dsp_complex_fp pts[], const uint32_t N ){
 
 
     for(uint32_t i=1;i<N/4;i++){
-        dsp_complex_fp a = pts[N/2 + i];
-        dsp_complex_fp b = pts[N - i];
+        att_complex_fp a = pts[N/2 + i];
+        att_complex_fp b = pts[N - i];
         pts[N/2 + i] = b;
         pts[N - i]  = a;
     }
 }
 
 #pragma unsafe arrays
-void att_merge_spectra( dsp_complex_fp pts[], const uint32_t N ){
+void att_merge_spectra( att_complex_fp pts[], const uint32_t N ){
     for(uint32_t i=1;i<N/4;i++){
-        dsp_complex_fp a = pts[N/2 + i];
-        dsp_complex_fp b = pts[N - i];
+        att_complex_fp a = pts[N/2 + i];
+        att_complex_fp b = pts[N - i];
         pts[N/2 + i] = b;
         pts[N - i]  = a;
     }
