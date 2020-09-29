@@ -1,5 +1,6 @@
 // Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
 #include "att_unit_tests.h"
+#include "voice_toolbox.h"
 
 #define PROC_FRAME_LENGTH 256
 
@@ -22,7 +23,7 @@ void test_limit_bits(){
         }
         memcpy(a_copy, a, sizeof(a));
 
-        unsigned a_hr = dsp_bfp_cls(a, PROC_FRAME_LENGTH)-1;
+        unsigned a_hr = vtb_bfp_cls(a, PROC_FRAME_LENGTH)-1;
 
         att_limit_bits(a, PROC_FRAME_LENGTH, bit_limit);
 

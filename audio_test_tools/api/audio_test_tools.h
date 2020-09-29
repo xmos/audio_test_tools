@@ -5,9 +5,9 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include "att_types.h"
 #include "dsp.h"
 #include "xscope_settings.h"
-#include "att_types.h"
 
 #define CRC_POLY (0xEB31D82E)
 #define ATT_WAV_HEADER_BYTES 44

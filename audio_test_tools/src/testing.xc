@@ -1,5 +1,6 @@
 // Copyright (c) 2017-2019, XMOS Ltd, All rights reserved
 #include "audio_test_tools.h"
+#include "voice_toolbox.h"
 
 #include <xs1.h>
 #include <limits.h>
@@ -526,7 +527,7 @@ void att_limit_bits(att_complex_t * a, unsigned length, unsigned bits){
     if(bits >= 32)
         return;
 
-    unsigned hr = dsp_bfp_cls(a, length)-1;
+    unsigned hr = vtb_bfp_cls(a, length)-1;
     int mask = bitrev((1<<bits)-1);
 
     mask >>= hr;
