@@ -16,7 +16,7 @@
  * Struct containing a complex floating point number.
  */
 #if defined(__XS3A__)
-    typedef complex_float_t att_complex_fp;
+    typedef complex_double_t att_complex_fp;
 #else
     typedef dsp_complex_fp att_complex_fp;
 #endif // defined(__XS3A__)
