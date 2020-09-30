@@ -43,5 +43,4 @@ sh==1.13.1
 # If this repository uses the setup functionality (e.g., script entry points)
 # of its own setup.py file, then this list must include an entry for that
 # setup.py file, e.g., '-e .' or '-e ./python' (without the quotes).
--e ../infr_scripts_py
--e ../infr_apps
+-e ./python

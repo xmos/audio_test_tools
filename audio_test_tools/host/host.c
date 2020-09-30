@@ -127,7 +127,7 @@ unsigned send_file(const char *name)
         n_bytes_read = fread(buf, 1, sizeof(buf), fp);
         if(n_bytes_read < INPUT_BLOCK_SIZE_BYTES && n_bytes_read){
             printf("Host: incomplete final block read - wanted %u but got %u. Truncating input stream by %u bytes.\n"
-                , INPUT_BLOCK_SIZE_BYTES, n_bytes_read, INPUT_BLOCK_SIZE_BYTES - n_bytes_read);
+                , INPUT_BLOCK_SIZE_BYTES, n_bytes_read, n_bytes_read);
             break;
         }
         for(unsigned idx = 0; idx < n_bytes_read / MAX_XSCOPE_SIZE_BYTES; idx++){
@@ -184,8 +184,8 @@ int main(int argc, char *argv[])
     }
     close_out_file();
     pthread_mutex_destroy(&lock);
-    printf("Host: Exit received, %u bytes sent, %u bytes written (%u truncated due to DUT)\n",
-                       total_bytes_read, total_bytes_written, total_bytes_read-total_bytes_written);
+    printf("Host: Exit received, %u bytes sent, %u bytes written\n",
+                       total_bytes_read, total_bytes_written);
     return 0;
 }
 
