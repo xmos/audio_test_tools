@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, XMOS Ltd, All rights reserved
+// Copyright (c) 2017-2020, XMOS Ltd, All rights reserved
 
 #ifndef AUDIO_TEST_TOOLS_H_
 #define AUDIO_TEST_TOOLS_H_
@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "dsp.h"
+#include "xscope_settings.h"
 
 #define CRC_POLY (0xEB31D82E)
 #define ATT_WAV_HEADER_BYTES 44
@@ -48,6 +49,7 @@ void att_pw_play_until_sample_passes(chanend c_comms, long sample);
  *          This will stop the wav playing and finish the task.
  */
 void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_comms);
+void att_process_wav_xscope(chanend c_xscope, chanend c_app_to_dsp, chanend c_dsp_to_app, chanend ?c_comms);
 
 
 /*
