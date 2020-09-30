@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+4.4.0
+-----
+
+  * ADDED: Move audio testing python utilities from sw_xvf3510 
+
 4.3.1
 -----
 
