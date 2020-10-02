@@ -1,15 +1,13 @@
 Audio test tools change log
 ===========================
 
-4.3.1
------
-
-  * FIXED: test_wav_xx build failure for non-xscope (axe) apps
-
 4.3.0
 -----
 
   * ADDED: test_wav_xscope test feature
+  * ADDED: lib_xs3_math as a library upon which this one depends
+  * ADDED: ATT-specific synonyms for DSP and XS3-math types
+  * CHANGED: use Voice Toolbox to count leading sign bits instead of DSP library
 
 4.2.0
 -----

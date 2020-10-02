@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include "att_types.h"
 #include "dsp.h"
 #include "xscope_settings.h"
 
@@ -94,11 +95,11 @@ long att_wav_get_frame_start(const att_wav_header &s, unsigned frame_number, uin
  * Double precision DTF
  */
 void att_make_sine_table(double * sine_lut, unsigned proc_frame_length);
-void att_bit_reverse    ( dsp_complex_fp pts[], const uint32_t N );
-void att_forward_fft    ( dsp_complex_fp pts[], const uint32_t N, const double sine[]);
-void att_inverse_fft    ( dsp_complex_fp pts[], const uint32_t N, const double sine[]);
-void att_split_spectrum ( dsp_complex_fp pts[], const uint32_t N );
-void att_merge_spectra  ( dsp_complex_fp pts[], const uint32_t N );
+void att_bit_reverse    ( att_complex_fp pts[], const uint32_t N );
+void att_forward_fft    ( att_complex_fp pts[], const uint32_t N, const double sine[]);
+void att_inverse_fft    ( att_complex_fp pts[], const uint32_t N, const double sine[]);
+void att_split_spectrum ( att_complex_fp pts[], const uint32_t N );
+void att_merge_spectra  ( att_complex_fp pts[], const uint32_t N );
 
 //Returns the interpolated center bin and interpolated peak
 {double, double} att_poly_interpolate(double left, double peak, double right, double center_bin);
@@ -129,18 +130,18 @@ uint32_t att_double_to_uint32(double d, const int d_exp);
 int64_t att_double_to_int64(double d, const int d_exp);
 uint64_t att_double_to_uint64(double d, const int d_exp);
 
-dsp_complex_fp att_complex_int16_to_double(dsp_complex_short_t x, int x_exp);
-dsp_complex_fp att_complex_int32_to_double(dsp_complex_t x, int x_exp);
+att_complex_fp att_complex_int16_to_double(att_complex_short_t x, int x_exp);
+att_complex_fp att_complex_int32_to_double(att_complex_t x, int x_exp);
 
 q8_24 att_uint32_to_q24(uint32_t v, int v_exp);
 
 /*
  * Float/Fixed vector comparision
  */
-unsigned att_bfp_vector_complex_short(dsp_complex_short_t * B, int B_exp, dsp_complex_fp * f, size_t start, size_t count);
+unsigned att_bfp_vector_complex_short(att_complex_short_t * B, int B_exp, att_complex_fp * f, size_t start, size_t count);
 unsigned att_bfp_vector_uint16(uint16_t * B, int B_exp, double * f, size_t start, size_t count);
 unsigned att_bfp_vector_int16(int16_t * B, int B_exp, double * f, size_t start, size_t count);
-unsigned att_bfp_vector_complex(dsp_complex_t * B, int B_exp, dsp_complex_fp * f, size_t start, size_t count);
+unsigned att_bfp_vector_complex(att_complex_t * B, int B_exp, att_complex_fp * f, size_t start, size_t count);
 unsigned att_bfp_vector_uint32(uint32_t * B, int B_exp, double * f, size_t start, size_t count);
 unsigned att_bfp_vector_int32(int32_t * B, int B_exp, double * f, size_t start, size_t count);
 unsigned long long att_bfp_vector_uint64(uint64_t * B, int B_exp, double * f, size_t start, size_t count);
@@ -150,36 +151,36 @@ unsigned long long att_bfp_vector_int64(int64_t * B, int B_exp, double * f, size
  * Python pretty printers
  */
 
-void att_print_int_python_fd(dsp_complex_t * d, size_t length);
-void att_print_int_python_td(dsp_complex_t * d, size_t length, int print_imag);
+void att_print_int_python_fd(att_complex_t * d, size_t length);
+void att_print_int_python_td(att_complex_t * d, size_t length, int print_imag);
 void att_print_int_python_int32(int32_t * d, size_t length);
 void att_print_int_python_uint32(uint32_t * d, size_t length);
 void att_print_int_python_int64(int64_t * d, size_t length);
 void att_print_int_python_uint64(uint64_t * d, size_t length);
 
 
-void att_print_python_fd_shortd(dsp_complex_short_t * d, size_t length, int d_exp);
-void att_print_python_td_short(dsp_complex_short_t * d, size_t length, int d_exp, int print_imag);
-void att_print_python_fd(dsp_complex_t * d, size_t length, int d_exp);
-void att_print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_imag);
+void att_print_python_fd_shortd(att_complex_short_t * d, size_t length, int d_exp);
+void att_print_python_td_short(att_complex_short_t * d, size_t length, int d_exp, int print_imag);
+void att_print_python_fd(att_complex_t * d, size_t length, int d_exp);
+void att_print_python_td(att_complex_t * d, size_t length, int d_exp, int print_imag);
 void att_print_python_int16(int16_t * d, size_t length, int d_exp);
 void att_print_python_uint16(uint16_t * d, size_t length, int d_exp);
 void att_print_python_int32(int32_t * d, size_t length, int d_exp);
 void att_print_python_uint32(uint32_t * d, size_t length, int d_exp);
 void att_print_python_int64(int64_t * d, size_t length, int d_exp);
 void att_print_python_uint64(uint64_t * d, size_t length, int d_exp);
-void att_print_python_fd_fp(dsp_complex_fp * d, size_t length);
-void att_print_python_td_fp(dsp_complex_fp * d, size_t length, int print_imag);
+void att_print_python_fd_fp(att_complex_fp * d, size_t length);
+void att_print_python_td_fp(att_complex_fp * d, size_t length, int print_imag);
 
 /*
  * DSP tracers
  */
 #define ATT_FRAME_NUMBER_INIT (-1)
 void att_trace_new_frame(unsigned & frame_number);
-void att_trace_complex_fd_short(char name[], dsp_complex_short_t * d, int exponent, unsigned length);
-void att_trace_complex_td_short(char name[], dsp_complex_short_t * d, int exponent, unsigned length, int print_imag);
-void att_trace_complex_fd(char name[], dsp_complex_t * d, int exponent, unsigned length);
-void att_trace_complex_td(char name[], dsp_complex_t * d, int exponent, unsigned length, int print_imag);
+void att_trace_complex_fd_short(char name[], att_complex_short_t * d, int exponent, unsigned length);
+void att_trace_complex_td_short(char name[], att_complex_short_t * d, int exponent, unsigned length, int print_imag);
+void att_trace_complex_fd(char name[], att_complex_t * d, int exponent, unsigned length);
+void att_trace_complex_td(char name[], att_complex_t * d, int exponent, unsigned length, int print_imag);
 
 void att_trace_uint16(char name[], uint16_t *d, int exponent, unsigned length);
 void att_trace_int16(char name[], int16_t *d, int exponent, unsigned length);
@@ -205,6 +206,6 @@ void att_burn_thread_div();
 void att_divide_array(unsigned * array, unsigned array_length, unsigned space_to_divide, int use_all_space, unsigned &r);
 
 //Limit the number of significant bit of information in a complex array.
-void att_limit_bits(dsp_complex_t * a, unsigned length, unsigned bits);
+void att_limit_bits(att_complex_t * a, unsigned length, unsigned bits);
 
 #endif /* AUDIO_TEST_TOOLS_H_ */

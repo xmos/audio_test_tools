@@ -1,5 +1,6 @@
-// Copyright (c) 2017-2019, XMOS Ltd, All rights reserved
+// Copyright (c) 2017-2020, XMOS Ltd, All rights reserved
 #include "audio_test_tools.h"
+#include "voice_toolbox.h"
 
 #include <xs1.h>
 #include <limits.h>
@@ -147,29 +148,29 @@ uint64_t att_double_to_uint64(double d, const int d_exp){
     return (uint64_t)ldexp(m, m_exp - d_exp);
 }
 
-dsp_complex_t att_double_to_complex(dsp_complex_fp d, const int d_exp){
-    dsp_complex_t r;
+att_complex_t att_double_to_complex(att_complex_fp d, const int d_exp){
+    att_complex_t r;
     r.re = att_double_to_int32(d.re, d_exp);
     r.im = att_double_to_int32(d.im, d_exp);
     return r;
 }
 
 
-dsp_complex_fp att_complex_int16_to_double(dsp_complex_short_t x, int x_exp){
-    dsp_complex_fp f;
+att_complex_fp att_complex_int16_to_double(att_complex_short_t x, int x_exp){
+    att_complex_fp f;
     f.re = att_int16_to_double(x.re, x_exp);
     f.im = att_int16_to_double(x.im, x_exp);
     return f;
 }
 
-dsp_complex_fp att_complex_int32_to_double(dsp_complex_t x, int x_exp){
-    dsp_complex_fp f;
+att_complex_fp att_complex_int32_to_double(att_complex_t x, int x_exp){
+    att_complex_fp f;
     f.re = att_int32_to_double(x.re, x_exp);
     f.im = att_int32_to_double(x.im, x_exp);
     return f;
 }
 
-unsigned att_bfp_vector_complex_short(dsp_complex_short_t * B, int B_exp, dsp_complex_fp * f, size_t start, size_t count){
+unsigned att_bfp_vector_complex_short(att_complex_short_t * B, int B_exp, att_complex_fp * f, size_t start, size_t count){
     int16_t * b_int = (int16_t *) B;
     double * f_double = (double *) f;
     return att_bfp_vector_int16(b_int, B_exp, f_double, start*2, count*2);
@@ -203,7 +204,7 @@ unsigned att_bfp_vector_int16(int16_t * B, int B_exp, double * f, size_t start, 
     return max_diff;
 }
 
-unsigned att_bfp_vector_complex(dsp_complex_t * B, int B_exp, dsp_complex_fp * f, size_t start, size_t count){
+unsigned att_bfp_vector_complex(att_complex_t * B, int B_exp, att_complex_fp * f, size_t start, size_t count){
     int32_t * b_int = (int32_t *) B;
     double * f_double = (double *) f;
     return att_bfp_vector_int32(b_int, B_exp, f_double, start*2, count*2);
@@ -296,7 +297,7 @@ void att_print_int_python_uint64(uint64_t * d, size_t length){
 }
 
 
-void att_print_int_python_fd(dsp_complex_t * d, size_t length){
+void att_print_int_python_fd(att_complex_t * d, size_t length){
     printf("np.asarray([%d, ", d[0].re);
     for(size_t i=1;i<length;i++){
         printf("%d + %dj, ", d[i].re, d[i].im);
@@ -304,7 +305,7 @@ void att_print_int_python_fd(dsp_complex_t * d, size_t length){
     printf("%d])\n", d[0].im);
 }
 
-void att_print_int_python_td(dsp_complex_t * d, size_t length, int print_imag){
+void att_print_int_python_td(att_complex_t * d, size_t length, int print_imag){
     printf("np.asarray([");
     if(print_imag){
         for(size_t i=0;i<length;i++)
@@ -316,7 +317,7 @@ void att_print_int_python_td(dsp_complex_t * d, size_t length, int print_imag){
     printf("])\n");
 }
 
-void att_print_python_fd_short(dsp_complex_short_t * d, size_t length, int d_exp){
+void att_print_python_fd_short(att_complex_short_t * d, size_t length, int d_exp){
     printf("np.asarray([%.12f, ", att_int16_to_double( d[0].re, d_exp));
     for(size_t i=1;i<length;i++){
         printf("%.12f + %.12fj, ", att_int16_to_double( d[i].re, d_exp),
@@ -324,7 +325,7 @@ void att_print_python_fd_short(dsp_complex_short_t * d, size_t length, int d_exp
     }
     printf("%.12f])\n", att_int16_to_double( d[0].im, d_exp));
 }
-void att_print_python_td_short(dsp_complex_short_t * d, size_t length, int d_exp, int print_imag){
+void att_print_python_td_short(att_complex_short_t * d, size_t length, int d_exp, int print_imag){
     printf("np.asarray([");
     if(print_imag){
         for(size_t i=0;i<length;i++)
@@ -336,7 +337,7 @@ void att_print_python_td_short(dsp_complex_short_t * d, size_t length, int d_exp
     printf("])\n");
 }
 
-void att_print_python_fd(dsp_complex_t * d, size_t length, int d_exp){
+void att_print_python_fd(att_complex_t * d, size_t length, int d_exp){
     printf("np.asarray([%.12f, ", att_int32_to_double( d[0].re, d_exp));
     for(size_t i=1;i<length;i++){
         printf("%.12f + %.12fj, ", att_int32_to_double( d[i].re, d_exp),
@@ -344,7 +345,7 @@ void att_print_python_fd(dsp_complex_t * d, size_t length, int d_exp){
     }
     printf("%.12f])\n", att_int32_to_double( d[0].im, d_exp));
 }
-void att_print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_imag){
+void att_print_python_td(att_complex_t * d, size_t length, int d_exp, int print_imag){
     printf("np.asarray([");
     if(print_imag){
         for(size_t i=0;i<length;i++)
@@ -356,14 +357,14 @@ void att_print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_
     printf("])\n");
 }
 
-void att_print_python_fd_fp(dsp_complex_fp * d, size_t length){
+void att_print_python_fd_fp(att_complex_fp * d, size_t length){
     printf("np.asarray([%.12f, ", d[0].re);
     for(size_t i=1;i<length;i++){
         printf("%.12f + %.12fj, ", d[i].re,d[i].im);
     }
     printf("%.12f])\n", d[0].im);
 }
-void att_print_python_td_fp(dsp_complex_fp * d, size_t length, int print_imag){
+void att_print_python_td_fp(att_complex_fp * d, size_t length, int print_imag){
     printf("np.asarray([");
     if(print_imag){
         for(size_t i=0;i<length;i++)
@@ -435,14 +436,14 @@ void att_trace_new_frame(unsigned &frame_no){
     frame_no++;
 }
 
-void att_trace_complex_td(char name[], dsp_complex_t * d, int exponent, unsigned length, int print_imag){
+void att_trace_complex_td(char name[], att_complex_t * d, int exponent, unsigned length, int print_imag){
     printf("current_frame.update({\"%s\": [[", name);
     for(unsigned i=0;i<length;i++)
         printf("%d, ", (d[i], int32_t[2])[print_imag]);
     printf("], %d]})\n", exponent);
 }
 
-void att_trace_complex_fd(char name[], dsp_complex_t * d, int exponent, unsigned length){
+void att_trace_complex_fd(char name[], att_complex_t * d, int exponent, unsigned length){
     printf("current_frame.update({\"%s\": [[%d,", name, d[0].re);
     for(unsigned i=1;i<length;i++){
         printf("%d+%dj, ", d[i].re, d[i].im);
@@ -450,14 +451,14 @@ void att_trace_complex_fd(char name[], dsp_complex_t * d, int exponent, unsigned
     printf("%d], %d]})\n", d[0].im, exponent);
 }
 
-void att_trace_complex_td_short(char name[], dsp_complex_short_t * d, int exponent, unsigned length, int print_imag){
+void att_trace_complex_td_short(char name[], att_complex_short_t * d, int exponent, unsigned length, int print_imag){
     printf("current_frame.update({\"%s\": [[", name);
     for(unsigned i=0;i<length;i++)
         printf("%d, ", (d[i], int16_t[2])[print_imag]);
     printf("], %d]})\n", exponent);
 }
 
-void att_trace_complex_fd_short(char name[], dsp_complex_short_t * d, int exponent, unsigned length){
+void att_trace_complex_fd_short(char name[], att_complex_short_t * d, int exponent, unsigned length){
     printf("current_frame.update({\"%s\": [[%d,", name, d[0].re);
     for(unsigned i=1;i<length;i++){
         printf("%d+%dj, ", d[i].re, d[i].im);
@@ -521,12 +522,12 @@ void att_divide_array(unsigned * array, unsigned array_length, unsigned space_to
 }
 
 
-void att_limit_bits(dsp_complex_t * a, unsigned length, unsigned bits){
+void att_limit_bits(att_complex_t * a, unsigned length, unsigned bits){
 
     if(bits >= 32)
         return;
 
-    unsigned hr = dsp_bfp_cls(a, length)-1;
+    unsigned hr = vtb_bfp_cls(a, length)-1;
     int mask = bitrev((1<<bits)-1);
 
     mask >>= hr;
