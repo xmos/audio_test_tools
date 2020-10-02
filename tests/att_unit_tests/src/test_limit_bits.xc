@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
+// Copyright (c) 2018-2020, XMOS Ltd, All rights reserved
 #include "att_unit_tests.h"
 #include "voice_toolbox.h"
 
