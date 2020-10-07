@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
+# Copyright (c) 2018-2020, XMOS Ltd, All rights reserved
 from __future__ import print_function
 from builtins import str
 import os.path
@@ -12,7 +12,7 @@ def pytest_collect_file(parent, path):
     if ((path.ext == ".c" or path.ext == ".xc")
             and (path.basename.startswith("test_")
                  and "_Runner" not in path.basename)):
-        return UnityTestSource(path, parent)
+        return UnityTestSource.from_parent(parent, fspath=path)
 
 
 class UnityTestSource(pytest.File):
@@ -31,7 +31,7 @@ class UnityTestSource(pytest.File):
         test_bin_name = test_src_name + '.xe'
         test_bin_path = os.path.join('bin', test_bin_name)
 
-        yield UnityTestExecutable(test_bin_path, self)
+        yield UnityTestExecutable.from_parent(self, name=test_bin_path)
 
 
 class UnityTestExecutable(pytest.Item):
