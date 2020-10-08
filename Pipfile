@@ -9,11 +9,13 @@ pylint = "*"
 
 [packages]
 numpy = "*"
+sh = "*"
 scipy = "*"
 matplotlib = "*"
 pandas = "*"
-pytest = "*"
-pytest-xdist = "*"
+audio-test-tools = {path = "python",editable = true}
+pytest = "==6.0.0"
+pytest-xdist = "==1.34.0"
 
 [requires]
 python_version = "3.7"

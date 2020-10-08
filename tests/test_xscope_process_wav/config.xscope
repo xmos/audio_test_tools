@@ -1,0 +1,6 @@
+<xSCOPEconfig ioMode="basic" enabled="true">
+  <Probe name="FILE_OUT" type="CONTINUOUS" datatype="UINT" units="Value" enabled="true"/>
+  <Probe name="HOST_QUIT" type="CONTINUOUS" datatype="UINT" units="Value" enabled="true"/>
+  <Probe name="READY_TO_RECEIVE" type="CONTINUOUS" datatype="UINT" units="Value" enabled="true"/>
+</xSCOPEconfig>
+

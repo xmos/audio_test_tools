@@ -1,6 +1,15 @@
 Audio test tools change log
 ===========================
 
+4.3.0
+-----
+
+  * ADDED: test_wav_xscope test feature
+  * FIXED: test_wav_xx build failure for non-xscope (axe) apps
+  * CHANGED: Pin Python package versions
+  * REMOVED: not necessary cpanfile
+
+
 4.2.0
 -----
 
