@@ -4,7 +4,7 @@ Audio test tools
 Summary
 -------
 
-This repo contains several Python scrips and XC functions used for testing lib_audio_pipelines and its dependent libs.
+This repo contains several Python scrips and XC functions used for testing audio pipelines and the dependent libs.
 
 Features
 ........
