@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+4.4.0
+-----
+
+  * ADDED: test and build for XS3 target
+
 4.3.0
 -----
 
@@ -8,7 +13,6 @@ Audio test tools change log
   * FIXED: test_wav_xx build failure for non-xscope (axe) apps
   * CHANGED: Pin Python package versions
   * REMOVED: not necessary cpanfile
-
 
 4.2.0
 -----
