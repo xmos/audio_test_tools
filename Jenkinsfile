@@ -94,6 +94,11 @@ pipeline {
           }
         }
       }//stages
+      post {
+        cleanup {
+          xcoreCleanSandbox()
+        }
+      }
     }//Standard build and XS2 tests
     stage('xcore.ai Verification'){
       agent {
