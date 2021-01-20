@@ -68,6 +68,7 @@ pipeline {
               dir("${REPO}/tests/test_parse_wav_header") {
                 runXmake(".", "", "XCOREAI=0")
                 runPytest('--numprocesses=1')
+                runXmake(".", "", "XCOREAI=1")
                 // stash name: 'AN00162', includes: 'bin/XCORE_AI/AN00162_i2s_loopback_demo.xe, '
               }
             }
