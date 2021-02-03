@@ -135,14 +135,16 @@ pipeline {
         }
         stage('xrun'){
           steps{
-            toolsEnv(TOOLS_PATH) {  // load xmos tools
-              dir("tests/test_parse_wav_header") {
-                unstash 'test_parse_wav_header'
-                sh 'python test_wav.py --ai' //Note using pytest as we are passing an argument
-              }
-              dir("tests/att_unit_tests") {
-                unstash 'att_unit_tests'
-                sh 'xrun --io --id 0 bin/test_limit_bits.xe'
+            withVenv() {
+              toolsEnv(TOOLS_PATH) {  // load xmos tools
+                dir("tests/test_parse_wav_header") {
+                  unstash 'test_parse_wav_header'
+                  sh 'python test_wav.py --ai' //Note using pytest as we are passing an argument
+                }
+                dir("tests/att_unit_tests") {
+                  unstash 'att_unit_tests'
+                  sh 'xrun --io --id 0 bin/test_limit_bits.xe'
+                }
               }
             }
           }
