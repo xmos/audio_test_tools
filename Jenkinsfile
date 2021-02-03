@@ -20,8 +20,8 @@ pipeline {
       environment {
         REPO = 'audio_test_tools'
         // VIEW = getViewName(REPO)
-        VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
-        // VIEW = "audio_test_tools_feature_test_xs3"
+        // VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
+        VIEW = "audio_test_tools_feature_test_xs3"
       }
       options {
         skipDefaultCheckout()
@@ -104,6 +104,7 @@ pipeline {
         }
       }
     }//Standard build and XS2 tests
+
     stage('xcore.ai Verification'){
       agent {
         label 'xcore.ai-explorer'
@@ -122,9 +123,8 @@ pipeline {
         stage('xrun'){
           steps{
             toolsEnv(TOOLS_PATH) {  // load xmos tools
-              //Just run on HW and error on incorrect binary etc. We need specific HW for it to run so just check it loads OK
-              // unstash 'AN00162'
-              // sh 'xrun --id 0 bin/XCORE_AI/AN00162_i2s_loopback_demo.xe'
+              unstash 'AN00162'
+              sh 'xrun --id 0 bin/XCORE_AI/AN00162_i2s_loopback_demo.xe'
 
               //Just run on HW and error on incorrect binary etc. It will not run otherwise due to lack of loopback (intended for sim)
               //We run xsim afterwards for actual test (with loopback)
