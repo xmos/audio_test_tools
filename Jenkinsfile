@@ -90,12 +90,11 @@ pipeline {
             }
           }
         }
-        stage('Build test_process_wav') {
+        stage('test_process_wav') {
           steps {
             viewEnv() {
               dir("${REPO}/tests/test_process_wav") {
                 runXmake(".", "", "XCOREAI=0")
-                runPytest('--numprocesses=1')
                 runXmake(".", "", "XCOREAI=1")
                 stash name: 'test_process_wav', includes: 'bin/AI/test_process_wav.xe, '
               }
@@ -134,6 +133,9 @@ pipeline {
 
               unstash 'att_unit_tests'
               sh 'xrun --io --id 0 tests/att_unit_tests/bin/test_limit_bits.xe'
+
+              unstash 'test_process_wav'
+              sh 'xrun --io --id 0 tests/test_process_wav/bin/AI/test_process_wav.xe'
             }
           }
         }
