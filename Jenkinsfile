@@ -128,14 +128,13 @@ pipeline {
           steps{
             toolsEnv(TOOLS_PATH) {  // load xmos tools
               unstash 'test_parse_wav_header'
-              sh 'tree'
-              sh 'xrun --io --id 0 tests/test_parse_wav_header/bin/AI/test_wav_parse_header.xe'
+              sh 'xrun --io --id 0 bin/AI/test_wav_parse_header.xe'
 
               unstash 'att_unit_tests'
-              sh 'xrun --io --id 0 tests/att_unit_tests/bin/test_limit_bits.xe'
+              sh 'xrun --io --id 0 bin/test_limit_bits.xe'
 
               unstash 'test_process_wav'
-              sh 'xrun --io --id 0 tests/test_process_wav/bin/AI/test_process_wav.xe'
+              sh 'xrun --io --id 0 bin/AI/test_process_wav.xe'
             }
           }
         }
