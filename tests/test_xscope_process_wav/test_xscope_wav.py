@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2020, XMOS Ltd, All rights reserved
+# Copyright (c) 2018-2021, XMOS Ltd, All rights reserved
 
 import numpy as np
 import scipy.io.wavfile
@@ -32,7 +32,7 @@ def test_test_wav_xscope():
     for filename in filenames:
         os.remove(filename)
 
-    audio_wav_utils.run_test_wav_xscope(input_file, output_file, test_wav_exe, host_exe, use_xsim=False, target="O[0]")
+    audio_wav_utils.run_test_wav_xscope(input_file, output_file, test_wav_exe, host_exe, use_xsim=False, target="P[0]")
 
     in_rate, in_wav_data = scipy.io.wavfile.read(input_file, 'r')
     out_rate, out_wav_data = scipy.io.wavfile.read(output_file, 'r')
