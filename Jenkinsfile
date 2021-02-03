@@ -153,6 +153,9 @@ pipeline {
           steps{
             withVenv() {
               toolsEnv(TOOLS_PATH) {  // load xmos tools
+                dir("audio_test_tools/host"){
+                  sh 'make'
+                }
                 dir("tests/test_xscope_process_wav") {
                   runPytest()
                 }
