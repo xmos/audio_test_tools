@@ -90,13 +90,22 @@ pipeline {
             }
           }
         }
-        stage('test_process_wav') {
+        stage('Build test_process_wav') {
           steps {
             viewEnv() {
               dir("${REPO}/tests/test_process_wav") {
                 runXmake(".", "", "XCOREAI=0")
                 runXmake(".", "", "XCOREAI=1")
-                stash name: 'test_process_wav', includes: 'bin/AI/test_process_wav.xe, '
+              }
+            }
+          }
+        }
+        stage('Build test_xscope_process_wav') {
+          steps {
+            viewEnv() {
+              dir("${REPO}/tests/test_xscope_process_wav") {
+                runWaf('.', "configure clean build")
+                stash name: 'test_xscope_process_wav', includes: 'bin/test_xscope_process_wav.xe, '
               }
             }
           }
@@ -132,9 +141,17 @@ pipeline {
 
               unstash 'att_unit_tests'
               sh 'xrun --io --id 0 bin/test_limit_bits.xe'
-
-              unstash 'test_process_wav'
-              sh 'xrun --io --id 0 bin/AI/test_process_wav.xe'
+            }
+          }
+        }
+        stage('test_xscope_process_wav'){
+          steps{
+            withVenv() {
+              toolsEnv(TOOLS_PATH) {  // load xmos tools
+                dir("tests/test_xscope_process_wav") {
+                  runPytest()
+                }
+              }
             }
           }
         }
