@@ -84,6 +84,8 @@ pipeline {
                   runWaf('.', "configure clean build")
                   runPytest()
                   runWaf('.', "configure clean build --ai")
+                  sh 'tree'
+                  stash name: 'att_unit_tests', includes: 'bin/test_limit_bits.xe, '
               }
             }
           }
@@ -123,15 +125,11 @@ pipeline {
         stage('xrun'){
           steps{
             toolsEnv(TOOLS_PATH) {  // load xmos tools
-              unstash 'AN00162'
-              sh 'xrun --id 0 bin/XCORE_AI/AN00162_i2s_loopback_demo.xe'
+              unstash 'test_parse_wav_header'
+              sh 'xrun --io --id 0 tests/test_parse_wav_header/bin/AI/test_wav_parse_header.xe'
 
-              //Just run on HW and error on incorrect binary etc. It will not run otherwise due to lack of loopback (intended for sim)
-              //We run xsim afterwards for actual test (with loopback)
-              // unstash 'backpressure_test'
-              // sh 'xrun --id 0 bin/XCORE_AI/backpressure_test_XCORE_AI.xe'
-              // sh 'xsim --xscope "-offline xscope.xmt" bin/XCORE_AI/backpressure_test_XCORE_AI.xe --plugin LoopbackPort.dll "-port tile[0] XS1_PORT_1G 1 0 -port tile[0] XS1_PORT_1A 1 0" > bp_test.txt'
-              // sh 'cat bp_test.txt && diff bp_test.txt tests/backpressure_test.expect'
+              unstash 'att_unit_tests'
+              sh 'xrun --io --id 0 tests/att_unit_tests/bin/test_limit_bits.xe'
             }
           }
         }
