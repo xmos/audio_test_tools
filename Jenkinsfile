@@ -149,7 +149,7 @@ pipeline {
             withVenv() {
               toolsEnv(TOOLS_PATH) {  // load xmos tools
                 dir("tests/test_xscope_process_wav") {
-                  runPytest()
+                  sh 'python test_wav.py --ai' //Note using pytest as we are passing an argument
                 }
               }
             }
