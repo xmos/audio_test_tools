@@ -129,6 +129,7 @@ pipeline {
           steps{
             toolsEnv(TOOLS_PATH) {  // load xmos tools
               unstash 'test_parse_wav_header'
+              sh 'tree'
               sh 'xrun --io --id 0 tests/test_parse_wav_header/bin/AI/test_wav_parse_header.xe'
 
               unstash 'att_unit_tests'
