@@ -157,6 +157,7 @@ pipeline {
                   sh 'make'
                 }
                 dir("tests/test_xscope_process_wav") {
+                  unstash 'test_xscope_process_wav'
                   runPytest('-s --numprocesses=1')
                 }
               }
