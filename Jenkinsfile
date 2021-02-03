@@ -137,7 +137,7 @@ pipeline {
           steps{
             toolsEnv(TOOLS_PATH) {  // load xmos tools
               unstash 'test_parse_wav_header'
-              sh 'xrun --io --id 0 bin/AI/test_wav_parse_header.xe'
+              sh 'python test_wav.py --ai' //Note using pytest as we are passing an argument
 
               unstash 'att_unit_tests'
               sh 'xrun --io --id 0 bin/test_limit_bits.xe'
@@ -149,7 +149,7 @@ pipeline {
             withVenv() {
               toolsEnv(TOOLS_PATH) {  // load xmos tools
                 dir("tests/test_xscope_process_wav") {
-                  sh 'python test_wav.py --ai' //Note using pytest as we are passing an argument
+                  runPytest()
                 }
               }
             }
