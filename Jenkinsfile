@@ -94,7 +94,10 @@ pipeline {
           steps {
             viewEnv() {
               dir("${REPO}/tests/test_process_wav") {
-                  runWaf('.')
+                runXmake(".", "", "XCOREAI=0")
+                runPytest('--numprocesses=1')
+                runXmake(".", "", "XCOREAI=1")
+                stash name: 'test_process_wav', includes: 'bin/AI/test_process_wav.xe, '
               }
             }
           }
