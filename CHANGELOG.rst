@@ -1,6 +1,16 @@
 Audio test tools change log
 ===========================
 
+4.4.0
+-----
+
+  * ADDED: Move audio testing python utilities from sw_xvf3510 
+
+4.3.1
+-----
+
+  * FIXED: test_wav_xx build failure for non-xscope (axe) apps
+
 4.3.0
 -----
 
