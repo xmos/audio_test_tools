@@ -166,6 +166,9 @@ pipeline {
         }
       }//stages
       post {
+        success {
+          updateViewfiles()
+        }
         cleanup {
           cleanWs()
         }
