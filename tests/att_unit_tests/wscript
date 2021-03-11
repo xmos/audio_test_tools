@@ -156,6 +156,8 @@ create_waf_contexts(UNITY_TESTS)
 
 def options(opt):
     opt.load('xwaf.xcommon')
+    opt.add_option('--ai', '--flag', dest='xcoreai', default=False, action='store_true',
+             help='build using XCORE AI as target')
 
 
 def configure(conf):
@@ -175,10 +177,14 @@ def build(bld):
         print('Build queue {}'.format(Options.commands))
     else:
         print('Building runner {}'.format(bld.variant))
-        bld.env.TARGET_ARCH = 'XCORE-200-EXPLORER'
         bld.env.XSCOPE = bld.path.find_resource('config.xscope')
         bld.env.XCC_FLAGS = ['-O2', '-g', '-Wall', '-DUNITY_SUPPORT_64',
                              '-DUNITY_INCLUDE_DOUBLE']
+        if bld.options.xcoreai:
+            bld.env.TARGET_ARCH = 'XCORE-AI-EXPLORER'
+            bld.env.XCC_FLAGS.append('-D__XS2A__=1')
+        else:
+            bld.env.TARGET_ARCH = 'XCORE-200-EXPLORER'
 
         depends_on = ['audio_test_tools', 'lib_dsp',
                       'Unity']
@@ -195,14 +201,13 @@ def build(bld):
         print("config = {}".format(bld.options.config))
         makefile_opts = {}
         makefile_opts['SOURCE_DIRS'] = ['src', os.path.join('runners', bld.variant)]
-        makefile_opts['TARGET'] = ['XCORE-200-EXPLORER']
+        makefile_opts['TARGET'] = [bld.env.TARGET_ARCH]
         makefile_opts['INCLUDE_DIRS'] = ['src']
         makefile_opts['XCC_FLAGS'] = ['-O2', '-g', '-Wall', '-DUNITY_SUPPORT_64', '-DUNITY_INCLUDE_DOUBLE']
-        makefile_opts['APP_NAME'] = [bld.variant]
+        makefile_opts['APP_NAME'] = [bld.variant] #This doesn't work and is ignored grr!!
         makefile_opts['USED_MODULES'] = depends_on
         makefile_opts['XCOMMON_MAKEFILE'] = ['Makefile.common']
         bld.do_xcommon(makefile_opts)
-
 
 def dist(ctx):
     ctx.load('xwaf.xcommon')

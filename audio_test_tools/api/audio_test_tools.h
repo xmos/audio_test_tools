@@ -1,4 +1,5 @@
-// Copyright (c) 2017-2020, XMOS Ltd, All rights reserved
+// Copyright (c) 2017-2021, XMOS Ltd, All rights reserved
+// This software is available under the terms provided in LICENSE.txt.
 
 #ifndef AUDIO_TEST_TOOLS_H_
 #define AUDIO_TEST_TOOLS_H_
