@@ -27,6 +27,8 @@ static volatile unsigned file_progress = 0;
 static volatile unsigned total_bytes_read = 0;
 static volatile unsigned read_file_size = 0;
 
+static volatile unsigned frame_size_bytes = 0; //no. of bytes to send to the device per xscope_ep_request_upload() call
+
 #define VERBOSE 0
 
 void init_out_file(const char *file_name){
@@ -77,6 +79,10 @@ void xscope_record(
     if(id == 2)
     {
         pthread_mutex_lock(&lock);
+        if(frame_size_bytes) {
+            assert(frame_size_bytes == (unsigned)dataval); //cannot change frame_size_bytes after setting it once
+        }
+        frame_size_bytes = (unsigned)dataval;
         flow_counter++;
         pthread_mutex_unlock(&lock);
         // printf("Host: more!\n");
@@ -104,7 +110,6 @@ void xscope_record(
         printf("Host: xSCOPE record event (id [%u] length [%u]\n", id, length);
     }
 }
-
 unsigned send_file(const char *name)
 {
     unsigned char buf[INPUT_BLOCK_SIZE_BYTES];
@@ -124,19 +129,22 @@ unsigned send_file(const char *name)
         //Spin until device is ready for more
         while(flow_counter <= 0);
 
+        assert(INPUT_BLOCK_SIZE_BYTES >= frame_size_bytes);
+        assert(MAX_XSCOPE_SIZE_BYTES >= frame_size_bytes);
+
         n_bytes_read = fread(buf, 1, sizeof(buf), fp);
         if(n_bytes_read < INPUT_BLOCK_SIZE_BYTES && n_bytes_read){
             printf("Host: incomplete final block read - wanted %u but got %u. Truncating input stream by %u bytes.\n"
                 , INPUT_BLOCK_SIZE_BYTES, n_bytes_read, n_bytes_read);
             break;
         }
-        for(unsigned idx = 0; idx < n_bytes_read / MAX_XSCOPE_SIZE_BYTES; idx++){
-            int ret = xscope_ep_request_upload(MAX_XSCOPE_SIZE_BYTES, &buf[idx * MAX_XSCOPE_SIZE_BYTES]);
+        for(unsigned idx = 0; idx < n_bytes_read / frame_size_bytes; idx++){
+            int ret = xscope_ep_request_upload(frame_size_bytes, &buf[idx * frame_size_bytes]);
             if(ret) printf("Error, ret: %d\n", ret);
         }
-        unsigned left_over = n_bytes_read % MAX_XSCOPE_SIZE_BYTES;
+        unsigned left_over = n_bytes_read % frame_size_bytes;
         if(left_over){
-            int ret = xscope_ep_request_upload(left_over, &buf[(n_bytes_read / MAX_XSCOPE_SIZE_BYTES) * MAX_XSCOPE_SIZE_BYTES]);
+            int ret = xscope_ep_request_upload(left_over, &buf[(n_bytes_read / frame_size_bytes) * frame_size_bytes]);
             if(ret) printf("Error, ret: %d\n", ret);
         }
         total_bytes_read += n_bytes_read;

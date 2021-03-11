@@ -182,7 +182,7 @@ def find_free_target_id(target):
     for line in xrun_output.splitlines():
         # xrun will return [in use] if not available so not a match
         # we will find all matches and so this returns the last available target ID in the list
-        match = re.match("\s+(\d+)\s+XMOS XTAG-\d\s+\w+\s+"+escaped_target, line)
+        match = re.match("\s+(\d+)\s+XMOS XTAG-\d\s+\S+\s+"+escaped_target, line)
         if match:
             free_target_id = int(match.group(1))
     if free_target_id is None:
@@ -264,7 +264,7 @@ def run_on_target(xtag_id, infile, outfile, test_wav_exe, host_exe, use_xsim=Fal
 
 
 
-def run_test_wav_xscope(input_file, output_file, test_wav_exe, host_exe, use_xsim=False, target="P[0]"):
+def run_test_wav_xscope(input_file, output_file, test_wav_exe, host_exe, num_out_channels=4, use_xsim=False, target="P[0]"):
     #Find target
     if use_xsim:
         id = None
@@ -278,7 +278,7 @@ def run_test_wav_xscope(input_file, output_file, test_wav_exe, host_exe, use_xsi
     test_outfile = "output.raw"
     
     run_on_target(id, test_infile, test_outfile, test_wav_exe, host_exe, use_xsim)
-    sh.sox(f"-b 32 -e signed-integer -c 4 -r 16000 {test_outfile} {output_file}".split())
+    sh.sox(f"-b 32 -e signed-integer -c {num_out_channels} -r 16000 {test_outfile} {output_file}".split())
     os.remove(test_infile)
     os.remove(test_outfile)
 

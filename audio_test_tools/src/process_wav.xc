@@ -266,7 +266,7 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
     // Queue up a few requests for file data so that the H->D buffer in xscope is always full
     // We will request more after each block is processed. We do this because
     // xscope seems unstable if we hammer it too hard with data hence throttle the transfers 
-    for (int i=0; i<4;i++) xscope_int(READY_TO_RECEIVE, 0);
+    for (int i=0; i<4;i++) xscope_int(READY_TO_RECEIVE, ATT_PW_FRAME_ADVANCE /*chunk size in bytes to receive per xfer from the host*/);
 
     block_bytes_so_far = 0;
     union input_block_buffer_t input_block_buffer;
@@ -345,7 +345,7 @@ void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanen
                     input_frame_counter++;
                     block_bytes_so_far = 0;
                     //request more data from host
-                    xscope_int(READY_TO_RECEIVE, 0);
+                    xscope_int(READY_TO_RECEIVE, ATT_PW_FRAME_ADVANCE /*chunk size in bytes to receive per xfer from the host*/);
                     tx_from_dut_empty = 0;
                 }
                 else if(block_bytes_so_far > ATT_PW_INPUT_CHANNELS * ATT_PW_FRAME_ADVANCE * 4){
