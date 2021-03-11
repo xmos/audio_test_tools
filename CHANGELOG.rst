@@ -5,7 +5,8 @@ Audio test tools change log
 -----
 
   * ADDED: test and build for XS3 target
-  * ADDED: Move audio testing python utilities from sw_xvf3510 
+  * ADDED: Move audio testing python utilities from sw_xvf3510
+  * FIXED: att_process_wav_xscope() working for chunk sizes a multiple of 240
 
 4.3.1
 -----
