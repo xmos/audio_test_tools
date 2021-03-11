@@ -19,9 +19,7 @@ pipeline {
       }
       environment {
         REPO = 'audio_test_tools'
-        // VIEW = getViewName(REPO)
-        // VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
-        VIEW = "audio_test_tools_feature_test_xs3"
+         VIEW = getViewName(REPO)
       }
       options {
         skipDefaultCheckout()
