@@ -31,9 +31,9 @@ const char wav_default_header[ATT_WAV_HEADER_BYTES] = {
 #include "xscope_io_device.h"
 int att_get_wav_header_details_xscope(xscope_file_t *input_file, att_wav_header & s, unsigned &header_size){
   //Assume file is already open here. First rewind.
-  xscope_fseek(0, SEEK_SET, input_file);
+  xscope_fseek(input_file, 0, SEEK_SET);
   //read riff header section (12 bytes)
-  xscope_fread((char*)(&s.riff_header[0]), RIFF_SECTION_SIZE, input_file);
+  xscope_fread(input_file, (char*)(&s.riff_header[0]), RIFF_SECTION_SIZE);
 #else
 int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigned &header_size){
 
@@ -58,7 +58,7 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
   }
   
 #ifdef TEST_WAV_XSCOPE
-  xscope_fread((char*)&s.fmt_header[0], FMT_SUBCHUNK_MIN_SIZE, input_file);
+  xscope_fread(input_file, (char*)&s.fmt_header[0], FMT_SUBCHUNK_MIN_SIZE);
 #else
   //read fmt subchunk (24, 26 or 48 bytes depending on the extension). We read 24 bytes since this covers all information common to all 3 types 
   read(fid, (char*)&s.fmt_header[0], FMT_SUBCHUNK_MIN_SIZE);
@@ -76,16 +76,16 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
 #ifdef TEST_WAV_XSCOPE
   {
     //seek to the end of fmt subchunk and rewind 16bytes to the beginning of GUID
-    xscope_fseek(fmt_subchunk_remaining_size - EXTENDED_FMT_GUID_SIZE, SEEK_CUR, input_file);
+    xscope_fseek(input_file, fmt_subchunk_remaining_size - EXTENDED_FMT_GUID_SIZE, SEEK_CUR);
     //The first 2 bytes of GUID is the audio_format.
-    xscope_fread((uint8_t *)&s.audio_format, sizeof(s.audio_format), input_file);
+    xscope_fread(input_file, (uint8_t *)&s.audio_format, sizeof(s.audio_format));
     //skip the rest of GUID
-    xscope_fseek(EXTENDED_FMT_GUID_SIZE - sizeof(s.audio_format), SEEK_CUR, input_file);
+    xscope_fseek(input_file, EXTENDED_FMT_GUID_SIZE - sizeof(s.audio_format), SEEK_CUR);
   }
   else
   {
     //go to the end of fmt subchunk
-    xscope_fseek(fmt_subchunk_remaining_size, SEEK_CUR, input_file);
+    xscope_fseek(input_file, fmt_subchunk_remaining_size, SEEK_CUR);
   }
 #else
   {
@@ -111,14 +111,14 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
   
   //read header (4 bytes) for the next subchunk
 #ifdef TEST_WAV_XSCOPE
-  xscope_fread((char*)&s.data_header[0], sizeof(s.data_header), input_file);
+  xscope_fread(input_file, (char*)&s.data_header[0], sizeof(s.data_header));
   //if next subchunk is fact, read subchunk size and skip it
   if(memcmp(s.data_header, "fact", sizeof(s.data_header)) == 0)
   {
     uint32_t chunksize;
-    xscope_fread((uint8_t *)&chunksize, sizeof(s.data_bytes), input_file);
-    xscope_fseek(chunksize, SEEK_CUR, input_file);
-    xscope_fread((char*)(&s.data_header[0]), sizeof(s.data_header), input_file);
+    xscope_fread(input_file, (uint8_t *)&chunksize, sizeof(s.data_bytes));
+    xscope_fseek(input_file, chunksize, SEEK_CUR);
+    xscope_fread(input_file, (char*)(&s.data_header[0]), sizeof(s.data_header));
   }
 #else
   read(fid, (char*)&s.data_header[0], sizeof(s.data_header));
@@ -140,7 +140,7 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
   }
   //read data subchunk size. 
 #ifdef TEST_WAV_XSCOPE
-  xscope_fread((uint8_t *)&s.data_bytes, sizeof(s.data_bytes), input_file);
+  xscope_fread(input_file, (uint8_t *)&s.data_bytes, sizeof(s.data_bytes));
   header_size = xscope_ftell(input_file); //total file size should be header_size + data_bytes
   //No need to close file - handled by caller
 #else

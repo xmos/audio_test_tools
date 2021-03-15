@@ -71,7 +71,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
         printf("error in att_get_wav_header_details()\n");
         _Exit(1);
     }
-    xscope_fseek(input_wavheader_size, SEEK_SET, &input_file);
+    xscope_fseek(&input_file, input_wavheader_size, SEEK_SET);
 #else
     if(att_get_wav_header_details(input_file_name, input_header_struct, input_wavheader_size) != 0){
         printf("error in att_get_wav_header_details()\n");
@@ -112,7 +112,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
 #ifdef TEST_WAV_XSCOPE
         output_file = xscope_open_file(output_file_name, "wb");
 #else
-        output_file = open( output_file_name , O_WRONLY|O_CREAT|O_BINARY, 0644 );
+        output_file = open(output_file_name , O_WRONLY|O_CREAT|O_BINARY, 0644 );
 #endif
 
         att_wav_form_header(output_header_struct,
@@ -123,7 +123,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
                 block_count*ATT_PW_FRAME_ADVANCE);
 
 #ifdef TEST_WAV_XSCOPE
-        xscope_fwrite((char*)(&output_header_struct),  ATT_WAV_HEADER_BYTES, &output_file);
+        xscope_fwrite(&output_file, (char*)(&output_header_struct),  ATT_WAV_HEADER_BYTES);
 #else
         write(output_file, (char*)(&output_header_struct),  ATT_WAV_HEADER_BYTES);
 #endif
@@ -180,10 +180,10 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
         long input_location =  att_wav_get_frame_start(input_header_struct, b * ATT_PW_FRAME_ADVANCE, input_wavheader_size);
 
 #ifdef TEST_WAV_XSCOPE
-        xscope_fseek (input_location, SEEK_SET, &input_file);
+        xscope_fseek (&input_file, input_location, SEEK_SET);
 
-        xscope_fread((char*)&input_read_buffer[0],
-                input_bytes_per_frame * ATT_PW_FRAME_ADVANCE, &input_file);
+        xscope_fread(&input_file, (char*)&input_read_buffer[0],
+                input_bytes_per_frame * ATT_PW_FRAME_ADVANCE);
 #else
         lseek (input_file, input_location, SEEK_SET);
 
@@ -219,7 +219,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
                 }
             }
 #ifdef TEST_WAV_XSCOPE
-            xscope_fwrite((uint8_t *)output_write_buffer, output_header_struct.bit_depth/8 * ATT_PW_FRAME_ADVANCE * ATT_PW_OUTPUT_CHANNELS, &output_file);
+            xscope_fwrite(&output_file, (uint8_t *)output_write_buffer, output_header_struct.bit_depth/8 * ATT_PW_FRAME_ADVANCE * ATT_PW_OUTPUT_CHANNELS);
 #else
             write(output_file, output_write_buffer, output_header_struct.bit_depth/8 * ATT_PW_FRAME_ADVANCE * ATT_PW_OUTPUT_CHANNELS);
 #endif
@@ -239,7 +239,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
     _Exit(1);
 #endif
 #ifdef TEST_WAV_XSCOPE
-    xscope_close_files();
+    xscope_close_all_files();
 #endif
 
 }
