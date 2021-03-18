@@ -156,7 +156,6 @@ pipeline {
             }
           }
         }
-      }//stages
       post {
         cleanup {
           cleanWs()
