@@ -144,7 +144,7 @@ pipeline {
           steps{
             dir("${REPO}") {
               viewEnv() {
-                withVenv()
+                withVenv() {
                   dir("tests/test_xscope_process_wav") {  // load xmos tools
                     sh "pip install -e ${env.WORKSPACE}/xtagctl"
                     sh "pip install -e ${env.WORKSPACE}/xscope_fileio"                
@@ -155,6 +155,7 @@ pipeline {
               }
             }
           }
+        }
         }
       post {
         cleanup {
