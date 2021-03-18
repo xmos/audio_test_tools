@@ -143,16 +143,16 @@ pipeline {
         }
         stage('xrun'){
           steps{
-            withVenv() {
-              toolsEnv(TOOLS_PATH) {  // load xmos tools
-                dir("tests/test_parse_wav_header") {
-                  unstash 'test_parse_wav_header'
-                  sh 'python test_wav.py --ai' //Note using pytest as we are passing an argument
-                }
-                dir("tests/att_unit_tests") {
-                  unstash 'att_unit_tests'
-                  sh 'xrun --io --id 0 bin/test_limit_bits.xe'
-                }
+            viewEnv() {
+                withVenv() {
+                  dir("${REPO}/tests/test_parse_wav_header") {  // load xmos tools
+                    unstash 'test_parse_wav_header'
+                    sh 'python test_wav.py --ai' //Note using pytest as we are passing an argument
+                  }
+                  dir("${REPO}/tests/att_unit_tests") {
+                    unstash 'att_unit_tests'
+                    sh 'xrun --io --id 0 bin/test_limit_bits.xe'
+                  }
               }
             }
           }
@@ -160,8 +160,8 @@ pipeline {
         stage('test_xscope_process_wav'){
           steps{
             viewEnv() {
-              withVenv() {
-                dir("${REPO}/tests/test_xscope_process_wav") {  // load xmos tools
+              dir("${REPO}/tests/test_xscope_process_wav") {  // load xmos tools
+                withVenv() {
                   sh "pip install -e ${env.WORKSPACE}/xtagctl"
                   sh "pip install -e ${env.WORKSPACE}/xscope_fileio"                
                     unstash 'test_xscope_process_wav'
