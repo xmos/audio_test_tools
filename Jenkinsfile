@@ -19,9 +19,7 @@ pipeline {
       }
       environment {
         REPO = 'audio_test_tools'
-        // VIEW = getViewName(REPO)
-        // VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
-        VIEW = "audio_test_tools_feature_test_xs3"
+        VIEW = getViewName(REPO)
       }
       options {
         skipDefaultCheckout()
@@ -125,8 +123,18 @@ pipeline {
       environment {
         // '/XMOS/tools' from get_tools.py and rest from tools installers
         TOOLS_PATH = "/XMOS/tools/${params.TOOLS_VERSION}/XMOS/xTIMEcomposer/${params.TOOLS_VERSION}"
+        REPO = 'audio_test_tools'
+        VIEW = getViewName(REPO)        
+      }
+      options {
+        skipDefaultCheckout()
       }
       stages{
+        stage('Get View') {
+            steps {
+                xcorePrepareSandbox("${VIEW}", "${REPO}")
+            }
+        }        
         stage('Install Dependencies') {
           steps {
             sh '/XMOS/get_tools.py ' + params.TOOLS_VERSION
@@ -151,13 +159,13 @@ pipeline {
         }
         stage('test_xscope_process_wav'){
           steps{
-            withVenv() {
-              toolsEnv(TOOLS_PATH) {  // load xmos tools
-                sh "pip install -e ${env.WORKSPACE}/xtagctl"
-                sh "pip install -e ${env.WORKSPACE}/xscope_fileio"                
-                dir("tests/test_xscope_process_wav") {
-                  unstash 'test_xscope_process_wav'
-                  runPytest('-s --numprocesses=1')
+            viewEnv() {
+              withVenv() {
+                dir("${REPO}/tests/test_xscope_process_wav") {  // load xmos tools
+                  sh "pip install -e ${env.WORKSPACE}/xtagctl"
+                  sh "pip install -e ${env.WORKSPACE}/xscope_fileio"                
+                    unstash 'test_xscope_process_wav'
+                    runPytest('-s --numprocesses=1')
                 }
               }
             }
