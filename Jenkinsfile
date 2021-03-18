@@ -153,9 +153,8 @@ pipeline {
           steps{
             withVenv() {
               toolsEnv(TOOLS_PATH) {  // load xmos tools
-                dir("audio_test_tools/host"){
-                  sh 'make'
-                }
+                sh "pip install -e ${env.WORKSPACE}/xtagctl"
+                sh "pip install -e ${env.WORKSPACE}/xscope_fileio"                
                 dir("tests/test_xscope_process_wav") {
                   unstash 'test_xscope_process_wav'
                   runPytest('-s --numprocesses=1')
