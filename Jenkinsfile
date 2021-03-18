@@ -156,7 +156,7 @@ pipeline {
             }
           }
         }
-        }
+      }
       post {
         cleanup {
           cleanWs()
