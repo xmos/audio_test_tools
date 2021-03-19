@@ -1,4 +1,5 @@
-# Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
+# Copyright (c) 2018-2021, XMOS Ltd, All rights reserved
+# This software is available under the terms provided in LICENSE.txt.
 from __future__ import division
 from __future__ import print_function
 from builtins import str
@@ -20,19 +21,9 @@ def parse_arguments():
     args = parser.parse_args()
     return args
 
-if __name__ == "__main__":
 
-    args = parse_arguments()
-
-    #The number of samples of data in the frame
-    proc_frame_length = 2**12
-
-    a_rate, a_wav_file = scipy.io.wavfile.read(args.a, 'r')
-    b_rate, b_wav_file = scipy.io.wavfile.read(args.b, 'r')
+def compare(a_wav_file, b_wav_file):
    
-    if a_rate != b_rate:
-        print("Error files are different rates")
-
     a_wav_data, a_channel_count, a_file_length = audio_wav_utils.parse_audio(a_wav_file)
     b_wav_data, b_channel_count, b_file_length = audio_wav_utils.parse_audio(b_wav_file)
     
@@ -79,7 +70,22 @@ if __name__ == "__main__":
 
         if rms_channel_diff != 0 :
             print("Ch: " + str(ch) + ' Difference: ' + str(20.*np.log10(rms_channel_diff)) + ' dB')
+            return False
         else:
             print("Ch: " + str(ch) + ' Exactly the same')
+            return True
 
+if __name__ == "__main__":
 
+    args = parse_arguments()
+
+    #The number of samples of data in the frame
+    proc_frame_length = 2**12
+
+    a_rate, a_wav_file = scipy.io.wavfile.read(args.a, 'r')
+    b_rate, b_wav_file = scipy.io.wavfile.read(args.b, 'r')
+
+    if a_rate != b_rate:
+        print("Error files are different rates")
+
+    compare(a_wav_file, b_wav_file)

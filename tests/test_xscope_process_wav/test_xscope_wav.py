@@ -1,26 +1,29 @@
-# Copyright (c) 2018-2020, XMOS Ltd, All rights reserved
+# Copyright (c) 2018-2021, XMOS Ltd, All rights reserved
+# This software is available under the terms provided in LICENSE.txt.
 
 import numpy as np
 import scipy.io.wavfile
 import sys
 import os
-import audio_wav_utils
+# import audio_wav_utils
+
+import xscope_fileio
+import xtagctl
 from io import StringIO
 import sh
 
 TEST_LEN_SECONDS=15
-INFILE="noise_4ch.wav"
-OUTFILE="noise_4ch_processed.wav"
+INFILE="input.wav"
+OUTFILE="output.wav"
 package_dir = os.path.dirname(os.path.abspath(__file__))
 test_wav_exe = os.path.join(package_dir, 'bin/test_xscope_process_wav.xe')
-host_exe = os.path.join(package_dir, '../../audio_test_tools/host/xscope_host_endpoint')
 
 input_file = os.path.join(package_dir, INFILE)
 output_file = os.path.join(package_dir, OUTFILE)
 
 
 def test_test_wav_xscope():
-    #create test noise file
+    #create test noise file. Note we round to a frame because test_wav_xscope can only handle full frames
     length_rounded_to_frame = round((float(TEST_LEN_SECONDS) * 16000.0 / 240.0)) * 240 / 16000
     print(f"Generating a {length_rounded_to_frame}s test file")
     filenames = []
@@ -32,8 +35,11 @@ def test_test_wav_xscope():
     for filename in filenames:
         os.remove(filename)
 
-    audio_wav_utils.run_test_wav_xscope(input_file, output_file, test_wav_exe, host_exe, use_xsim=False, target="O[0]")
-
+    print(f"acquire")
+    with xtagctl.acquire("XCORE-AI-EXPLORER") as adapter_id:
+        print(f"Running on {adapter_id}")
+        xscope_fileio.run_on_target(adapter_id, test_wav_exe)
+   
     in_rate, in_wav_data = scipy.io.wavfile.read(input_file, 'r')
     out_rate, out_wav_data = scipy.io.wavfile.read(output_file, 'r')
 
@@ -52,7 +58,7 @@ if __name__ == "__main__":
     sh.waf("configure build".split())
     #Build host app
     print("Building host app")
-    os.chdir(os.path.join(package_dir,"../../audio_test_tools/host/"))
+    os.chdir(os.path.join(package_dir,"../../../xscope_fileio/host"))
     sh.make()
     os.chdir(package_dir)
 
