@@ -1,4 +1,5 @@
-// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2017-2021, XMOS Ltd, All rights reserved
+// This software is available under the terms provided in LICENSE.txt.
 	.text
     .issue_mode  dual
 	.globl	att_burn_thread_div

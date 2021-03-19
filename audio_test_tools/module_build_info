@@ -1,7 +1,8 @@
-VERSION = 4.3.0
+VERSION = 4.4.0
 
 DEPENDENT_MODULES = lib_dsp(>=6.0.0) \
-                    lib_voice_toolbox(>=8.0.0)
+                    lib_voice_toolbox(>=8.0.0) \
+                    xscope_fileio(>=0.1.0)
 
 MODULE_XCC_FLAGS = $(XCC_FLAGS)
 
