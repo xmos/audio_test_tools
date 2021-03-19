@@ -1,27 +1,19 @@
-@Library('xmos_jenkins_shared_library@v0.15.1') _
+@Library('xmos_jenkins_shared_library@v0.16.2') _
 
 getApproval()
 
 pipeline {
   agent none
-  //Tools for AI verif stage. Tools for standard stage in view file
-  parameters {
-    string(
-      name: 'TOOLS_VERSION',
-      defaultValue: '15.0.2',
-      description: 'The tools version to build with (check /projects/tools/ReleasesTools/)'
-      )
+
+  environment {
+    REPO = 'audio_test_tools'
+    VIEW = getViewName(REPO)
   }
+
   stages {
     stage('Standard build and XS2 tests') {
       agent {
         label 'x86_64 && brew'
-      }
-      environment {
-        REPO = 'audio_test_tools'
-        // VIEW = getViewName(REPO)
-        // VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
-        VIEW = "audio_test_tools_feature_test_xs3"
       }
       options {
         skipDefaultCheckout()
@@ -117,33 +109,32 @@ pipeline {
         }
       }
     }//Standard build and XS2 tests
-
     stage('xcore.ai Verification'){
       agent {
         label 'xcore.ai-explorer'
       }
-      environment {
-        // '/XMOS/tools' from get_tools.py and rest from tools installers
-        TOOLS_PATH = "/XMOS/tools/${params.TOOLS_VERSION}/XMOS/xTIMEcomposer/${params.TOOLS_VERSION}"
+      options {
+        skipDefaultCheckout()
       }
       stages{
-        stage('Install Dependencies') {
-          steps {
-            sh '/XMOS/get_tools.py ' + params.TOOLS_VERSION
-            installDependencies()
-          }
-        }
+        stage('Get View') {
+            steps {
+                xcorePrepareSandbox("${VIEW}", "${REPO}")
+            }
+        }        
         stage('xrun'){
           steps{
-            withVenv() {
-              toolsEnv(TOOLS_PATH) {  // load xmos tools
-                dir("tests/test_parse_wav_header") {
-                  unstash 'test_parse_wav_header'
-                  sh 'python test_wav.py --ai' //Note using pytest as we are passing an argument
-                }
-                dir("tests/att_unit_tests") {
-                  unstash 'att_unit_tests'
-                  sh 'xrun --io --id 0 bin/test_limit_bits.xe'
+            dir("${REPO}") {
+              viewEnv() {
+                withVenv() {
+                  dir("tests/test_parse_wav_header") {  // load xmos tools
+                    unstash 'test_parse_wav_header'
+                    sh 'python test_wav.py --ai' //Note using pytest as we are passing an argument
+                  }
+                  dir("tests/att_unit_tests") {
+                    unstash 'att_unit_tests'
+                    sh 'xrun --io --id 0 bin/test_limit_bits.xe'
+                  }
                 }
               }
             }
@@ -151,28 +142,37 @@ pipeline {
         }
         stage('test_xscope_process_wav'){
           steps{
-            withVenv() {
-              toolsEnv(TOOLS_PATH) {  // load xmos tools
-                dir("audio_test_tools/host"){
-                  sh 'make'
-                }
-                dir("tests/test_xscope_process_wav") {
-                  unstash 'test_xscope_process_wav'
-                  runPytest('-s --numprocesses=1')
+            dir("${REPO}") {
+              viewEnv() {
+                withVenv() {
+                  dir("tests/test_xscope_process_wav") {  // load xmos tools
+                    sh "pip install -e ${env.WORKSPACE}/xtagctl"
+                    sh "pip install -e ${env.WORKSPACE}/xscope_fileio"                
+                      unstash 'test_xscope_process_wav'
+                      runPytest('-s --numprocesses=1')
+                  }
                 }
               }
             }
           }
         }
-      }//stages
+      }
       post {
-        success {
-          updateViewfiles()
-        }
         cleanup {
           cleanWs()
         }
       }
     }// xcore.ai
+    stage('Update view files') {
+      agent {
+        label 'x86_64&&brew'
+      }
+      when {
+        expression { return currentBuild.currentResult == "SUCCESS" }
+      }
+      steps {
+        updateViewfiles()
+      }
+    }
   }
 }
