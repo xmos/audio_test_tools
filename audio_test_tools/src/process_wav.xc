@@ -41,7 +41,7 @@ void att_pw_play_until_sample_passes(chanend c_comms, long sample){
 }
 
 #ifdef TEST_WAV_XSCOPE
-void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanend c_dsp_to_app, chanend ?c_comms){
+void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_comms){
 #else
 void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_comms){
 #endif

@@ -79,7 +79,7 @@ int att_get_wav_header_details(const char* filename, att_wav_header & s, unsigne
 #ifdef TEST_WAV_XSCOPE
 #include "xscope_io_device.h"
 int att_get_wav_header_details_xscope(xscope_file_t *input_file, att_wav_header & s, unsigned &header_size);
-void att_process_wav_xscope(chanend c_xscope, chanend c_app_to_dsp, chanend c_dsp_to_app, chanend ?c_comms);
+void att_process_wav_xscope(chanend c_xscope, chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_comms);
 #endif
 
 int att_wav_form_header(att_wav_header & header,

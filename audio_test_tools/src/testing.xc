@@ -337,6 +337,16 @@ void att_print_python_td_short(dsp_complex_short_t * d, size_t length, int d_exp
     printf("])\n");
 }
 
+#ifdef TEST_WAV_XSCOPE
+void att_print_python_fd(dsp_complex_t * d, size_t length, int d_exp){
+    printf("np.asarray([%.12f, \n", att_int32_to_double( d[0].re, d_exp));
+    for(size_t i=1;i<length;i++){
+        printf("dump_h_hat: %.12f + %.12fj, \n", att_int32_to_double( d[i].re, d_exp),
+                att_int32_to_double( d[i].im, d_exp));
+    }
+    printf("dump_h_hat: %.12f])\n", att_int32_to_double( d[0].im, d_exp));
+}
+#else
 void att_print_python_fd(dsp_complex_t * d, size_t length, int d_exp){
     printf("np.asarray([%.12f, ", att_int32_to_double( d[0].re, d_exp));
     for(size_t i=1;i<length;i++){
@@ -345,6 +355,7 @@ void att_print_python_fd(dsp_complex_t * d, size_t length, int d_exp){
     }
     printf("%.12f])\n", att_int32_to_double( d[0].im, d_exp));
 }
+#endif
 void att_print_python_td(dsp_complex_t * d, size_t length, int d_exp, int print_imag){
     printf("np.asarray([");
     if(print_imag){
