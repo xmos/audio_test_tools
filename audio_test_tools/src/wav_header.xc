@@ -26,11 +26,24 @@ const char wav_default_header[ATT_WAV_HEADER_BYTES] = {
 #define FMT_SUBCHUNK_MIN_SIZE (24)
 #define EXTENDED_FMT_GUID_SIZE (16)
 
+
+#ifdef TEST_WAV_XSCOPE
+#include "xscope_io_device.h"
+int att_get_wav_header_details_xscope(xscope_file_t *input_file, att_wav_header & s, unsigned &header_size){
+  //Assume file is already open here. First rewind.
+  xscope_fseek(input_file, 0, SEEK_SET);
+  //read riff header section (12 bytes)
+  xscope_fread(input_file, (char*)(&s.riff_header[0]), RIFF_SECTION_SIZE);
+#else
 int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigned &header_size){
+
   int fid = open ( filename , O_RDONLY );
   
   //read riff header section (12 bytes)
   read(fid, (char*)(&s.riff_header[0]), RIFF_SECTION_SIZE);
+#endif
+
+
 
   if(memcmp(s.riff_header, "RIFF", sizeof(s.riff_header)) != 0)
   {
@@ -44,8 +57,12 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
     return 1;
   }
   
+#ifdef TEST_WAV_XSCOPE
+  xscope_fread(input_file, (char*)&s.fmt_header[0], FMT_SUBCHUNK_MIN_SIZE);
+#else
   //read fmt subchunk (24, 26 or 48 bytes depending on the extension). We read 24 bytes since this covers all information common to all 3 types 
   read(fid, (char*)&s.fmt_header[0], FMT_SUBCHUNK_MIN_SIZE);
+#endif
   if(memcmp(s.fmt_header, "fmt ", sizeof(s.fmt_header)) != 0)
   {
     printf("Error: couldn't find fmt: 0x%x, 0x%x, 0x%x, 0x%x\n", s.fmt_header[0], s.fmt_header[1], s.fmt_header[2], s.fmt_header[3]);
@@ -56,6 +73,21 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
   unsigned fmt_subchunk_remaining_size = fmt_subchunk_actual_size - FMT_SUBCHUNK_MIN_SIZE;
   //if audio_format indicates extended (0xfffe), read the actual audio_format present in GUID in the extended part of fmt subchunk. 
   if(s.audio_format == (short)0xfffe)
+#ifdef TEST_WAV_XSCOPE
+  {
+    //seek to the end of fmt subchunk and rewind 16bytes to the beginning of GUID
+    xscope_fseek(input_file, fmt_subchunk_remaining_size - EXTENDED_FMT_GUID_SIZE, SEEK_CUR);
+    //The first 2 bytes of GUID is the audio_format.
+    xscope_fread(input_file, (uint8_t *)&s.audio_format, sizeof(s.audio_format));
+    //skip the rest of GUID
+    xscope_fseek(input_file, EXTENDED_FMT_GUID_SIZE - sizeof(s.audio_format), SEEK_CUR);
+  }
+  else
+  {
+    //go to the end of fmt subchunk
+    xscope_fseek(input_file, fmt_subchunk_remaining_size, SEEK_CUR);
+  }
+#else
   {
     //seek to the end of fmt subchunk and rewind 16bytes to the beginning of GUID
     lseek(fid, fmt_subchunk_remaining_size - EXTENDED_FMT_GUID_SIZE, SEEK_CUR);
@@ -69,6 +101,7 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
     //go to the end of fmt subchunk
     lseek(fid, fmt_subchunk_remaining_size, SEEK_CUR);
   }
+#endif
 
   if(s.audio_format != 1)
   {
@@ -77,6 +110,17 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
   }
   
   //read header (4 bytes) for the next subchunk
+#ifdef TEST_WAV_XSCOPE
+  xscope_fread(input_file, (char*)&s.data_header[0], sizeof(s.data_header));
+  //if next subchunk is fact, read subchunk size and skip it
+  if(memcmp(s.data_header, "fact", sizeof(s.data_header)) == 0)
+  {
+    uint32_t chunksize;
+    xscope_fread(input_file, (uint8_t *)&chunksize, sizeof(s.data_bytes));
+    xscope_fseek(input_file, chunksize, SEEK_CUR);
+    xscope_fread(input_file, (char*)(&s.data_header[0]), sizeof(s.data_header));
+  }
+#else
   read(fid, (char*)&s.data_header[0], sizeof(s.data_header));
   //if next subchunk is fact, read subchunk size and skip it
   if(memcmp(s.data_header, "fact", sizeof(s.data_header)) == 0)
@@ -86,6 +130,8 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
     lseek(fid, chunksize, SEEK_CUR);
     read(fid, (char*)(&s.data_header[0]), sizeof(s.data_header));
   }
+#endif
+
   //only thing expected at this point is the 'data' subchunk. Throw error if not found.
   if(memcmp(s.data_header, "data", sizeof(s.data_header)) != 0)
   {
@@ -93,10 +139,17 @@ int att_get_wav_header_details(const char *filename, att_wav_header & s, unsigne
     return 1;
   }
   //read data subchunk size. 
+#ifdef TEST_WAV_XSCOPE
+  xscope_fread(input_file, (uint8_t *)&s.data_bytes, sizeof(s.data_bytes));
+  header_size = xscope_ftell(input_file); //total file size should be header_size + data_bytes
+  //No need to close file - handled by caller
+#else
   read(fid, &s.data_bytes, sizeof(s.data_bytes));
   header_size = lseek(fid, 0, SEEK_CUR); //total file size should be header_size + data_bytes
-
   close(fid);
+#endif
+
+
   return 0;
 }
 
