@@ -1,4 +1,4 @@
-VERSION = 4.4.0
+VERSION = 4.5.0
 
 DEPENDENT_MODULES = lib_dsp(>=6.0.0) \
                     lib_voice_toolbox(>=8.0.0) \
