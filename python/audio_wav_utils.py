@@ -16,7 +16,6 @@ import re
 import socket
 import time
 import os
-import sh
 
 def get_channel_count(wav_file):
     s = np.shape(wav_file)
@@ -166,7 +165,7 @@ def make_src(path, verbose=False):
     print("Building src...")
     with pushd(path):
         args = f""
-        sh.make(args.split(), _out=sh_print)
+        subprocess.run(["make", args.split()], stdout=sh_print)
         print()
     return path / "bin/src_test.xe"
 
@@ -176,7 +175,7 @@ def create_white_noise_wav(out_filename, seconds, channels, volume=1.0):
     for ch in range(4):
         filename = f"noise_ch{ch}_tmp.wav"
         filenames.append(filename)
-        sh.sox(f"-n -c 1 -b 32 -r 16000 -e signed-integer {filename} synth {seconds} whitenoise vol {volume}".split())
-    sh.sox(f"-M {' '.join(filenames)} {out_filename} remix 1 2 3 4".split())
+        subprocess.run(f"sox -n -c 1 -b 32 -r 16000 -e signed-integer {filename} synth {seconds} whitenoise vol {volume}".split())
+    subprocess.run(f"sox -M {' '.join(filenames)} {out_filename} remix 1 2 3 4".split())
     for filename in filenames:
         os.remove(filename)
