@@ -4,7 +4,7 @@ Audio test tools change log
 4.6.0
 -----
 
-* CHANGED: remove sh (no windows support) from audio_wav_utils.py and replace with subprocess
+  * CHANGED: remove sh (no windows support) from audio_wav_utils.py and replace with subprocess
 
 4.5.0
 -----
