@@ -5,6 +5,7 @@ Audio test tools change log
 -----
 
   * CHANGED: Use XMOS Public Licence Version 1
+  * CHANGED: remove sh (no windows support) from audio_wav_utils.py and replace with subprocess
 
 4.4.0
 -----
