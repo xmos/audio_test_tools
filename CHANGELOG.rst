@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+4.5.0
+-----
+
+  * CHANGED: Use XMOS Public Licence Version 1
+
 4.4.0
 -----
 
