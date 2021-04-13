@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+4.5.0
+-----
+
+* CHANGED: calls to sh replaced with subprocess in python/audio_wav_utils.py as sh does not support windows
+
 4.4.0
 -----
 
