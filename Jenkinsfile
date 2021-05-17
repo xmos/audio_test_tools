@@ -13,7 +13,7 @@ pipeline {
   stages {
     stage('Standard build and XS2 tests') {
       agent {
-        label 'x86_64 && brew'
+        label 'x86_64&&brew&&macOS'
       }
       options {
         skipDefaultCheckout()
@@ -100,6 +100,13 @@ pipeline {
                 stash name: 'test_xscope_process_wav', includes: 'bin/test_xscope_process_wav.xe, '
               }
             }
+          }
+        }
+        stage('Build docs') {
+          steps {
+            runXdoc("${REPO}/${REPO}/doc")
+            // Archive all the generated .pdf docs
+            archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf", fingerprint: true, allowEmptyArchive: true
           }
         }
       }//stages
