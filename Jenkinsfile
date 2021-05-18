@@ -129,6 +129,19 @@ pipeline {
                 xcorePrepareSandbox("${VIEW}", "${REPO}")
             }
         }        
+        stage('Reset XTAGs'){
+          steps{
+            dir("${REPO}") {
+              sh 'rm -f ~/.xtag/acquired' //Hacky but ensure it always works even when previous failed run left lock file present
+              viewEnv() {
+                withVenv{
+                  sh "python -m pip install git+git://github0.xmos.com/xmos-int/xtagctl.git@v1.3.0"
+                  sh "xtagctl reset_all XCORE-AI-EXPLORER" 
+                }
+              }
+            }
+          }
+        }        
         stage('xrun'){
           steps{
             dir("${REPO}") {
@@ -153,7 +166,6 @@ pipeline {
               viewEnv() {
                 withVenv() {
                   dir("tests/test_xscope_process_wav") {  // load xmos tools
-                    sh "pip install -e ${env.WORKSPACE}/xtagctl"
                     sh "pip install -e ${env.WORKSPACE}/xscope_fileio"                
                       unstash 'test_xscope_process_wav'
                       runPytest('-s --numprocesses=1')

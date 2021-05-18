@@ -1,6 +1,12 @@
 Audio test tools change log
 ===========================
 
+4.5.1
+-----
+
+  * REMOVED: TkAgg usage from audio_utils.py
+  * CHANGED: Initialze input buffer to all zeros in att_process_wav
+
 4.5.0
 -----
 
