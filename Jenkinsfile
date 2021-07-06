@@ -135,7 +135,7 @@ pipeline {
               sh 'rm -f ~/.xtag/acquired' //Hacky but ensure it always works even when previous failed run left lock file present
               viewEnv() {
                 withVenv{
-                  sh "python -m pip install git+git://github0.xmos.com/xmos-int/xtagctl.git@v1.3.0"
+                  sh "python -m pip install git+git://github0.xmos.com/xmos-int/xtagctl.git@v1.3.1"
                   sh "xtagctl reset_all XCORE-AI-EXPLORER" 
                 }
               }
