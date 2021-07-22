@@ -41,7 +41,7 @@ void att_pw_play_until_sample_passes(chanend c_comms, long sample){
 }
 
 #ifdef TEST_WAV_XSCOPE
-void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanend c_dsp_to_app, chanend ?c_comms){
+void att_process_wav_xscope(chanend xscope_data_in, chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_comms){
 #else
 void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_comms){
 #endif
@@ -50,7 +50,7 @@ void att_process_wav(chanend c_app_to_dsp, chanend ?c_dsp_to_app, chanend ?c_com
     // Initialise input
 
     char * input_file_name = ATT_PW_INPUT_FILE_NAME;
-    int32_t input_read_buffer  [ATT_PW_PROC_FRAME_LENGTH*ATT_PW_INPUT_CHANNELS];
+    int32_t input_read_buffer  [ATT_PW_PROC_FRAME_LENGTH*ATT_PW_INPUT_CHANNELS] = {0};
 #ifdef TEST_WAV_XSCOPE
     xscope_io_init(xscope_data_in);
     xscope_file_t input_file = xscope_open_file(input_file_name, "rb");
