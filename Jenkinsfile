@@ -118,7 +118,7 @@ pipeline {
     }//Standard build and XS2 tests
     stage('xcore.ai Verification'){
       agent {
-        label 'xcore.ai-explorer'
+        label 'xcore.ai'
       }
       options {
         skipDefaultCheckout()
