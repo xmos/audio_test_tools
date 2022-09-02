@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+4.5.2
+-----
+
+  * REMOVED: Python sh module dependency
+
 4.5.1
 -----
 
