@@ -30,14 +30,18 @@ pipeline {
             stage ("Flake 8") {
               steps {
                 viewEnv() {
-                  flake("${REPO}")
+                  warnError("Flake") {
+                    flake("${REPO}")
+                  }
                 }
               }
             }
             stage ("Copyright") {
               steps {
                 viewEnv() {
-                  sourceCheck("${REPO}")
+                  warnError("Source") {
+                    sourceCheck("${REPO}")
+                  }
                 }
               }
             }
@@ -51,7 +55,9 @@ pipeline {
             stage ("Clang style") {
               steps {
                 viewEnv() {
-                  clangStyleCheck()
+                  warnError("Clang Style") {
+                    clangStyleCheck()
+                  }
                 }
               }
             }
