@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.32.0') _
+@Library('xmos_jenkins_shared_library@v0.38.0') _
 
 getApproval()
 
@@ -13,7 +13,7 @@ pipeline {
   stages {
     stage('Standard build and XS2 tests') {
       agent {
-        label 'x86_64&&macOS'
+        label 'x86_64&&linux'
       }
       options {
         skipDefaultCheckout()
@@ -106,13 +106,6 @@ pipeline {
                 stash name: 'test_xscope_process_wav', includes: 'bin/test_xscope_process_wav.xe, '
               }
             }
-          }
-        }
-        stage('Build docs') {
-          steps {
-            runXdoc("${REPO}/${REPO}/doc")
-            // Archive all the generated .pdf docs
-            archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf", fingerprint: true, allowEmptyArchive: true
           }
         }
       }//stages
