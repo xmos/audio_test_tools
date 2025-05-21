@@ -1,0 +1,22 @@
+[build-system]
+requires = ['flit_core>=3.7']
+build-backend = 'flit_core.buildapi'
+
+[project]
+name = 'audio_test_tools'
+description = 'tools for audio testing'
+version = '4.5.2'
+dependencies = [
+    'matplotlib',
+    'numpy',
+    'pandas',
+    'scipy',
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    'pytest-xdist',
+    "flake8",
+    'pylint',
+]
