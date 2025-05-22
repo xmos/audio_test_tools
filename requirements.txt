@@ -21,8 +21,8 @@ flake8==7.2.0
 matplotlib==3.10.3
 
 # Pin numpy to 1.18.5 due to tensorflow v2.1.1 hard pinning it to that version.
-numpy==2.2.6
-pandas==2.2.3
+numpy==1.26.4
+pandas==1.5.3
 pylint==3.3.7
 pytest==8.3.5
 pytest-xdist==3.6.1
