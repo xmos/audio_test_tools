@@ -20,3 +20,15 @@ test = [
     "flake8",
     "pylint",
 ]
+
+[tool.setuptools]
+py-modules = [
+    "audio_generation",
+    "audio_utils",
+    "audio_wav_utils",
+    "common_utils",
+    "pcm_to_pdm",
+    "test_wav_erle",
+    "thdncalculator",
+    "wav_comp"
+]
