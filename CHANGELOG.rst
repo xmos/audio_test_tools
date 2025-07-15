@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+4.5.3
+-----
+
+  * CHANGED: use v1.0.0 or later of xscope-fileio
+
 4.5.2
 -----
 
