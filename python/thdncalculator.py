@@ -1,7 +1,11 @@
 # Copyright 2019-2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import sys, os
-from scipy.signal import blackmanharris
+try:
+    from scipy.signal import blackmanharris
+except ImportError:
+    from scipy.signal.windows import blackmanharris
+import scipy.signal as spsig
 from numpy.fft import rfft, irfft
 from numpy import argmax, sqrt, mean, absolute, arange, log10
 import numpy as np
@@ -40,6 +44,79 @@ def find_range(f, x):
             break
     return (lowermin, uppermin)
 
+def peak_locator(f, psd):
+    """
+    Locate peaks in the PSD
+    """
+    max_idx = argmax(psd)
+
+    # equation 13.75 in "Understanding Digital Signal Processing" 3rd Ed. by Lyons
+    # note 1.72 assumes Blackman Harris window
+    C = 1.72*(psd[max_idx+1] - psd[max_idx - 1])/(psd[max_idx] + psd[max_idx-1] + psd[max_idx + 1])
+
+    # assuming f[0] is 0, f[1] should be our frequency spacing
+    assert f[0] == 0
+    true_peak = f[max_idx] + C*f[1]
+    return true_peak
+
+def _adaptive_notch_Q(f0, fs, nperseg, mainlobe_bins=8, safety=1.25, use_filtfilt=True):
+    """
+    Choose Q so notch bandwidth >= window mainlobe (~8 bins for Blackman-Harris).
+    mainlobe width (Hz) ≈ mainlobe_bins * fs / nperseg.
+    Q = f0 / BW. Reduce Q further if filtfilt is used (since magnitude squared narrows BW).
+    """
+
+    win = spsig.windows.blackmanharris(nperseg)
+    win_spect = np.fft.rfft(win)
+    lobe_width = (argmax(np.diff(np.abs(win_spect))) - 1) * 2 + 1
+
+    bw_mainlobe_hz = lobe_width * fs / nperseg
+    Q_target = (f0 / (bw_mainlobe_hz * safety))
+
+    if Q_target < 1.2 or Q_target > 3.0:
+        print(f"Warning: Calculated Q {Q_target:.2f} out of AES17 range")
+        # Q_target = min(3.0, max(1.2, Q_target))
+
+    if use_filtfilt:
+        Q_target *= 0.85  # compensate for filtfilt narrowing
+
+    return Q_target
+
+
+def thdn_new(signal, fs,x_freq=None):
+    """
+    New THD+N calculation method
+    """
+
+    nperseg = 1024*8
+
+    # do a PSD and find the fundamental frequency
+    freqs, psd = spsig.welch(signal, fs, nperseg=nperseg, window='blackmanharris', noverlap=0, scaling='density', detrend=False)
+    if x_freq is None:
+        x_freq = peak_locator(freqs, psd)
+
+    Q = _adaptive_notch_Q(x_freq, fs, nperseg=nperseg, mainlobe_bins=8, safety=1.25, use_filtfilt=True)
+    notch_b, notch_a = spsig.iirnotch(x_freq, Q=Q, fs=fs)
+    filtered_signal = spsig.filtfilt(notch_b, notch_a, signal)
+    freqs, psd2 = spsig.welch(filtered_signal, fs, nperseg=nperseg, window='blackmanharris', noverlap=0, scaling='density', detrend=False)
+
+    thdn = (np.sqrt(np.sum(psd2)/np.sum(psd)))
+
+    # win = spsig.windows.hann(len(filtered_signal))
+    # thdn = (np.sum(np.abs(filtered_signal*win))) / (np.sum(np.abs(signal*win)))
+    # thdn = sqrt(np.mean((filtered_signal*win)**2)) / sqrt(np.mean((signal*win)**2))
+
+    result = "new THD+N: %.4f%% or %.1f dB" % (thdn * 100, 20 * log10(thdn))
+    print(result)
+
+    # thdn = sqrt(np.sum((filtered_signal)**2)) / sqrt(np.sum(signal**2))
+    # import matplotlib.pyplot as plt
+    # plt.plot(freqs, 10 * np.log10(psd))
+    # plt.plot(freqs, 10 * np.log10(psd2))
+    # plt.show()
+
+    return 20*log10(thdn)
+
 
 
 def THDN_and_freq(signal, sample_rate):
@@ -77,7 +154,7 @@ def THDN_and_freq(signal, sample_rate):
     THDN = rms_flat(noise, sample_rate) / total_rms
 
     result = "THD+N:     %.4f%% or %.1f dB" % (THDN * 100, 20 * log10(THDN))
-    # print(result)
+    print(result)
 
     return 20 * log10(THDN) , freq
 
