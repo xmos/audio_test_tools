@@ -77,13 +77,15 @@ def test_sine_wave_with_harmonics(fs, f, duration):
     thdn_db_old = thdncalculator.THDN(signal, sample_rate)
 
     # With harmonics, THD+N should be very consistent at approximately -19.6 dB
-    # across all parameter combinations (within 0.1 dB)
-    if f/fs < 100/44100:
+    if f/fs < 100/96000:
+        # notch is wide and might reduce harmonics
         assert thdn_db > -22.6, f"THD+N with harmonics unexpectedly low: {thdn_db} dB"
-        assert thdn_db < -18.5, f"THD+N with harmonics unexpectedly high: {thdn_db} dB"
+    elif f/fs < 100/44100:
+        assert thdn_db > -20.7, f"THD+N with harmonics unexpectedly low: {thdn_db} dB"
     else:
-        assert thdn_db > -20.2, f"THD+N with harmonics unexpectedly low: {thdn_db} dB"
-        assert thdn_db < -18.5, f"THD+N with harmonics unexpectedly high: {thdn_db} dB"
+        assert thdn_db > -19.9, f"THD+N with harmonics unexpectedly low: {thdn_db} dB"
+    assert thdn_db < -19.6, f"THD+N with harmonics unexpectedly high: {thdn_db} dB"
+
 
 @pytest.mark.parametrize("duration", [0.5, 1.0])
 @pytest.mark.parametrize("fs", [16000, 44100, 48000, 96000])
@@ -111,21 +113,9 @@ def test_sine_wave_with_noise(fs, f, duration, noise_level):
     thdn_db_old = thdncalculator.THDN(signal, sample_rate)
 
     # THD+N should reflect the noise level added
-    # NOTE: 997 Hz at 0.5s has slightly worse performance (about 1.5 dB worse)
-    # -60dB noise: ranges from -55.5 to -57.1 dB (worst at 997Hz 0.5s)
-    # -40dB noise: ranges from -36.9 to -37.1 dB
-    # -20dB noise: ranges from -17.0 to -17.2 dB
     assert thdn_db > noise_level, f"THD+N with {noise_level}dB noise unexpectedly low: {thdn_db} dB"
-    if noise_level == -100:
-        assert thdn_db < -95.0, f"THD+N with {noise_level}dB noise unexpectedly high: {thdn_db} dB"
-    elif noise_level == -80:
-        assert thdn_db < -75.5, f"THD+N with {noise_level}dB noise unexpectedly high: {thdn_db} dB"
-    elif noise_level == -60:
-        assert thdn_db < -54.5, f"THD+N with {noise_level}dB noise unexpectedly high: {thdn_db} dB"
-    elif noise_level == -40:
-        assert thdn_db < -35.8, f"THD+N with {noise_level}dB noise unexpectedly high: {thdn_db} dB"
-    elif noise_level == -20:
-        assert thdn_db < -15.9, f"THD+N with {noise_level}dB noise unexpectedly high: {thdn_db} dB"
+    # I think the +3.1 might be intermodulation?
+    assert thdn_db < noise_level+3.1, f"THD+N with {noise_level}dB noise unexpectedly high: {thdn_db} dB"
 
 
 @pytest.mark.parametrize("duration", [0.5, 1.0])
@@ -148,30 +138,11 @@ def test_frequency_detection(fs, f, duration):
     assert freq_error < 0.01, \
         f"Frequency detection error too large: expected {freq} Hz, got {detected_freq} Hz (error: {freq_error*100:.2f}%)"
 
-@pytest.mark.parametrize("duration", [0.5, 1.0])
-@pytest.mark.parametrize("fs", [16000, 44100, 48000, 96000])
-@pytest.mark.parametrize("f", [440, 997, 4997])
-def test_different_sample_rates(fs, f, duration):
-    """Test THD+N calculation works with different sample rates"""
-
-    if f > fs / 2:
-        pytest.skip(f"Frequency {f} Hz too close to Nyquist for {fs} Hz sample rate")
-
-    sample_rate = fs
-    frequency = f  # Hz
-    
-    signal = get_sine(duration, [frequency], sample_rate=sample_rate)
-    thdn_db = thdncalculator.thdn_new(signal, sample_rate, x_freq=frequency)
-    thdn_db_old = thdncalculator.THDN(signal, sample_rate)
-
-    # Pure sine should have low THD+N at any sample rate
-    assert thdn_db < -70, \
-        f"Pure sine THD+N too high at {sample_rate} Hz sample rate: {thdn_db} dB"
 
 @pytest.mark.parametrize("duration", [0.5, 1.0])
 @pytest.mark.parametrize("fs", [16000, 44100, 48000, 96000])
 @pytest.mark.parametrize("f", [440, 997, 4997])
-@pytest.mark.parametrize("amplitude", [0.1, 0.5, 1.0])
+@pytest.mark.parametrize("amplitude", [0.01, 0.1, 1.0])
 def test_low_amplitude_signal(fs, f, duration, amplitude):
     """Test THD+N calculation with various amplitude signals"""
 
@@ -188,7 +159,7 @@ def test_low_amplitude_signal(fs, f, duration, amplitude):
     thdn_db_old = thdncalculator.THDN(signal, sample_rate)
     
     # Should still have low THD+N regardless of amplitude
-    assert thdn_db < -95, f"Sine wave at amplitude {amplitude} THD+N too high: {thdn_db} dB"
+    assert thdn_db < -235, f"Sine wave at amplitude {amplitude} THD+N too high: {thdn_db} dB"
 
 
 @pytest.mark.parametrize("duration", [0.5, 1.0])
@@ -203,9 +174,10 @@ def test_white_noise_only(fs, duration, noise_db):
     
     # Calculate THD+N
     thdn_db, detected_freq = thdncalculator.THDN_and_freq(signal, sample_rate)
-    
+    thdn_db = thdncalculator.thdn_new(signal, sample_rate, x_freq=997)
+
     # For white noise, THD+N should be close to 0 dB (100%)
-    assert thdn_db > -1, f"White noise THD+N unexpectedly low: {thdn_db} dB"
+    assert thdn_db > -0.1, f"White noise THD+N unexpectedly low: {thdn_db} dB"
 
 
 @pytest.mark.parametrize("duration", [0.5, 1.0])
