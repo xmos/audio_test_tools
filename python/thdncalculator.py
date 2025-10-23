@@ -9,6 +9,7 @@ import scipy.signal as spsig
 from numpy.fft import rfft, irfft
 from numpy import argmax, sqrt, mean, absolute, arange, log10
 import numpy as np
+import warnings
 
 use_soundfile = False
 
@@ -59,11 +60,12 @@ def peak_locator(f, psd):
     true_peak = f[max_idx] + C*f[1]
     return true_peak
 
-def _adaptive_notch_Q(f0, fs, nperseg, mainlobe_bins=8, safety=1.25, use_filtfilt=False):
+
+def _adaptive_notch_Q(f0, fs, nperseg, safety=1.25):
     """
     Choose Q so notch bandwidth >= window mainlobe (~8 bins for Blackman-Harris).
     mainlobe width (Hz) ≈ mainlobe_bins * fs / nperseg.
-    Q = f0 / BW. Reduce Q further if filtfilt is used (since magnitude squared narrows BW).
+    Q = f0 / BW.
     """
 
     win = spsig.windows.blackmanharris(nperseg)
@@ -73,12 +75,11 @@ def _adaptive_notch_Q(f0, fs, nperseg, mainlobe_bins=8, safety=1.25, use_filtfil
     bw_mainlobe_hz = lobe_width * fs / nperseg
     Q_target = (f0 / (bw_mainlobe_hz * safety))
 
-    if Q_target < 1.2 or Q_target > 3.0:
-        print(f"Warning: Calculated Q {Q_target:.2f} out of AES17 range")
-        # Q_target = min(3.0, max(1.2, Q_target))
+    # limit upper Q to AES17 recommended range
+    Q_target = min(3.0, Q_target)
 
-    if use_filtfilt:
-        Q_target *= 0.85  # compensate for filtfilt narrowing
+    if Q_target < 1.2 or Q_target > 3.0:
+        warnings.warn(f"Desired Q {Q_target:.2f} for THD+N notch out of AES17 range ({f0} Hz, {fs} Hz sample rate)")
 
     return Q_target
 
@@ -98,16 +99,11 @@ def thdn_new(signal, fs,x_freq=None):
     if x_freq is None:
         x_freq = peak_locator(freqs, psd)
 
-    Q = _adaptive_notch_Q(x_freq, fs, nperseg=nperseg, mainlobe_bins=8, safety=1.25, use_filtfilt=True)
+    Q = _adaptive_notch_Q(x_freq, fs, nperseg=nperseg)
     notch_b, notch_a = spsig.iirnotch(x_freq, Q=Q, fs=fs)
+
     filtered_signal = spsig.lfilter(notch_b, notch_a, signal)
-    # freqs, psd2 = spsig.welch(filtered_signal[6500:], fs, nperseg=nperseg, window='blackmanharris', noverlap=0, scaling='density', detrend=False)
-    # freqs, psd = spsig.welch(signal[6500:], fs, nperseg=nperseg, window='blackmanharris', noverlap=0, scaling='density', detrend=False)
-
-    # thdn = (np.sqrt(np.sum(psd2)/np.sum(psd)))
-
-    # win = spsig.windows.hann(len(filtered_signal))
-    # thdn = (np.sum(np.abs(filtered_signal*win))) / (np.sum(np.abs(signal*win)))
+    # avoid the notch transient by ignoring the start of the signal
     thdn = sqrt(np.mean((filtered_signal[6500:])**2)) / sqrt(np.mean((signal[6500:])**2))
 
     result = "new THD+N: %.4f%% or %.1f dB" % (thdn * 100, 20 * log10(thdn))
