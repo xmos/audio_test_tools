@@ -59,7 +59,7 @@ def peak_locator(f, psd):
     true_peak = f[max_idx] + C*f[1]
     return true_peak
 
-def _adaptive_notch_Q(f0, fs, nperseg, mainlobe_bins=8, safety=1.25, use_filtfilt=True):
+def _adaptive_notch_Q(f0, fs, nperseg, mainlobe_bins=8, safety=1.25, use_filtfilt=False):
     """
     Choose Q so notch bandwidth >= window mainlobe (~8 bins for Blackman-Harris).
     mainlobe width (Hz) ≈ mainlobe_bins * fs / nperseg.
@@ -90,6 +90,9 @@ def thdn_new(signal, fs,x_freq=None):
 
     nperseg = 1024*8
 
+    if len(signal) < 8000:
+        raise ValueError("Signal too short for THD+N calculation")
+
     # do a PSD and find the fundamental frequency
     freqs, psd = spsig.welch(signal, fs, nperseg=nperseg, window='blackmanharris', noverlap=0, scaling='density', detrend=False)
     if x_freq is None:
@@ -97,14 +100,15 @@ def thdn_new(signal, fs,x_freq=None):
 
     Q = _adaptive_notch_Q(x_freq, fs, nperseg=nperseg, mainlobe_bins=8, safety=1.25, use_filtfilt=True)
     notch_b, notch_a = spsig.iirnotch(x_freq, Q=Q, fs=fs)
-    filtered_signal = spsig.filtfilt(notch_b, notch_a, signal)
-    freqs, psd2 = spsig.welch(filtered_signal, fs, nperseg=nperseg, window='blackmanharris', noverlap=0, scaling='density', detrend=False)
+    filtered_signal = spsig.lfilter(notch_b, notch_a, signal)
+    # freqs, psd2 = spsig.welch(filtered_signal[6500:], fs, nperseg=nperseg, window='blackmanharris', noverlap=0, scaling='density', detrend=False)
+    # freqs, psd = spsig.welch(signal[6500:], fs, nperseg=nperseg, window='blackmanharris', noverlap=0, scaling='density', detrend=False)
 
-    thdn = (np.sqrt(np.sum(psd2)/np.sum(psd)))
+    # thdn = (np.sqrt(np.sum(psd2)/np.sum(psd)))
 
     # win = spsig.windows.hann(len(filtered_signal))
     # thdn = (np.sum(np.abs(filtered_signal*win))) / (np.sum(np.abs(signal*win)))
-    # thdn = sqrt(np.mean((filtered_signal*win)**2)) / sqrt(np.mean((signal*win)**2))
+    thdn = sqrt(np.mean((filtered_signal[6500:])**2)) / sqrt(np.mean((signal[6500:])**2))
 
     result = "new THD+N: %.4f%% or %.1f dB" % (thdn * 100, 20 * log10(thdn))
     print(result)

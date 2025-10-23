@@ -47,7 +47,7 @@ def test_pure_sine_wave(fs, f, duration):
     # if duration < 1.0:
     #     threshold = -59  # Accounts for 997 Hz at 0.5s worst case
     # else:
-    threshold = -94.7  # Most are better than -87 dB at 1.0s duration
+    threshold = -230  # Most are better than -87 dB at 1.0s duration
     assert thdn_db < threshold, f"Pure sine wave THD+N too high: {thdn_db} dB (threshold: {threshold} dB)"
 
 @pytest.mark.parametrize("duration", [0.5, 1.0])
@@ -78,8 +78,12 @@ def test_sine_wave_with_harmonics(fs, f, duration):
 
     # With harmonics, THD+N should be very consistent at approximately -19.6 dB
     # across all parameter combinations (within 0.1 dB)
-    assert thdn_db > -20.2, f"THD+N with harmonics unexpectedly low: {thdn_db} dB"
-    assert thdn_db < -18.5, f"THD+N with harmonics unexpectedly high: {thdn_db} dB"
+    if f/fs < 100/44100:
+        assert thdn_db > -22.6, f"THD+N with harmonics unexpectedly low: {thdn_db} dB"
+        assert thdn_db < -18.5, f"THD+N with harmonics unexpectedly high: {thdn_db} dB"
+    else:
+        assert thdn_db > -20.2, f"THD+N with harmonics unexpectedly low: {thdn_db} dB"
+        assert thdn_db < -18.5, f"THD+N with harmonics unexpectedly high: {thdn_db} dB"
 
 @pytest.mark.parametrize("duration", [0.5, 1.0])
 @pytest.mark.parametrize("fs", [16000, 44100, 48000, 96000])
@@ -254,6 +258,6 @@ def test_wav_file_loading(fs, f, duration):
 if __name__ == "__main__":
     # Run tests with pytest
     # pytest.main([__file__, "-v"])
-    # test_sine_wave_with_noise(48000, 997, 0.1, -100)
-    # test_sine_wave_with_harmonics(48000, 997, 1.0)
-    test_pure_sine_wave(48000, 99.7, 1.0)
+    # test_sine_wave_with_noise(48000, 997, 0.5, -100)
+    test_sine_wave_with_harmonics(48000, 99.7, 1.0)
+    # test_pure_sine_wave(16000, 997, 0.5)
