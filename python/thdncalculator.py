@@ -45,6 +45,7 @@ def find_range(f, x):
             break
     return (lowermin, uppermin)
 
+
 def peak_locator(f, psd):
     """
     Locate peaks in the PSD
@@ -61,7 +62,7 @@ def peak_locator(f, psd):
     return true_peak
 
 
-def _adaptive_notch_Q(f0, fs, nperseg, safety=1.25):
+def get_notch_Q(f0, fs, nperseg, safety=1.25):
     """
     Choose Q so notch bandwidth >= window mainlobe (~8 bins for Blackman-Harris).
     mainlobe width (Hz) ≈ mainlobe_bins * fs / nperseg.
@@ -84,42 +85,67 @@ def _adaptive_notch_Q(f0, fs, nperseg, safety=1.25):
     return Q_target
 
 
-def thdn_new(signal, fs,x_freq=None):
+def AES_THDN_and_freq(signal, sample_rate, fund_freq=None):
     """
-    New THD+N calculation method
+    THD+N calculation method after AES17, using a time domain notch filter. It is highly
+    recommended to provide the fundamental frequency as fund_freq for accurate notching.
+
+    Note the low pass filter specified in AES17 is not implemented here.
     """
 
-    nperseg = 1024*8
+    nperseg = 1024*8 * max(1, sample_rate//48000)
 
     if len(signal) < 8000:
         raise ValueError("Signal too short for THD+N calculation")
 
     # do a PSD and find the fundamental frequency
-    freqs, psd = spsig.welch(signal, fs, nperseg=nperseg, window='blackmanharris', noverlap=0, scaling='density', detrend=False)
-    if x_freq is None:
-        x_freq = peak_locator(freqs, psd)
+    freqs, psd = spsig.welch(signal, sample_rate, nperseg=nperseg, window='blackmanharris', noverlap=nperseg*0.5, scaling='density', detrend=False)
+    if fund_freq is None:
+        fund_freq = peak_locator(freqs, psd)
+    else:
+        max_idx = argmax(psd)
+        # check provided fund_freq is close to peak
+        if abs(freqs[max_idx] - fund_freq) > (sample_rate / nperseg):
+            raise ValueError(f"Provided fundamental frequency {fund_freq} Hz differs from peak frequency {freqs[max_idx]} Hz by more than one bin ({sample_rate / nperseg} Hz)")
 
-    Q = _adaptive_notch_Q(x_freq, fs, nperseg=nperseg)
-    notch_b, notch_a = spsig.iirnotch(x_freq, Q=Q, fs=fs)
-
+    # calculate required notch Q and filter the signal
+    Q = get_notch_Q(fund_freq, sample_rate, nperseg=nperseg)
+    notch_b, notch_a = spsig.iirnotch(fund_freq, Q=Q, fs=sample_rate)
     filtered_signal = spsig.lfilter(notch_b, notch_a, signal)
+
     # avoid the notch transient by ignoring the start of the signal
     thdn = sqrt(np.mean((filtered_signal[6500:])**2)) / sqrt(np.mean((signal[6500:])**2))
 
     result = "new THD+N: %.4f%% or %.1f dB" % (thdn * 100, 20 * log10(thdn))
-    print(result)
-
-    # thdn = sqrt(np.sum((filtered_signal)**2)) / sqrt(np.sum(signal**2))
-    # import matplotlib.pyplot as plt
-    # plt.plot(freqs, 10 * np.log10(psd))
-    # plt.plot(freqs, 10 * np.log10(psd2))
-    # plt.show()
-
-    return 20*log10(thdn)
+    # print(result)
 
 
+    # nperseg = 2*(len(psd)-1)
+    # win = spsig.windows.blackmanharris(nperseg)
+    # win_sig =np.sin(np.arange(len(signal))*2*np.pi/sample_rate*fund_freq)
+    # win_spect = np.fft.fft(win/np.sum(win))
+    # win_spect = np.fft.fftshift(win_spect)
 
-def THDN_and_freq(signal, sample_rate):
+    # _, notch_response = spsig.freqz(notch_b, notch_a, worN=nperseg//2+1, fs=sample_rate, include_nyquist=True)
+
+    # win_psd = np.abs(win_spect)**2
+    # _, win_psd = spsig.welch(win_sig, sample_rate, nperseg=nperseg, window='blackmanharris', noverlap=nperseg*0.5, scaling='density', detrend=False)
+    # max_idx = argmax(psd)
+    # win_psd = win_psd * np.max(psd[max_idx-5:max_idx+4] / win_psd[max_idx-5:max_idx+4]) 
+
+    # # filtered_psd = psd-win_psd
+    # psd_diff = psd-win_psd
+    # psd_diff[psd_diff < 0] = np.finfo(float).tiny
+    # thdn = sqrt((np.sum(psd_diff)) / np.sum(psd))
+
+
+    return 20*log10(thdn), fund_freq
+
+def thdn_new(signal, sample_rate, fund_freq=None):
+    thdn, freq = AES_THDN_and_freq(signal, sample_rate, fund_freq=fund_freq)
+    return thdn
+
+def old_THDN_and_freq(signal, sample_rate):
     """
     Measure the THD+N for a signal and print the results
 
@@ -154,14 +180,23 @@ def THDN_and_freq(signal, sample_rate):
     THDN = rms_flat(noise, sample_rate) / total_rms
 
     result = "THD+N:     %.4f%% or %.1f dB" % (THDN * 100, 20 * log10(THDN))
-    print(result)
+    # print(result)
 
     return 20 * log10(THDN) , freq
 
 
-def THDN(signal, sample_rate):
-    THDN, freq = THDN_and_freq(signal, sample_rate)
+def THDN(signal, sample_rate, fund_freq=None):
+    THDN, _ = THDN_and_freq(signal, sample_rate, fund_freq=fund_freq)
     return THDN
+
+
+def THDN_and_freq(signal, sample_rate, fund_freq=None):
+    if len(signal) < 8000:
+        warnings.warn("Signal too short for AES THD+N calculation, using old method")
+        THDN, freq = old_THDN_and_freq(signal, sample_rate)
+    else:
+        THDN, freq = AES_THDN_and_freq(signal, sample_rate, fund_freq=fund_freq)
+    return THDN, freq
 
 
 def load(filename):
