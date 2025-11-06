@@ -19,6 +19,7 @@ test = [
     "pytest-xdist",
     "flake8",
     "pylint",
+    "soundfile",
 ]
 
 [tool.setuptools]
