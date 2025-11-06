@@ -119,26 +119,6 @@ def AES_THDN_and_freq(signal, sample_rate, fund_freq=None):
     result = "new THD+N: %.4f%% or %.1f dB" % (thdn * 100, 20 * log10(thdn))
     # print(result)
 
-
-    # nperseg = 2*(len(psd)-1)
-    # win = spsig.windows.blackmanharris(nperseg)
-    # win_sig =np.sin(np.arange(len(signal))*2*np.pi/sample_rate*fund_freq)
-    # win_spect = np.fft.fft(win/np.sum(win))
-    # win_spect = np.fft.fftshift(win_spect)
-
-    # _, notch_response = spsig.freqz(notch_b, notch_a, worN=nperseg//2+1, fs=sample_rate, include_nyquist=True)
-
-    # win_psd = np.abs(win_spect)**2
-    # _, win_psd = spsig.welch(win_sig, sample_rate, nperseg=nperseg, window='blackmanharris', noverlap=nperseg*0.5, scaling='density', detrend=False)
-    # max_idx = argmax(psd)
-    # win_psd = win_psd * np.max(psd[max_idx-5:max_idx+4] / win_psd[max_idx-5:max_idx+4]) 
-
-    # # filtered_psd = psd-win_psd
-    # psd_diff = psd-win_psd
-    # psd_diff[psd_diff < 0] = np.finfo(float).tiny
-    # thdn = sqrt((np.sum(psd_diff)) / np.sum(psd))
-
-
     return 20*log10(thdn), fund_freq
 
 def thdn_new(signal, sample_rate, fund_freq=None):
@@ -147,15 +127,18 @@ def thdn_new(signal, sample_rate, fund_freq=None):
 
 def old_THDN_and_freq(signal, sample_rate):
     """
-    Measure the THD+N for a signal and print the results
+    Measure the THD+N for a signal and print the results. This uses
+    frequency domain methods which are less accurate than time-domain,
+    but can be used for short signals.
 
-    Prints the estimated fundamental frequency and the measured THD+N.  This is
-    calculated from the ratio of the entire signal before and after
-    notch-filtering.
+    Prints the estimated fundamental frequency and the measured THD+N. 
+    This is calculated from the ratio of the entire signal before and after
+    notch-filtering in the frequency domain.
 
     Currently this tries to find the "skirt" around the fundamental and notch
-    out the entire thing.  A fixed-width filter would probably be just as good,
-    if not better.
+    out the entire thing.  However, depending on the signal length, windowing
+    and expected THD, this can be very inaccurate for low THD signals
+    (>100dB error).
     """
     # Get rid of DC and window the signal
     signal -= mean(signal) # TODO: Do this in the frequency domain, and take any skirts with it?

@@ -181,6 +181,19 @@ pipeline {
         }
       }
     }// xcore.ai
+    stage("THD+N tests") {
+      steps{
+        dir("${REPO}") {
+          viewEnv() {
+            withVenv() {
+              dir("tests") {  
+                  runPytest('-v -k test_thdncalculator.py')
+              }
+            }
+          }
+        }
+      }
+    }
     stage('Update view files') {
       agent {
         label 'x86_64 && linux'
