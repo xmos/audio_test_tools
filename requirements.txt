@@ -6,16 +6,36 @@
 #
 #    pip-compile --output-file=requirements.txt 'python\pyproject.toml'
 #
+astroid==4.0.1
+    # via pylint
+colorama==0.4.6
+    # via
+    #   pylint
+    #   pytest
 contourpy==1.3.3
     # via matplotlib
 cycler==0.12.1
     # via matplotlib
+dill==0.4.0
+    # via pylint
+execnet==2.1.1
+    # via pytest-xdist
+flake8==7.3.0
+    # via audio_test_tools (python/pyproject.toml)
 fonttools==4.60.1
     # via matplotlib
+iniconfig==2.3.0
+    # via pytest
+isort==7.0.0
+    # via pylint
 kiwisolver==1.4.9
     # via matplotlib
 matplotlib==3.10.7
     # via audio_test_tools (python/pyproject.toml)
+mccabe==0.7.0
+    # via
+    #   flake8
+    #   pylint
 numpy==1.26.4
     # via
     #   audio_test_tools (python/pyproject.toml)
@@ -24,22 +44,44 @@ numpy==1.26.4
     #   pandas
     #   scipy
 packaging==25.0
-    # via matplotlib
+    # via
+    #   matplotlib
+    #   pytest
 pandas==2.3.3
     # via audio_test_tools (python/pyproject.toml)
 pillow==12.0.0
     # via matplotlib
+platformdirs==4.5.0
+    # via pylint
+pluggy==1.6.0
+    # via pytest
+pycodestyle==2.14.0
+    # via flake8
+pyflakes==3.4.0
+    # via flake8
+pygments==2.19.2
+    # via pytest
+pylint==4.0.2
+    # via audio_test_tools (python/pyproject.toml)
 pyparsing==3.2.5
     # via matplotlib
+pytest==8.4.2
+    # via
+    #   audio_test_tools (python/pyproject.toml)
+    #   pytest-xdist
+pytest-xdist==3.8.0
+    # via audio_test_tools (python/pyproject.toml)
 python-dateutil==2.9.0.post0
     # via
     #   matplotlib
     #   pandas
 pytz==2025.2
     # via pandas
-scipy==1.16.2
+scipy==1.16.3
     # via audio_test_tools (python/pyproject.toml)
 six==1.17.0
     # via python-dateutil
+tomlkit==0.13.3
+    # via pylint
 tzdata==2025.2
     # via pandas
