@@ -7,11 +7,10 @@ name = "audio_test_tools"
 description = "tools for audio testing"
 version = "4.5.2"
 dependencies = [
-    "matplotlib<=3.10.7",
+    "matplotlib",
     "numpy<2",
     "pandas",
     "scipy",
-    "astroid<=3.2.4",
 ]
 
 [project.optional-dependencies]

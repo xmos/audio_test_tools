@@ -6,10 +6,8 @@
 #
 #    pip-compile --extra=test --output-file=requirements-test.txt python/pyproject.toml
 #
-astroid==3.2.4
-    # via
-    #   audio_test_tools (python/pyproject.toml)
-    #   pylint
+astroid==4.0.1
+    # via pylint
 colorama==0.4.6
     # via
     #   pylint
@@ -28,7 +26,7 @@ fonttools==4.60.1
     # via matplotlib
 iniconfig==2.3.0
     # via pytest
-isort==5.13.2
+isort==7.0.0
     # via pylint
 kiwisolver==1.4.9
     # via matplotlib
@@ -63,11 +61,11 @@ pyflakes==3.4.0
     # via flake8
 pygments==2.19.2
     # via pytest
-pylint==3.2.7
+pylint==4.0.2
     # via audio_test_tools (python/pyproject.toml)
 pyparsing==3.2.5
     # via matplotlib
-pytest==9.0.0
+pytest==8.4.2
     # via
     #   audio_test_tools (python/pyproject.toml)
     #   pytest-xdist
