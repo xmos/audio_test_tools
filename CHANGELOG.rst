@@ -1,6 +1,11 @@
 Audio test tools change log
 ===========================
 
+Unreleased
+----------
+
+  * CHANGED: Improved THD+N calculation
+
 4.5.3
 -----
 

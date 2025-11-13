@@ -23,3 +23,5 @@ xscope.xmt
 **/*.egg-info/
 */.venv/*
 Pipfile.lock
+**/build
+.vscode

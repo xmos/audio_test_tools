@@ -22,7 +22,6 @@ pipeline {
         stage('Get view') {
           steps {
             xcorePrepareSandbox("${VIEW}", "${REPO}")
-
           }
         }
         stage('SW reference checks (NOT ALL)') {
@@ -108,6 +107,19 @@ pipeline {
             }
           }
         }
+        stage("THD+N tests") {
+          steps{
+            dir("${REPO}") {
+              viewEnv() {
+                withVenv() {
+                  dir("tests") {  
+                      runPytest('test_thdncalculator.py -v')
+                  }
+                }
+              }
+            }
+          }
+        }
       }//stages
       post {
         cleanup {
@@ -165,7 +177,7 @@ pipeline {
               viewEnv() {
                 withVenv() {
                   dir("tests/test_xscope_process_wav") {  // load xmos tools
-                    sh "pip install -e ${env.WORKSPACE}/xscope_fileio"                
+                      sh "pip install git+ssh://git@github.com/xmos/xscope_fileio@v1.3.1"
                       unstash 'test_xscope_process_wav'
                       runPytest('-s --numprocesses=1')
                   }
