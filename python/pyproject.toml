@@ -11,6 +11,7 @@ dependencies = [
     "numpy<2",
     "pandas",
     "scipy",
+    "soundfile",
 ]
 
 [project.optional-dependencies]
@@ -18,8 +19,7 @@ test = [
     "pytest",
     "pytest-xdist",
     "flake8",
-    "pylint",
-    "soundfile",
+    "pylint"
 ]
 
 [tool.setuptools]
