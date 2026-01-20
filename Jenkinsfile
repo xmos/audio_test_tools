@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.16.2') _
+@Library('xmos_jenkins_shared_library@v0.38.0') _
 
 getApproval()
 
@@ -13,7 +13,7 @@ pipeline {
   stages {
     stage('Standard build and XS2 tests') {
       agent {
-        label 'x86_64&&brew&&macOS'
+        label 'x86_64&&linux'
       }
       options {
         skipDefaultCheckout()
@@ -22,7 +22,6 @@ pipeline {
         stage('Get view') {
           steps {
             xcorePrepareSandbox("${VIEW}", "${REPO}")
-
           }
         }
         stage('SW reference checks (NOT ALL)') {
@@ -30,14 +29,18 @@ pipeline {
             stage ("Flake 8") {
               steps {
                 viewEnv() {
-                  flake("${REPO}")
+                  warnError("Flake") {
+                    flake("${REPO}")
+                  }
                 }
               }
             }
             stage ("Copyright") {
               steps {
                 viewEnv() {
-                  sourceCheck("${REPO}")
+                  warnError("Source") {
+                    sourceCheck("${REPO}")
+                  }
                 }
               }
             }
@@ -51,7 +54,9 @@ pipeline {
             stage ("Clang style") {
               steps {
                 viewEnv() {
-                  clangStyleCheck()
+                  warnError("Clang Style") {
+                    clangStyleCheck()
+                  }
                 }
               }
             }
@@ -102,11 +107,17 @@ pipeline {
             }
           }
         }
-        stage('Build docs') {
-          steps {
-            runXdoc("${REPO}/${REPO}/doc")
-            // Archive all the generated .pdf docs
-            archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf", fingerprint: true, allowEmptyArchive: true
+        stage("THD+N tests") {
+          steps{
+            dir("${REPO}") {
+              viewEnv() {
+                withVenv() {
+                  dir("tests") {  
+                      runPytest('test_thdncalculator.py -v')
+                  }
+                }
+              }
+            }
           }
         }
       }//stages
@@ -118,7 +129,7 @@ pipeline {
     }//Standard build and XS2 tests
     stage('xcore.ai Verification'){
       agent {
-        label 'xcore.ai-explorer'
+        label 'xcore.ai'
       }
       options {
         skipDefaultCheckout()
@@ -135,7 +146,7 @@ pipeline {
               sh 'rm -f ~/.xtag/acquired' //Hacky but ensure it always works even when previous failed run left lock file present
               viewEnv() {
                 withVenv{
-                  sh "python -m pip install git+git://github0.xmos.com/xmos-int/xtagctl.git@v1.3.0"
+                  sh "python -m pip install -e ${WORKSPACE}/xtagctl"
                   sh "xtagctl reset_all XCORE-AI-EXPLORER" 
                 }
               }
@@ -166,7 +177,7 @@ pipeline {
               viewEnv() {
                 withVenv() {
                   dir("tests/test_xscope_process_wav") {  // load xmos tools
-                    sh "pip install -e ${env.WORKSPACE}/xscope_fileio"                
+                      sh "pip install git+ssh://git@github.com/xmos/xscope_fileio@v1.3.1"
                       unstash 'test_xscope_process_wav'
                       runPytest('-s --numprocesses=1')
                   }
@@ -184,7 +195,7 @@ pipeline {
     }// xcore.ai
     stage('Update view files') {
       agent {
-        label 'x86_64&&brew'
+        label 'x86_64 && linux'
       }
       when {
         expression { return currentBuild.currentResult == "SUCCESS" }

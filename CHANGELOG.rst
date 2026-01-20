@@ -1,6 +1,21 @@
 Audio test tools change log
 ===========================
 
+4.6.0
+-----
+
+  * CHANGED: Improved THD+N calculation
+
+4.5.3
+-----
+
+  * CHANGED: use v1.0.0 or later of xscope-fileio
+
+4.5.2
+-----
+
+  * REMOVED: Python sh module dependency
+
 4.5.1
 -----
 
@@ -17,7 +32,7 @@ Audio test tools change log
 -----
 
   * ADDED: test and build for XS3 target
-  * ADDED: Move audio testing python utilities from sw_xvf3510 
+  * ADDED: Move audio testing python utilities from sw_xvf3510
   * FIXED: test_wav_xx build failure for non-xscope (axe) apps
 
 4.3.0

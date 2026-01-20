@@ -1,4 +1,4 @@
-# Copyright 2018-2021 XMOS LIMITED.
+# Copyright 2018-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 import numpy as np
@@ -10,7 +10,7 @@ import os
 import xscope_fileio
 import xtagctl
 from io import StringIO
-import sh
+import subprocess
 
 TEST_LEN_SECONDS=15
 INFILE="input.wav"
@@ -30,8 +30,10 @@ def test_test_wav_xscope():
     for ch in range(4):
         filename = f"noise_ch{ch}.wav"
         filenames.append(filename)
-        sh.sox(f"-n -c 1 -b 32 -r 16000 -e signed-integer {filename} synth {length_rounded_to_frame} whitenoise vol 1.0".split())
-    sh.sox(f"-M {' '.join(filenames)} {input_file} remix 1 2 3 4".split())
+        cmd_opts = f"-n -c 1 -b 32 -r 16000 -e signed-integer {filename} synth {length_rounded_to_frame} whitenoise vol 1.0"
+        subprocess.run(["sox", *cmd_opts.split()])
+    cmd_opts = f"-M {' '.join(filenames)} {input_file} remix 1 2 3 4"
+    subprocess.run(["sox", *cmd_opts.split()])
     for filename in filenames:
         os.remove(filename)
 
@@ -55,11 +57,11 @@ def test_test_wav_xscope():
 if __name__ == "__main__":
     #If running locally, make sure we build fw. This would normally be done by jenkins
     print("Building firmware")
-    sh.waf("configure build".split())
+    subprocess.run(["waf", "configure", "build"])
     #Build host app
     print("Building host app")
     os.chdir(os.path.join(package_dir,"../../../xscope_fileio/host"))
-    sh.make()
+    subprocess.run(["make"])
     os.chdir(package_dir)
 
     test_test_wav_xscope()

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "audio_test_tools"
+description = "tools for audio testing"
+version = "4.5.2"
+dependencies = [
+    "matplotlib",
+    "numpy<2",
+    "pandas",
+    "scipy",
+    "soundfile",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-xdist",
+    "flake8",
+    "pylint"
+]
+
+[tool.setuptools]
+py-modules = [
+    "audio_generation",
+    "audio_utils",
+    "audio_wav_utils",
+    "common_utils",
+    "pcm_to_pdm",
+    "test_wav_erle",
+    "thdncalculator",
+    "wav_comp"
+]

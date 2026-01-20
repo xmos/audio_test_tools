@@ -1,4 +1,4 @@
-# Copyright 2018-2021 XMOS LIMITED.
+# Copyright 2018-2025 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 from __future__ import division
 from __future__ import print_function
@@ -190,7 +190,7 @@ def get_sine(duration, frequencies, amplitudes=None, phases=None,
     assert (len(frequencies) == len(amplitudes)), \
             "Error: Frequencies and phases have different size"
 
-    x = np.linspace(0, duration * 2 * np.pi, int(duration * sample_rate))
+    x = np.arange(int(duration*sample_rate)) / sample_rate * 2 * np.pi
     signal = np.zeros((int(duration * sample_rate),))
     for idx in range(len(frequencies)):
         signal += amplitudes[idx] * np.sin(frequencies[idx] * x + phases[idx])

@@ -1,7 +1,7 @@
-# Copyright 2020-2021 XMOS LIMITED.
+# Copyright 2020-2022 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import os
-import sh
+import subprocess
 import sys
 import re
 from contextlib import contextmanager
@@ -51,12 +51,6 @@ def get_firmware_version():
         with open(changelog_file) as c:
             return c.read().splitlines()[3].strip()
 
-def print_output(x, verbose):
-    if verbose:
-        print(x, end="")
-    else:
-        print(".", end="", flush=True)
-
 
 def verbose_sleep(seconds: int):
     for i in range(seconds):
@@ -79,41 +73,40 @@ def prepare_firmware(host, xe_path=None, data_partition_image=None, build_flags=
 def build_host(extra_utilities):
     binaries = {}
     for utility in ["vfctrl_usb"] + extra_utilities:
-        sh_print = lambda x: print_output(x, False)
         CMakeCache_file = host_utility_locations[utility] / "CMakeCache.txt"
         if CMakeCache_file.is_file():
-            sh.rm(CMakeCache_file)
+            CMakeCache_file.unlink()
         print("Building %s..." % utility)
         with pushd(host_utility_locations[utility]):
             if utility != "vfctrl_json":
-                sh.cmake(".")
+                subprocess.run(["cmake", "."])
             else:
-                sh.cmake([".", "-DJSON=ON"])
-            sh.make(_out=sh_print)
+                subprocess.run(["cmake", ".", "-DJSON=ON"])
+            subprocess.run(["make"])
             print()
         path = host_utility_locations[utility] / "bin" / utility
         assert path.is_file()
-        binaries[utility] = sh.Command(str(path))
+        binaries[utility] = str(path)
     return binaries
 
 def build_firmware(verbose=False, build_flags="", config="usb_adaptive", blank=False):
     if blank:
         return None
-    sh_print = lambda x: print_output(x, True)
-    sh_print_err = lambda x: print_output(x, True)
     print("Building firmware...")
     with pushd(APP_PATH):
         args = f"configure clean build -j1 --config {config} {build_flags}"
-        sh.waf(args.split(), _out=sh_print, _err=sh_print_err)
+        ret = subprocess.run(["waf", *args.split()], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        print(ret.stdout)
         print()
     return APP_PATH / "bin" / "app_xk_xvf3510_l71_usb_adaptive.xe"
 
 def build_src_xe(verbose=False):
-    sh_print = lambda x: print_output(x, verbose)
     print("Building src xe...")
     with pushd(SRC_TEST_PATH):
         args = f"configure clean build"
-        sh.waf(args.split(), _out=sh_print)
+        ret = subprocess.run(["waf", *args.split()], capture_output=True, text=True)
+        if verbose:
+            print(ret.stdout)
         print()
     return SRC_TEST_PATH / "bin/src_test.xe"
 
@@ -122,16 +115,16 @@ def run_firmware(xe_path, data_partition_image=None):
     print("Calling xflash...")
 
     if data_partition_image != None:
-        sh.xflash("--boot-partition-size", "1048576", "--data", data_partition_image, xe_path, "--no-compression" )
+        subprocess.run(["xflash", "--boot-partition-size", "1048576", "--data", data_partition_image, xe_path, "--no-compression"])
     else:
-        sh.xflash(xe_path, "--no-compression")
+        subprocess.run(["xflash", xe_path, "--no-compression"])
 
     print("Waiting for firmware to boot...")
     verbose_sleep(15)
 
 def erase_flash(xn_file):
     print("Calling xflash --erase-all...")
-    sh.xflash("--erase-all", "--target-file", xn_file)
+    subprocess.run(["xflash", "--erase-all", "--target-file", xn_file])
 
 def build_data_image(host, which, compatibility_ver=None, bcd_ver=None, config_file=None, crc_error_data=False, verbose=False):
     config_path = APP_PATH / "data-partition"
@@ -153,19 +146,18 @@ def build_data_image(host, which, compatibility_ver=None, bcd_ver=None, config_f
                     file_out.write("SET_USB_BCD_DEVICE %d\n" % bcd_ver) # bcdDevice comes first so it's before USB start command
                 file_out.write(file_in.read())
 
-    sh_print = lambda x: print_output(x, verbose)
-
     extra_args = []
     if compatibility_ver:
         extra_args.extend(["--force-compatibility-version", compatibility_ver])
     if verbose:
         extra_args.append('--verbose')
-    sh.Command(sys.executable)( # Python executable otherwise you get FileNotFoundError
-        [config_path / "xvf3510_data_partition_generator.py",
-         "--vfctrl-host-bin-path", host["vfctrl_json"],
-         "--dpgen-host-bin-path", host["data_partition_generator"],
-         config_file] + extra_args,
-        _out=sh_print)
+    cmd_opts = [config_path / "xvf3510_data_partition_generator.py",
+                "--vfctrl-host-bin-path", host["vfctrl_json"],
+                "--dpgen-host-bin-path", host["data_partition_generator"],
+                config_file] + extra_args
+    ret = subprocess.run([sys.executable, *cmd_opts.split()], capture_output=True, text=True)
+    if verbose:
+        print(ret.stdout)
     if not compatibility_ver:
         compatibility_ver = get_firmware_version()
     return config_path / "output" / ("data_partition_%s_%s_v%s.bin" % (which, Path(config_file).stem, compatibility_ver.replace(".", "_")))
@@ -181,13 +173,14 @@ def dfu_add_suffix(host, boot_bin, data_bin):
 
 def dfu_write_upgrade(host, boot_dfu, data_dfu, skip_boot_image=False, verbose=False):
     print("Writing upgrade...")
-    sh_print = lambda x: print_output(x, verbose)
     extra_args = []
     if skip_boot_image:
         extra_args += ['--skip-boot-image']
     if not verbose:
         extra_args += ['--quiet']
-    host['dfu_usb'](extra_args + ["write_upgrade", boot_dfu, data_dfu], _out=sh_print)
+    ret = subprocess.run([host['dfu_usb'], *extra_args.split(), "write_upgrade", boot_dfu, data_dfu], capture_output=True, text=True)
+    if verbose:
+        print(ret.stdout)
     print("Waiting for firmware to reboot...")
     verbose_sleep(15)
 
@@ -203,8 +196,9 @@ def check_bld_message(host_bin_paths, expected_msg, vfctrl_flags=""):
 
 def get_xplay_version():
     try:
-        output = str(sh.xplay("--version")) # force from sh.RunningCommand to dump of standard output
-    except sh.ErrorReturnCode_1:
+        ret = subprocess.run(["xplay", "--version"], capture_output=True, check=True, text=True)
+        output = ret.stdout
+    except subprocess.CalledProcessError:
         output = "1.0" # heuristic: if it does not understand version command it must be 1.0
     return re.search(r"\b\d+\.\d+\b", output).group(0)
 
@@ -228,20 +222,21 @@ def find_alsa_device(alsa_output, vendor_str_search="Adaptive"):
     return card_num, dev_num
 
 def find_aplay_device(vendor_str_search="Adaptive"):
-    aplay_out = sh.aplay("-l")
-    return find_alsa_device(aplay_out, vendor_str_search)
+    ret = subprocess.run(["aplay", "-l"], capture_output=True, text=True)
+    return find_alsa_device(ret.stdout.splitlines(), vendor_str_search)
 
 
 def find_arecord_device(vendor_str_search="Adaptive"):
-    arecord_out = sh.arecord("-l")
-    return find_alsa_device(arecord_out, vendor_str_search)
+    ret = subprocess.run(["arecord", "-l"], capture_output=True, text=True)
+    return find_alsa_device(ret.stdout.splitlines(), vendor_str_search)
 
 def find_xplay_device_idx(product_string, in_out_string):
     XPLAY_REQUIRED_VERSION = "1.2"
     if get_xplay_version() != XPLAY_REQUIRED_VERSION:
         raise HardwareTestException("Did not detect xplay version %s" % XPLAY_REQUIRED_VERSION)
     xplay_device_idx = None
-    lines = sh.xplay("-l")
+    ret = subprocess.run(["xplay", "-l"], capture_output=True, text=True)
+    lines = ret.stdout.splitlines()
     for line in lines:
         found = re.search(r"Found Device (\d): %s.*%s" % (product_string, in_out_string), line)
         if found:
@@ -265,20 +260,14 @@ class audio_player:
     def play_background(self):
         if platform == "darwin":
             cmd = f"-p {self.play_file} -r {self.rate} -d {self.dev}"
-            self.process = sh.xplay(cmd.split(), _bg=True, _bg_exc=False)
+            self.process = subprocess.Popen(["xplay", *cmd.split()])
         else:
-            self.process = sh.aplay(f"{self.play_file} -r {self.rate} -D hw:{self.dev[0]},{self.dev[1]}".split(), _bg=True, _bg_exc=False)
-            # _bg_exc=False fixes an uncatchable exception https://github.com/amoffat/sh/issues/399
+            cmd = f"{self.play_file} -r {self.rate} -D hw:{self.dev[0]},{self.dev[1]}"
+            self.process = subprocess.Popen(["aplay", *cmd.split()])
 
     def end_playback(self):
-        if not self.process._process_completed:
+        if self.process.poll() is None:
             self.process.terminate()
-
-            if platform == "darwin":
-                try: # see sh module issue 399
-                    self.process.wait()
-                except sh.SignalException_SIGTERM:
-                    pass
 
     def wait_to_complete(self):
         self.process.wait()
@@ -303,22 +292,21 @@ class audio_recorder:
     def record_background(self):
         if platform == "darwin":
             cmd = f"-R {self.record_file} -r {self.rate} -b 32 -d {self.dev}"
-            self.process = sh.xplay(cmd.split(), _bg=True, _bg_exc=False) # This runs background
+            self.process = subprocess.Popen(["xplay", *cmd.split()])
         else:
-            self.process = sh.arecord(f"{self.tmp_wav_file} -f S32_LE -c 2 -r {self.rate} -D plughw:{self.dev[0]},{self.dev[1]}".split(), _bg=True, _bg_exc=False)
+            cmd = f"{self.tmp_wav_file} -f S32_LE -c 2 -r {self.rate} -D plughw:{self.dev[0]},{self.dev[1]}"
+            self.process = subprocess.Popen(["arecord", *cmd.split()])
 
     def end_recording(self):
         self.process.terminate()
         if platform == "darwin":
-            try: # see sh module issue 399
-                self.process.wait()
-            except sh.SignalException_SIGTERM:
-                pass
             # xplay leaves the header unpopulated on terminate so fix it
-            sh.sox(f"--ignore-length {self.record_file} {self.tmp_wav_file}".split())
-        capture_len = float(sh.soxi(f"-D {self.tmp_wav_file}".split()))
+            subprocess.run(["sox", "--ignore-length", f"{self.record_file}", f"{self.tmp_wav_file}"])
+        ret = subprocess.run(["soxi", "-D", f"{self.tmp_wav_file}"], capture_output=True, text=True)
+        capture_len = float(ret.stdout)
         assert capture_len > (self.start_trim_s + self.end_trim_s), f"Not enough recorded audio: {capture_len}s, {self.start_trim_s + self.end_trim_s}s needed"
-        sh.sox(f"{self.tmp_wav_file} {self.record_file} trim {self.start_trim_s} {-self.end_trim_s}".split())
+        cmd = f"{self.tmp_wav_file} {self.record_file} trim {self.start_trim_s} {-self.end_trim_s}"
+        subprocess.run(["sox", *cmd.split()])
 
 def record_and_play(play_file, play_device, record_file, record_device, rate=None, play_rate=None, rec_rate=None, trim_ends_s=0.0):
     if play_rate is None and rec_rate is None:
@@ -331,11 +319,7 @@ def record_and_play(play_file, play_device, record_file, record_device, rate=Non
     recorder.end_recording()
     # Belt and braces as xplay doesn't alway exit nicely
     if platform == "darwin":
-        try:
-            sh.killall(" xplay")
-        except sh.ErrorReturnCode_1:
-            pass
-            # Nothing to kill
+        subprocess.run(["killall", "xplay"])
 
 def play_and_record(play_file, play_device, record_file, record_device, rate=None, play_rate=None, rec_rate=None, trim_ends_s=0.0):
     if play_rate is None and rec_rate is None:
@@ -349,11 +333,7 @@ def play_and_record(play_file, play_device, record_file, record_device, rate=Non
     recorder.end_recording()
     # Belt and braces as xplay doesn't alway exit nicely
     if platform == "darwin":
-        try:
-            sh.killall(" xplay")
-        except sh.ErrorReturnCode_1:
-            pass
-            # Nothing to kill
+        subprocess.run(["killall", "xplay"])
 
 def prepare_4ch_wav_for_harness(input_file_name, output_file_name = "output.wav"):
     gen_pdm_and_pack_ref(input_file_name, output_file_name)
@@ -540,7 +520,7 @@ def get_app_directory():
 def reset_target():
     print("Resetting target...")
 
-    sh.xgdb('-batch', '-ex', 'connect --reset-to-mode-pins', '-ex', 'detach')
+    subprocess.run(["xgdb", "-batch", "-ex", "connect --reset-to-mode-pins", "-ex", "detach")
 
     # alternative way to reboot using DFU utility
     #host['dfu_usb'].reboot()
