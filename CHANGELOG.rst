@@ -1,8 +1,8 @@
 Audio test tools change log
 ===========================
 
-Unreleased
-----------
+4.6.0
+-----
 
   * CHANGED: Improved THD+N calculation
 
@@ -32,7 +32,7 @@ Unreleased
 -----
 
   * ADDED: test and build for XS3 target
-  * ADDED: Move audio testing python utilities from sw_xvf3510 
+  * ADDED: Move audio testing python utilities from sw_xvf3510
   * FIXED: test_wav_xx build failure for non-xscope (axe) apps
 
 4.3.0
